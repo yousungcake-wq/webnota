@@ -19,5 +19,5 @@
     "emitDeclarationOnly": true,
     "outDir": "node_modules/.tmp/app"
   },
-  "include": ["src"]
+  "include": ["src", "src/**/*.json"]
 }

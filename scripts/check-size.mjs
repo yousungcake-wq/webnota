@@ -14,6 +14,8 @@ const BUDGETS = {
   editor: { kb: 210, entry: 'src/features/editor/Editor.tsx' },
   i18n: { kb: 8, entry: 'src/core/i18n/ko.ts' }, // one language's dictionary, loaded at boot
   sync: { kb: 12, entry: 'src/core/sync/remote.ts' }, // GitHub client + engine, only once connected
+  emoji: { kb: 20, entry: 'src/features/emoji/EmojiPicker.tsx' }, // picker UI + icon set, on first open
+  emojiData: { kb: 40, entry: 'src/features/emoji/emoji-data.json' }, // names for search (한/영), loaded by the picker
   migrations: { kb: 8, entry: 'src/core/schema/migrations/index.ts' }, // only when data needs migrating
   // Add as features land: database: { kb: 120, entry: 'src/features/database/index.ts' }, …
 }

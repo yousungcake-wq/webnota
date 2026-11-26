@@ -5,3 +5,4 @@ worker/node_modules
 test-results
 *.md
 dist-e2e
+src/features/emoji/emoji-data.json

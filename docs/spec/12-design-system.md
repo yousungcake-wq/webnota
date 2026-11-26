@@ -41,8 +41,8 @@ CSS 파일 배치 (M0-09 ✅):
 | `toast()` | 실행 취소 버튼 지원 ("휴지통으로 이동함 [실행 취소]"), 최대 3개, 호버 시 멈춤 | ✅ M0 |
 | Tooltip | 데스크탑만. `data-tooltip` 속성 하나로 (OverlayHost의 전역 리스너) | ✅ M0 |
 | `Input`, `Switch`, `Segmented` ✅ / `TextArea`, `Select`, `Checkbox` | 필요해지는 마일스톤에서 추가 | M0 일부 |
-| `EmojiPicker` | 전체 이모지 데이터(지연 로드), 검색(한/영), 최근, 피부색 | M1 |
-| `IconPicker` | lucide 아이콘 + 색 | M1 |
+| `EmojiPicker` | 전체 이모지 데이터(지연 로드), 검색(한/영), 최근, 피부색 | M1 ✅ (`features/emoji`, 데이터는 `scripts/gen-emoji.mjs`로 emojibase에서 생성: 한/영 이름 + 첫 한국어 태그, gzip 36KB) |
+| `IconPicker` | lucide 아이콘 + 색 | M1 ✅ (선별 100개, 이름은 lucide kebab-case — 저장 데이터이므로 바꾸지 않음) |
 | `ColorPicker` | 블록 색 팔레트 | M2 |
 | `DatePicker` | 월 달력, 시간, 범위 | M4 |
 | `VirtualList` | @tanstack/react-virtual 래퍼 | M1 |
