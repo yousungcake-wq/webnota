@@ -1,3 +1,4 @@
+import { wsKey } from '../docs/slots'
 import { createStore } from '../store/createStore'
 
 /**
@@ -18,7 +19,7 @@ export interface SyncLogEntry {
   firstAt?: number
 }
 
-const KEY = 'webnota:sync-log'
+const KEY = wsKey('sync-log')
 const MAX = 50
 
 const isNoop = (e: SyncLogEntry) => e.ok && e.pulled + e.pushed + e.deleted === 0

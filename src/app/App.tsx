@@ -2,6 +2,7 @@ import { Home, Search, Settings, Star } from 'lucide-react'
 import { useEffect } from 'react'
 import { useViews } from '@/core/store/views'
 import { pushRecent } from '@/core/store/prefs'
+import { wsKey } from '@/core/docs/slots'
 import { href, navigate, useRoute, type Route } from '@/core/store/router'
 import { FavoritesView } from '@/features/favorites'
 import { HomeView } from '@/features/home'
@@ -15,7 +16,7 @@ import { EmptyState, ErrorBoundary } from '@/ui'
 import { DesktopShell } from './DesktopShell'
 import { SchemaBanner } from './SchemaBanner'
 
-const LAST_KEY = 'webnota:last-page'
+const LAST_KEY = wsKey('last-page')
 
 export function App() {
   const route = useRoute()

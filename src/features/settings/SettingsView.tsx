@@ -1,5 +1,5 @@
 import { LogOut, Monitor, Moon, RefreshCw, Sun, Trash2 } from 'lucide-react'
-import { Fragment, useState, type ReactNode } from 'react'
+import { Fragment, lazy, Suspense, useState, type ReactNode } from 'react'
 import { oauthAvailable, startLogin } from '@/core/auth/auth'
 import { FLAGS, setFlag, type FlagName } from '@/core/flags'
 import { useFlag } from '@/core/store/flags'
@@ -10,7 +10,10 @@ import { useSync } from '@/core/store/sync'
 import { connect, disconnect, syncNow } from '@/core/sync/controller'
 import { SyncBadge } from '@/features/sync'
 import { Button, confirmDialog, Input, LinkButton, Segmented, Switch, ViewHeader } from '@/ui'
+import { loadWorkspaceSettings } from '@/features/workspaces'
 import './settings.css'
+
+const WorkspaceSettings = lazy(loadWorkspaceSettings)
 import { SyncLog } from './SyncLog'
 
 function Github({ size = 18 }: { size?: number }) {
@@ -40,7 +43,7 @@ export function SettingsView() {
     setBusy(true)
     setErr(null)
     try {
-      await connect(pat.trim(), repo.trim() || 'webnota-data')
+      await connect(pat.trim(), repo.trim() || undefined)
       setPat('')
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e))
@@ -52,6 +55,9 @@ export function SettingsView() {
   return (
     <div className="view">
       <ViewHeader title={t('common.settings')} />
+      <Suspense fallback={null}>
+        <WorkspaceSettings />
+      </Suspense>
 
       <section className="card">
         <h2>

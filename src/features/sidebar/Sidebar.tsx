@@ -5,6 +5,7 @@ import { addPage } from '@/features/page'
 import { openPalette } from '@/features/search'
 import { SpaceSwitcher } from '@/features/spaces'
 import { SyncBadge } from '@/features/sync'
+import { WorkspaceSwitcher } from '@/features/workspaces'
 import { FavoritesList, PageTree } from './PageTree'
 import './sidebar.css'
 import { t } from '@/core/i18n'
@@ -19,10 +20,7 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
   return (
     <aside className="sidebar" aria-label={t('sidebar.label')}>
       <div className="sidebar-top">
-        <div className="brand">
-          <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={22} height={22} />
-          <span>WebNota</span>
-        </div>
+        <WorkspaceSwitcher />
         <IconButton size="sm" icon={PanelLeftClose} label={t('sidebar.close')} onClick={onClose} />
       </div>
 

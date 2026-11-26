@@ -4,7 +4,7 @@ import { openApp } from './helpers'
 test('phone: create a space from the home screen and switch back', async ({ page }) => {
   await openApp(page)
   await page.getByRole('button', { name: '뒤로' }).click()
-  const switcher = page.getByRole('button', { name: '스페이스 전환' })
+  const switcher = page.getByRole('button', { name: '스페이스 전환', exact: true })
   await switcher.tap()
   await page.getByRole('menuitem', { name: '새 스페이스' }).tap()
   const dialog = page.getByRole('dialog', { name: '새 스페이스' })

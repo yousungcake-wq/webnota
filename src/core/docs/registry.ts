@@ -12,7 +12,7 @@ import { IndexeddbPersistence } from 'y-indexeddb'
 /** Origin used when applying updates that came from GitHub, so they don't mark docs dirty. */
 import { REMOTE_ORIGIN } from '../sync/origins'
 import { isReadOnly } from '../schema/gate'
-import { currentWorkspaceId, idbName } from './slots'
+import { currentWorkspaceId, idbName, wsKey } from './slots'
 import { createTabRelay, TAB_ORIGIN } from './tabs'
 export { REMOTE_ORIGIN }
 
@@ -32,7 +32,7 @@ const registry = new Map<string, Entry>()
 export const tabs = createTabRelay(`webnota:${currentWorkspaceId()}`, (name) => registry.get(name)?.doc)
 
 // ---- dirty tracking (docs with local changes not yet pushed) ----
-const DIRTY_KEY = 'webnota:dirty'
+const DIRTY_KEY = wsKey('dirty')
 let dirty: Record<string, number> = readJSON(DIRTY_KEY, {})
 const dirtyListeners = new Set<() => void>()
 

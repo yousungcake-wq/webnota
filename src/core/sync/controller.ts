@@ -2,7 +2,7 @@ import { debugLog } from '../flags'
 import { t } from '../i18n'
 import { getToken, setToken } from '../auth/auth'
 import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc, pageDocName, retainDoc, tabs } from '../docs/registry'
-import { currentWorkspaceId } from '../docs/slots'
+import { currentWorkspaceId, wsKey } from '../docs/slots'
 import { adoptFavorites, listViews, setCurrentUser } from '../model/views'
 import { createStore } from '../store/createStore'
 import { isReadOnly } from '../schema/gate'
@@ -28,7 +28,7 @@ export interface ControllerState {
   error: string | null
 }
 
-const ACCOUNT_KEY = 'webnota:account'
+const ACCOUNT_KEY = wsKey('account')
 const DEFAULT_REPO = 'webnota-data'
 
 /** Read in React with `useSync()` (core/store/sync.ts). */
@@ -89,7 +89,7 @@ async function applyLogin(login: string) {
   setCurrentUser(login)
   try {
     localStorage.setItem(LOGIN_KEY, login)
-    const adopted = `webnota:adopted:${login}`
+    const adopted = wsKey(`adopted:${login}`)
     if (isReadOnly() || localStorage.getItem(adopted)) return
     adoptFavorites(await openDoc('workspace'), 'local')
     localStorage.setItem(adopted, '1')
@@ -110,11 +110,31 @@ export async function initUser() {
 }
 
 /** Validates a token, creates the private data repo if needed, and stores the account. */
-export async function connect(token: string, repoName = DEFAULT_REPO): Promise<Account> {
+/** Repository a new workspace should connect to once a token exists (`owner/repo` or `repo`). */
+const TARGET_KEY = () => wsKey('connect-target')
+export function setPendingTarget(target: string, slot?: Parameters<typeof wsKey>[1]) {
+  localStorage.setItem(wsKey('connect-target', slot), target)
+}
+export function pendingTarget(): string | null {
+  try {
+    return localStorage.getItem(TARGET_KEY())
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Validates a token and connects this workspace to a repository: `repo` (the user's own,
+ * created private if missing) or `owner/repo` (someone else's, which must exist and
+ * allow pushing — a repository shared with the user as a collaborator, WS-01).
+ */
+export async function connect(token: string, target = pendingTarget() ?? DEFAULT_REPO): Promise<Account> {
   const { GitHubClient, GitHubError, GitHubGitApi } = await remote()
   const gh = new GitHubClient(token)
   const user = await gh.getUser()
-  let repo = await gh.getRepo(user.login, repoName)
+  const [owner, repoName] = target.includes('/') ? (target.split('/', 2) as [string, string]) : [user.login, target]
+  let repo = await gh.getRepo(owner, repoName)
+  if (!repo && owner !== user.login) throw new Error(t('sync.err.repoNotFound', { repo: `${owner}/${repoName}` }))
   if (!repo) {
     try {
       repo = await gh.createRepo(repoName).then((r) => ({ ...r, private: true, size: 0 }))
@@ -128,7 +148,7 @@ export async function connect(token: string, repoName = DEFAULT_REPO): Promise<A
   const account: Account = {
     login: user.login,
     avatarUrl: user.avatar_url,
-    owner: user.login,
+    owner,
     repo: repoName,
     branch: repo!.default_branch || 'main',
   }
@@ -148,6 +168,7 @@ export async function connect(token: string, repoName = DEFAULT_REPO): Promise<A
   }
   setToken(token)
   localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account))
+  localStorage.removeItem(TARGET_KEY())
   set({ account, status: 'idle', error: null })
   await applyLogin(account.login)
   // Everything that exists locally must be uploaded at least once.

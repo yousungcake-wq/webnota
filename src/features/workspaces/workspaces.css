@@ -1,0 +1,60 @@
+.ws-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 32px;
+  padding: 2px 6px 2px 2px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+.ws-switcher:hover {
+  background: var(--bg-hover);
+}
+.ws-icon {
+  width: 22px;
+  text-align: center;
+  font-size: 18px;
+}
+.ws-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ws-form {
+  display: grid;
+  gap: var(--sp-3);
+}
+.ws-form-row {
+  display: flex;
+  gap: var(--sp-3);
+}
+.ws-form-row .field:last-child {
+  flex: 1;
+}
+.ws-icon-input {
+  width: 72px;
+}
+.ws-repo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+}
+.ws-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ws-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  border-top: 1px solid var(--border);
+}
+.phone .ws-switcher {
+  min-height: 44px;
+}

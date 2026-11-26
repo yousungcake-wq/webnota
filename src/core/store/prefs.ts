@@ -1,3 +1,4 @@
+import { wsKey } from '../docs/slots'
 import { createStore } from './createStore'
 import { useStore } from './useStore'
 
@@ -43,7 +44,7 @@ export function setTheme(t: Theme) {
 export const useTheme = (): Theme => useStore(themeStore)
 
 /** Per-device set of expanded tree nodes. */
-const EXP_KEY = 'webnota:expanded'
+const EXP_KEY = wsKey('expanded')
 const expandedStore = createStore(
   new Set<string>(
     (() => {
@@ -67,7 +68,7 @@ export function toggleExpanded(id: string, value?: boolean) {
 export const useExpanded = (): Set<string> => useStore(expandedStore)
 
 /** Space shown in the sidebar, per device (WS-02). Validated against the workspace by `useCurrentSpace`. */
-const SPACE_KEY = 'webnota:space'
+const SPACE_KEY = wsKey('space')
 export const spacePrefStore = createStore<string | null>(read(SPACE_KEY))
 export function setCurrentSpace(id: string) {
   write(SPACE_KEY, id)
@@ -83,7 +84,7 @@ export function setTrashAutoEmpty(on: boolean) {
 }
 
 /** Recently opened views, newest first, per device (WS-05). */
-const RECENT_KEY = 'webnota:recent'
+const RECENT_KEY = wsKey('recent')
 const RECENT_MAX = 30
 export const recentStore = createStore<string[]>(
   (() => {

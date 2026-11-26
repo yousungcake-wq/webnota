@@ -1,7 +1,7 @@
 import '@/styles/index.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { completeLoginFromUrl } from '@/core/auth/auth'
+import { completeLoginFromUrl, getToken } from '@/core/auth/auth'
 import { getLang, initI18n, t } from '@/core/i18n'
 import { legacyCopyDone, openDoc, pageDocName } from '@/core/docs/registry'
 import { currentWorkspaceId } from '@/core/docs/slots'
@@ -10,7 +10,7 @@ import { initSchema, isReadOnly } from '@/core/schema'
 import { debugFlag } from '@/platform/debug'
 import { applyTheme, trashAutoEmptyStore } from '@/core/store/prefs'
 import { navigate } from '@/core/store/router'
-import { connect, initUser, startAutoSync } from '@/core/sync/controller'
+import { connect, initUser, pendingTarget, startAutoSync, syncStore } from '@/core/sync/controller'
 import { loadSeed, preloadEditor } from '@/features/editor'
 import { addPage, autoEmptyTrash } from '@/features/page'
 import { startSearchIndexing } from '@/features/search'
@@ -76,6 +76,9 @@ async function boot() {
     if (token) {
       navigate({ name: 'settings' }, { replace: true })
       await connect(token)
+    } else if (!syncStore.get().account && pendingTarget() && getToken()) {
+      // A workspace created to open a repository connects on its first start (WS-01).
+      await connect(getToken()!)
     }
   } catch (e) {
     toast(e instanceof Error ? e.message : String(e), { tone: 'error' })

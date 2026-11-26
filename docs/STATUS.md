@@ -25,6 +25,7 @@
 - 동기화 스케줄 (M0-21): 동기화는 `core/sync/controller.ts`의 `scheduler`를 통해서만 시작 (`syncNow()`=수동 요청). 타이밍 규칙은 `core/sync/schedule.ts` (순수, 테스트 있음).
 - 탭 (M0-23): 동기화는 리더 탭만 (`electLeader`). 다른 탭에서 동기화를 시작하려면 `requestSync`/`syncNow` 사용 (직접 `scheduler.request` 금지). 문서 업데이트는 `tabs` 중계로 실시간 공유되며, 받은 업데이트 origin은 `TAB_ORIGIN`.
 - 지연 로드 패턴 (M1): 클릭해야 보이는 UI(더보기 메뉴 `LazyPageMenu`, 아이콘 선택·정보 `overlayViews`, 트리 드래그 `drag.ts`)는 지연 청크. 메뉴 항목에서 시트·대화상자를 열 때는 `afterMenuClosed()`(`features/page/rename.ts`)를 기다린 뒤 열 것 — 폰에서 메뉴 시트의 history pop과 겹치면 앱 밖으로 나감.
+- 워크스페이스 (M1-15): 워크스페이스마다 다른 localStorage 상태는 반드시 `wsKey('이름')`(`core/docs/slots.ts`)으로 저장. 기기 공통(테마, 사이드바 폭, 토큰, 언어, 플래그)만 `webnota:` 고정 키.
 - 상태 구독: Yjs는 `useY(doc, 고정 셀렉터, 비교 함수)`, 그 외는 `createStore` + `useStore`. 새 리스너 Set을 직접 만들지 말 것.
 - 스타일: 색은 `styles/tokens.css`에만 (테스트 강제). 기능 CSS는 그 기능 컴포넌트에서 import. 간격·반경 px는 아직 토큰으로 바꾸지 않음 (화면을 고칠 때 점진적으로).
 - CSS 리팩터링 시 회귀 확인: 스크래치 스크립트로 `vite preview` 화면 19장을 찍어 바이트 비교했음 (데스크탑·Pixel 7·iPhone 14·iPad, 라이트·다크). 필요하면 `tests/perf`나 e2e 스크린샷 테스트로 정식화 검토.

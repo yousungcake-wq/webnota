@@ -4,7 +4,7 @@ import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
 test('spaces: create, switch, edit, delete (WS-02)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  const switcher = page.locator('.sidebar').getByRole('button', { name: '스페이스 전환' })
+  const switcher = page.locator('.sidebar').getByRole('button', { name: '스페이스 전환', exact: true })
   await expect(switcher).toContainText('일반')
 
   await switcher.click()
