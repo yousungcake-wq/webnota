@@ -31,7 +31,7 @@
 ### 데이터
 - [x] M0-15 스키마 버전 + 마이그레이션 레지스트리 + 읽기 전용 게이트 (spec/02 §6) — 68fa08a
 - [x] M0-16 마이그레이션 v2: pages→views, FracKey, 즐겨찾기 사용자별, 기본 스페이스, `page/`→`doc/` IndexedDB 복사 (spec/02 §7) — e71fe99
-- [ ] M0-17 동기화 경로 v2 + 구 경로 이전 (SY-02a), FakeRemote 테스트
+- [x] M0-17 동기화 경로 v2 + 구 경로 이전 (SY-02a), FakeRemote 테스트 — 087a184
 - [ ] M0-18 IndexedDB 이름 공간 `wn:<wsId>:` (SY-05 대비)
 - [ ] M0-19 문서 레지스트리 LRU 언로드 (SY-01)
 - [ ] M0-20 `unknown` 노드 보존 처리 (ED-B23)

@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M0 기반 정비
-- **진행 상황**: M0 26개 중 16개 완료 (M0-01~16: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2)
+- **진행 상황**: M0 26개 중 17개 완료 (M0-01~17: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M0-17 동기화 경로 v2 (`doc/<id>` → `data/docs/<id>.yjs`) + 구 경로 이전 (SY-02a), FakeRemote 테스트. 아래 "스키마"·"M0-17 주의" 먼저 읽기.
+- **다음 할 일**: M0-18 IndexedDB 이름 공간 `wn:<wsId>:` (SY-05 대비). `meta.id`(워크스페이스 ID)가 아직 없으므로 생성 규칙부터 정할 것 (기기마다 다른 ID가 생기지 않게 — 저장소 연결 전 로컬 ID와 원격 병합 시 LWW 문제). 이름 변경은 M0-16의 `core/docs/legacy.ts` 복사 방식 재사용 가능.
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -32,7 +32,7 @@
 - `core/persistence`는 아직 없음. IndexedDB는 `core/docs/registry.ts`가 y-indexeddb를 직접 씀 → M0-18에서 분리.
 - 스키마 (M0-15, spec/02 §6 구현 규칙): `SCHEMA_VERSION`은 `core/schema/version.ts`. 새 마이그레이션은 `core/schema/migrations/NNN-name.ts` + 테스트, `MIGRATIONS`에 등록하고 `SCHEMA_VERSION`을 올림. 마이그레이션은 `core/model`을 쓰지 말고 raw Y 코드로, 결정적·멱등(고정 ID). 부팅 순서: `initWorkspace` → `initSchema` → `seedIfEmpty`(읽기 전용이면 생략). 모델 변경 함수에는 `assertWritable()`를 넣음 (`core/model/guard.ts`).
 - 데이터 모델 v2 (M0-16): workspace는 `views`/`spaces`/`users`. UI용 `PageMeta`(`core/model/pages.ts`)는 그대로지만 `order`는 FracKey 문자열, 스페이스가 부모면 `parentId: null`, `icon`은 이모지 값. 현재 사용자는 `getCurrentUser()`=`local` (DECISIONS 015). v1 `pages`는 **동결 사본으로 남아 있음 — 지우지 말 것** (구버전 앱이 원격 파일을 지움). 영구 삭제 시 `pages` 항목도 함께 지움.
-- **M0-17 주의**: 지금 doc 이름은 `doc/<id>`, 원격 경로는 아직 `data/pages/<id>.yjs` (`engine.ts` `pathForDoc`). 경로를 `data/docs/`로 옮길 때 v1 앱은 `data/docs/`를 무시하고 `pages` 동결 사본 기준으로만 지우므로 새 경로 파일은 안전. 구 경로 삭제 시 v1 앱은 본문을 못 받게 됨(읽기 전용도 아님) — 수용하거나 한동안 두 경로에 다 쓰는 방안 검토.
+- 동기화 경로 v2 (M0-17): `doc/<id>` ↔ `data/docs/<id>.yjs`, DB 경로 매핑도 있음(엔진은 아직 DB 파일을 지우지 않음). 구 `data/pages/` 파일은 첫 동기화에서 이동·삭제 — 구버전 앱은 이후 본문을 못 받음 (사용자 결정).
 
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
 - 실기기 한글 IME 미검증 (에뮬레이션 CDP 테스트만 통과).
@@ -59,3 +59,4 @@
 | 2026-11-26 | M0-14: 기능 플래그 레지스트리 + 설정 → 고급(디버그 로그) | f29e395 |
 | 2026-11-26 | M0-15: 스키마 버전·마이그레이션 레지스트리(원자적 단계)·읽기 전용 게이트(배너, 에디터 잠금, push 차단), QA 플래그 schema-newer | 68fa08a |
 | 2026-11-26 | M0-16: 마이그레이션 v2(pages→views·FracKey·사용자별 즐겨찾기·기본 스페이스, leftover 재변환, v1 pages 동결 유지), 모델 재작성, IndexedDB page/→doc/ 복사, QA 플래그 seed-v1 + e2e | e71fe99 |
+| 2026-11-26 | M0-17: 동기화 경로 v2(data/docs, data/dbs 매핑), 구 data/pages 파일 병합 후 같은 커밋에서 이동·삭제 | 087a184 |
