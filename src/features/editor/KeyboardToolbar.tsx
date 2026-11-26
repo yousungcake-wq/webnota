@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { BLOCKS } from './blocks'
+import { recordBlockUse } from './rank'
 import { t } from '@/core/i18n'
 
 /**
@@ -110,6 +111,7 @@ export function KeyboardToolbar({ editor }: { editor: Editor }) {
                 onMouseDown={keep}
                 onPointerDown={keep}
                 onClick={() => {
+                  recordBlockUse(b.id)
                   b.run(c()).run()
                   setPanel('none')
                 }}

@@ -13,13 +13,13 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { t, type MessageKey } from '@/core/i18n'
+import { rankBlocks, recentBlocks, type BlockCategory, type Rankable } from './rank'
 
-export interface BlockItem {
-  id: string
-  title: string
+export interface BlockItem extends Rankable {
   hint: string
-  keywords: string[]
   icon: LucideIcon
+  /** Can be offered in "turn into" (a text block type, not an insert-only one like a divider). */
+  turnInto: boolean
   run: (chain: ChainedCommands) => ChainedCommands
   isActive?: (editor: Editor) => boolean
 }
@@ -31,6 +31,8 @@ const kw = (key: MessageKey) => t(key).split(' ').filter(Boolean)
 export const BLOCKS: BlockItem[] = [
   {
     id: 'text',
+    category: 'basic',
+    turnInto: true,
     title: t('block.paragraph'),
     hint: t('block.paragraph.hint'),
     keywords: ['text', 'paragraph', ...kw('block.paragraph.kw')],
@@ -41,6 +43,8 @@ export const BLOCKS: BlockItem[] = [
   },
   {
     id: 'h1',
+    category: 'basic',
+    turnInto: true,
     title: t('block.h1'),
     hint: t('block.h1.hint'),
     keywords: ['h1', 'heading', 'title', ...kw('block.h1.kw')],
@@ -50,6 +54,8 @@ export const BLOCKS: BlockItem[] = [
   },
   {
     id: 'h2',
+    category: 'basic',
+    turnInto: true,
     title: t('block.h2'),
     hint: t('block.h2.hint'),
     keywords: ['h2', 'heading', ...kw('block.h2.kw')],
@@ -59,6 +65,8 @@ export const BLOCKS: BlockItem[] = [
   },
   {
     id: 'h3',
+    category: 'basic',
+    turnInto: true,
     title: t('block.h3'),
     hint: t('block.h3.hint'),
     keywords: ['h3', 'heading', ...kw('block.h3.kw')],
@@ -68,6 +76,8 @@ export const BLOCKS: BlockItem[] = [
   },
   {
     id: 'todo',
+    category: 'list',
+    turnInto: true,
     title: t('block.todo'),
     hint: t('block.todo.hint'),
     keywords: ['todo', 'task', 'check', 'checkbox', ...kw('block.todo.kw')],
@@ -77,6 +87,8 @@ export const BLOCKS: BlockItem[] = [
   },
   {
     id: 'bullet',
+    category: 'list',
+    turnInto: true,
     title: t('block.bullet'),
     hint: t('block.bullet.hint'),
     keywords: ['bullet', 'list', 'ul', ...kw('block.bullet.kw')],
@@ -86,6 +98,8 @@ export const BLOCKS: BlockItem[] = [
   },
   {
     id: 'numbered',
+    category: 'list',
+    turnInto: true,
     title: t('block.numbered'),
     hint: t('block.numbered.hint'),
     keywords: ['number', 'ordered', 'ol', ...kw('block.numbered.kw')],
@@ -95,6 +109,8 @@ export const BLOCKS: BlockItem[] = [
   },
   {
     id: 'quote',
+    category: 'basic',
+    turnInto: true,
     title: t('block.quote'),
     hint: t('block.quote.hint'),
     keywords: ['quote', 'blockquote', ...kw('block.quote.kw')],
@@ -104,6 +120,8 @@ export const BLOCKS: BlockItem[] = [
   },
   {
     id: 'code',
+    category: 'advanced',
+    turnInto: true,
     title: t('block.code'),
     hint: t('block.code.hint'),
     keywords: ['code', 'snippet', ...kw('block.code.kw')],
@@ -113,6 +131,8 @@ export const BLOCKS: BlockItem[] = [
   },
   {
     id: 'divider',
+    category: 'advanced',
+    turnInto: false,
     title: t('block.divider'),
     hint: t('block.divider.hint'),
     keywords: ['divider', 'hr', 'line', 'separator', ...kw('block.divider.kw')],
@@ -121,8 +141,13 @@ export const BLOCKS: BlockItem[] = [
   },
 ]
 
+/** Slash menu items: recent + by category when empty, ranked matches otherwise (ED-F01). */
 export function filterBlocks(query: string): BlockItem[] {
-  const q = query.trim().toLowerCase()
-  if (!q) return BLOCKS
-  return BLOCKS.filter((b) => b.title.toLowerCase().includes(q) || b.keywords.some((k) => k.includes(q)))
+  return rankBlocks(BLOCKS, query, recentBlocks())
+}
+
+export const CATEGORY_LABEL: Record<BlockCategory, MessageKey> = {
+  basic: 'block.cat.basic',
+  list: 'block.cat.list',
+  advanced: 'block.cat.advanced',
 }

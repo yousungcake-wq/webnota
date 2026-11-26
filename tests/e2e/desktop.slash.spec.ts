@@ -1,0 +1,23 @@
+import { expect, test } from '@playwright/test'
+import { openApp, waitForNewPage } from './helpers'
+
+test('slash menu: categories when browsing, recent first, ranked search (ED-F01)', async ({ page }) => {
+  await openApp(page)
+  await page.click('.sidebar-bottom >> text=새 페이지')
+  await waitForNewPage(page)
+  await page.locator('.wn-editor').click()
+  await page.keyboard.type('/')
+  const menu = page.locator('.slash-menu')
+  await expect(menu.locator('.slash-heading')).toHaveText(['기본', '목록', '고급'])
+  await page.keyboard.type('code')
+  await expect(menu.locator('.slash-title').first()).toHaveText('코드 블록')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('.wn-editor pre')).toHaveCount(1)
+
+  await page.keyboard.press('Control+a')
+  await page.keyboard.press('Backspace')
+  await page.keyboard.press('Backspace')
+  await page.keyboard.type('/')
+  await expect(menu.locator('.slash-heading').first()).toHaveText('최근 사용')
+  await expect(menu.locator('.slash-title').first()).toHaveText('코드 블록')
+})

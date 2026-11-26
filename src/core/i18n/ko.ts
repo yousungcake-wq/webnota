@@ -148,6 +148,10 @@ export const ko = {
 
   // editor
   'editor.body': '페이지 본문',
+  'block.cat.recent': '최근 사용',
+  'block.cat.basic': '기본',
+  'block.cat.list': '목록',
+  'block.cat.advanced': '고급',
   'editor.unknownContent':
     '이 페이지에는 이 버전에서 표시할 수 없는 내용({types})이 있어 읽기 전용으로 엽니다. 내용은 지워지지 않고 그대로 보존됩니다. 앱을 업데이트하세요.',
   'editor.addBelow': '아래에 블록 추가',

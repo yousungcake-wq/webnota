@@ -2,8 +2,9 @@ import { Extension, type Editor, type Range } from '@tiptap/core'
 import { PluginKey } from '@tiptap/pm/state'
 import { ReactRenderer } from '@tiptap/react'
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionProps } from '@tiptap/suggestion'
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { filterBlocks, type BlockItem } from './blocks'
+import { forwardRef, Fragment, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { CATEGORY_LABEL, filterBlocks, type BlockItem } from './blocks'
+import { recentBlocks, recordBlockUse } from './rank'
 import { t } from '@/core/i18n'
 
 export interface SlashListHandle {
@@ -13,9 +14,14 @@ export interface SlashListHandle {
 interface SlashListProps {
   items: BlockItem[]
   command: (item: BlockItem) => void
+  query?: string
 }
 
-export const SlashList = forwardRef<SlashListHandle, SlashListProps>(function SlashList({ items, command }, ref) {
+export const SlashList = forwardRef<SlashListHandle, SlashListProps>(function SlashList(
+  { items, command, query },
+  ref,
+) {
+  const recent = query ? [] : recentBlocks().slice(0, 3)
   const [selected, setSelected] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
 
@@ -55,26 +61,38 @@ export const SlashList = forwardRef<SlashListHandle, SlashListProps>(function Sl
     <div className="slash-menu" role="listbox" ref={listRef}>
       {items.map((item, i) => {
         const Icon = item.icon
+        // Section headings when browsing (no query): recent, then each category.
+        const section = query ? null : i < recent.length && recent.includes(item.id) ? 'recent' : item.category
+        const prev = items[i - 1]
+        const prevSection =
+          !prev || query ? null : i - 1 < recent.length && recent.includes(prev.id) ? 'recent' : prev.category
+        const heading = !query && (i === 0 || section !== prevSection)
         return (
-          <button
-            key={item.id}
-            type="button"
-            data-index={i}
-            role="option"
-            aria-selected={i === selected}
-            className={`slash-item${i === selected ? ' is-selected' : ''}`}
-            onMouseDown={(e) => e.preventDefault()}
-            onMouseEnter={() => setSelected(i)}
-            onClick={() => command(item)}
-          >
-            <span className="slash-icon">
-              <Icon size={18} />
-            </span>
-            <span className="slash-text">
-              <span className="slash-title">{item.title}</span>
-              <span className="slash-hint">{item.hint}</span>
-            </span>
-          </button>
+          <Fragment key={item.id}>
+            {heading && (
+              <div className="slash-heading" role="presentation">
+                {section === 'recent' ? t('block.cat.recent') : t(CATEGORY_LABEL[item.category])}
+              </div>
+            )}
+            <button
+              type="button"
+              data-index={i}
+              role="option"
+              aria-selected={i === selected}
+              className={`slash-item${i === selected ? ' is-selected' : ''}`}
+              onMouseDown={(e) => e.preventDefault()}
+              onMouseEnter={() => setSelected(i)}
+              onClick={() => command(item)}
+            >
+              <span className="slash-icon">
+                <Icon size={18} />
+              </span>
+              <span className="slash-text">
+                <span className="slash-title">{item.title}</span>
+                <span className="slash-hint">{item.hint}</span>
+              </span>
+            </button>
+          </Fragment>
         )
       })}
     </div>
@@ -112,6 +130,7 @@ export const SlashCommand = Extension.create({
         allowSpaces: false,
         items: ({ query }) => filterBlocks(query),
         command: ({ editor, range, props }: { editor: Editor; range: Range; props: BlockItem }) => {
+          recordBlockUse(props.id)
           props.run(editor.chain().focus().deleteRange(range)).run()
         },
         render: () => {
