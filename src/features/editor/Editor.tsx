@@ -9,6 +9,7 @@ import { useMedia } from '@/platform/media'
 import { editorExtensions } from './extensions'
 import { KeyboardToolbar } from './KeyboardToolbar'
 import './editor.css'
+import { t } from '@/core/i18n'
 
 interface Props {
   doc: Y.Doc
@@ -25,7 +26,7 @@ export function Editor({ doc, onReady }: Props) {
           class: 'wn-editor',
           spellcheck: 'false',
           autocapitalize: 'sentences',
-          'aria-label': '페이지 본문',
+          'aria-label': t('editor.body'),
         },
       },
     },
@@ -85,10 +86,10 @@ export function Editor({ doc, onReady }: Props) {
           }}
         >
           <div className="block-actions">
-            <button type="button" className="block-btn" title="아래에 블록 추가" onClick={addBlockBelow}>
+            <button type="button" className="block-btn" title={t('editor.addBelow')} onClick={addBlockBelow}>
               <Plus size={16} />
             </button>
-            <div className="block-btn grip" title="드래그해서 이동">
+            <div className="block-btn grip" title={t('editor.dragToMove')}>
               <GripVertical size={16} />
             </div>
           </div>
@@ -131,12 +132,27 @@ function FormatBubble({ editor }: { editor: TEditor }) {
       className="bubble"
       shouldShow={({ editor: e, from, to }) => from !== to && !e.isActive('codeBlock')}
     >
-      {btn(s.bold, '굵게', () => editor.chain().focus().toggleBold().run(), <Bold size={16} />)}
-      {btn(s.italic, '기울임', () => editor.chain().focus().toggleItalic().run(), <Italic size={16} />)}
-      {btn(s.underline, '밑줄', () => editor.chain().focus().toggleUnderline().run(), <Underline size={16} />)}
-      {btn(s.strike, '취소선', () => editor.chain().focus().toggleStrike().run(), <Strikethrough size={16} />)}
-      {btn(s.code, '인라인 코드', () => editor.chain().focus().toggleCode().run(), <Code size={16} />)}
-      {btn(s.highlight, '형광펜', () => editor.chain().focus().toggleHighlight().run(), <Highlighter size={16} />)}
+      {btn(s.bold, t('editor.bold'), () => editor.chain().focus().toggleBold().run(), <Bold size={16} />)}
+      {btn(s.italic, t('editor.italic'), () => editor.chain().focus().toggleItalic().run(), <Italic size={16} />)}
+      {btn(
+        s.underline,
+        t('editor.underline'),
+        () => editor.chain().focus().toggleUnderline().run(),
+        <Underline size={16} />,
+      )}
+      {btn(
+        s.strike,
+        t('editor.strike'),
+        () => editor.chain().focus().toggleStrike().run(),
+        <Strikethrough size={16} />,
+      )}
+      {btn(s.code, t('editor.inlineCode'), () => editor.chain().focus().toggleCode().run(), <Code size={16} />)}
+      {btn(
+        s.highlight,
+        t('editor.highlight'),
+        () => editor.chain().focus().toggleHighlight().run(),
+        <Highlighter size={16} />,
+      )}
     </BubbleMenu>
   )
 }

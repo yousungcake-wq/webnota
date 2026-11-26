@@ -4,7 +4,8 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type * as Y from 'yjs'
 import { openDoc, pageDocName } from '@/core/docs/registry'
 import { ws } from '@/core/docs/workspace'
-import { ancestorsOf, displayTitle, updatePage, type PageMeta } from '@/core/model/pages'
+import { ancestorsOf, updatePage, type PageMeta } from '@/core/model/pages'
+import { displayTitle } from './titles'
 import { usePages } from '@/core/store/pages'
 import { goBack, href } from '@/core/store/router'
 import { loadEditor } from '@/features/editor'
@@ -14,6 +15,7 @@ import { Overlay } from '@/ui/Menu'
 import { toggleFavorite } from './actions'
 import { PageMenu } from './PageMenu'
 import './page.css'
+import { t } from '@/core/i18n'
 
 // The editor (Tiptap + ProseMirror) is the biggest chunk; load it only when a page opens.
 const Editor = lazy(() => loadEditor().then((m) => ({ default: m.Editor })))
@@ -56,10 +58,10 @@ export function PageView({
   if (!page) {
     return (
       <div className="empty-state">
-        <p>페이지를 찾을 수 없습니다.</p>
-        <p className="muted">다른 기기에서 만든 페이지라면 동기화가 끝난 뒤 나타납니다.</p>
+        <p>{t('page.notFound')}</p>
+        <p className="muted">{t('page.notFoundHint')}</p>
         <a className="btn" href={href({ name: 'home' })}>
-          홈으로
+          {t('page.goHome')}
         </a>
       </div>
     )
@@ -69,17 +71,17 @@ export function PageView({
     <div className="page">
       <header className="topbar">
         {phone ? (
-          <button type="button" className="icon-btn" aria-label="뒤로" onClick={goBack}>
+          <button type="button" className="icon-btn" aria-label={t('common.back')} onClick={goBack}>
             <ChevronLeft size={22} />
           </button>
         ) : (
           !sidebarOpen && (
-            <button type="button" className="icon-btn" aria-label="사이드바 열기" onClick={onToggleSidebar}>
+            <button type="button" className="icon-btn" aria-label={t('sidebar.open')} onClick={onToggleSidebar}>
               <PanelLeft size={18} />
             </button>
           )
         )}
-        <nav className="crumbs" aria-label="경로">
+        <nav className="crumbs" aria-label={t('page.breadcrumbs')}>
           {!phone &&
             crumbs.map((c) => (
               <span key={c.id} className="crumb">
@@ -100,7 +102,7 @@ export function PageView({
           <button
             type="button"
             className={`icon-btn${page.favorite ? ' is-fav' : ''}`}
-            aria-label={page.favorite ? '즐겨찾기에서 제거' : '즐겨찾기에 추가'}
+            aria-label={page.favorite ? t('page.favoriteRemove') : t('page.favoriteAdd')}
             aria-pressed={page.favorite}
             onClick={() => toggleFavorite(page.id)}
           >
@@ -109,7 +111,7 @@ export function PageView({
           <button
             type="button"
             className="icon-btn"
-            aria-label="더보기"
+            aria-label={t('common.more')}
             onClick={(e) => setMenuAnchor(e.currentTarget)}
           >
             <MoreHorizontal size={18} />
@@ -173,23 +175,23 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
         <button
           type="button"
           className="page-icon"
-          aria-label="아이콘 변경"
+          aria-label={t('page.changeIcon')}
           onClick={(e) => setPicker(e.currentTarget)}
         >
           {page.icon}
         </button>
       ) : (
         <button type="button" className="add-icon" onClick={(e) => setPicker(e.currentTarget)}>
-          <SmilePlus size={16} /> 아이콘 추가
+          <SmilePlus size={16} /> {t('page.addIcon')}
         </button>
       )}
       <textarea
         ref={taRef}
         className="page-title"
         rows={1}
-        placeholder="제목 없음"
+        placeholder={t('common.untitled')}
         value={title}
-        aria-label="페이지 제목"
+        aria-label={t('page.titleLabel')}
         onFocus={() => (focused.current = true)}
         onBlur={() => {
           focused.current = false
@@ -207,7 +209,7 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
         }}
       />
       {picker && (
-        <Overlay anchor={picker} title="아이콘" sheet={phone} onClose={() => setPicker(null)}>
+        <Overlay anchor={picker} title={t('common.icon')} sheet={phone} onClose={() => setPicker(null)}>
           <div className="emoji-grid">
             {emojiList.map((em) => (
               <button
@@ -232,7 +234,7 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
                 setPicker(null)
               }}
             >
-              아이콘 제거
+              {t('page.removeIcon')}
             </button>
           )}
         </Overlay>

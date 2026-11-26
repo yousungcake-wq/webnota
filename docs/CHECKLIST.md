@@ -22,7 +22,7 @@
 - [x] M0-07 `src/core/{docs,persistence,sync,schema,model,store,auth}`로 이동, `src/features/*`, `src/ui/*`, `src/platform/*`, `src/app/*`로 분리 — d1f4ea1 (persistence·schema는 M0-15/18에서 생성)
 - [x] M0-08 `useY` 셀렉터 훅 + `createStore` 유틸, 기존 `usePages` 대체 — 083bdf8
 - [x] M0-09 `styles/tokens.css` + 기능별 CSS 분리, 하드코딩 색 제거 — 262d388
-- [ ] M0-10 i18n: `t()` + `ko.ts`/`en.ts` 사전, 기존 문자열 이전, 언어 감지
+- [~] M0-10 i18n: `t()` + `ko.ts`/`en.ts` 사전, 기존 문자열 이전, 언어 감지
 - [ ] M0-11 `ui/` 기본 컴포넌트: Button, IconButton, Menu(확장), Popover, Sheet, Dialog/Confirm, Toast(실행 취소), Tooltip, Input, Switch, Segmented, Skeleton, EmptyState, OverlayHost
 - [ ] M0-12 `useLayout()` (phone/tablet/desktop + isTouch)
 - [ ] M0-13 ErrorBoundary (화면 단위), 전역 오류 토스트

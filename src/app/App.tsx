@@ -10,6 +10,7 @@ import { SettingsView } from '@/features/settings'
 import { Sidebar } from '@/features/sidebar'
 import { TrashView } from '@/features/trash'
 import { useMedia } from '@/platform/media'
+import { t } from '@/core/i18n'
 
 const LAST_KEY = 'webnota:last-page'
 
@@ -65,7 +66,7 @@ function MainContent({
     default:
       return (
         <div className="empty-state">
-          <p>왼쪽에서 페이지를 선택하거나 새 페이지를 만드세요.</p>
+          <p>{t('app.selectPage')}</p>
         </div>
       )
   }
@@ -81,10 +82,10 @@ function PhoneShell({ route }: { route: Route }) {
     )
   }
   const tabs = [
-    { route: { name: 'home' } as Route, label: '홈', icon: Home },
-    { route: { name: 'favorites' } as Route, label: '즐겨찾기', icon: Star },
-    { route: { name: 'search' } as Route, label: '검색', icon: Search },
-    { route: { name: 'settings' } as Route, label: '설정', icon: Settings },
+    { route: { name: 'home' } as Route, label: t('common.home'), icon: Home },
+    { route: { name: 'favorites' } as Route, label: t('common.favorites'), icon: Star },
+    { route: { name: 'search' } as Route, label: t('common.search'), icon: Search },
+    { route: { name: 'settings' } as Route, label: t('common.settings'), icon: Settings },
   ]
   return (
     <div className="phone">
@@ -101,7 +102,7 @@ function PhoneShell({ route }: { route: Route }) {
           <HomeView />
         )}
       </div>
-      <nav className="tabbar" aria-label="하단 메뉴">
+      <nav className="tabbar" aria-label={t('app.tabbar')}>
         {tabs.map((t) => {
           const Icon = t.icon
           const active = t.route.name === route.name || (t.route.name === 'settings' && route.name === 'trash')

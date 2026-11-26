@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { BLOCKS } from './blocks'
+import { t } from '@/core/i18n'
 
 /**
  * Toolbar pinned to the top of the on-screen keyboard (Android & iOS).
@@ -122,53 +123,53 @@ export function KeyboardToolbar({ editor }: { editor: Editor }) {
       )}
       <div className="kb-row">
         <Btn
-          label={panel === 'blocks' ? '닫기' : '블록 바꾸기'}
+          label={panel === 'blocks' ? t('common.close') : t('editor.changeBlock')}
           active={panel === 'blocks'}
           onPress={() => setPanel(panel === 'blocks' ? 'none' : 'blocks')}
         >
           {panel === 'blocks' ? <X size={20} /> : <Plus size={20} />}
         </Btn>
         <span className="kb-sep" />
-        <Btn label="굵게" active={s.bold} onPress={() => c().toggleBold().run()}>
+        <Btn label={t('editor.bold')} active={s.bold} onPress={() => c().toggleBold().run()}>
           <Bold size={20} />
         </Btn>
-        <Btn label="기울임" active={s.italic} onPress={() => c().toggleItalic().run()}>
+        <Btn label={t('editor.italic')} active={s.italic} onPress={() => c().toggleItalic().run()}>
           <Italic size={20} />
         </Btn>
-        <Btn label="밑줄" active={s.underline} onPress={() => c().toggleUnderline().run()}>
+        <Btn label={t('editor.underline')} active={s.underline} onPress={() => c().toggleUnderline().run()}>
           <Underline size={20} />
         </Btn>
-        <Btn label="취소선" active={s.strike} onPress={() => c().toggleStrike().run()}>
+        <Btn label={t('editor.strike')} active={s.strike} onPress={() => c().toggleStrike().run()}>
           <Strikethrough size={20} />
         </Btn>
         <span className="kb-sep" />
-        <Btn label="할 일 목록" active={s.task} onPress={() => c().toggleTaskList().run()}>
+        <Btn label={t('block.todo')} active={s.task} onPress={() => c().toggleTaskList().run()}>
           <CheckSquare size={20} />
         </Btn>
-        <Btn label="글머리 기호 목록" active={s.bullet} onPress={() => c().toggleBulletList().run()}>
+        <Btn label={t('block.bullet')} active={s.bullet} onPress={() => c().toggleBulletList().run()}>
           <List size={20} />
         </Btn>
-        <Btn label="들여쓰기" disabled={!s.inList} onPress={() => c().sinkListItem(itemType).run()}>
+        <Btn label={t('editor.indent')} disabled={!s.inList} onPress={() => c().sinkListItem(itemType).run()}>
           <IndentIncrease size={20} />
         </Btn>
-        <Btn label="내어쓰기" disabled={!s.inList} onPress={() => c().liftListItem(itemType).run()}>
+        <Btn label={t('editor.outdent')} disabled={!s.inList} onPress={() => c().liftListItem(itemType).run()}>
           <IndentDecrease size={20} />
         </Btn>
         <span className="kb-sep" />
-        <Btn label="블록 위로 이동" onPress={() => c().moveBlockUp().run()}>
+        <Btn label={t('editor.moveUp')} onPress={() => c().moveBlockUp().run()}>
           <ArrowUp size={20} />
         </Btn>
-        <Btn label="블록 아래로 이동" onPress={() => c().moveBlockDown().run()}>
+        <Btn label={t('editor.moveDown')} onPress={() => c().moveBlockDown().run()}>
           <ArrowDown size={20} />
         </Btn>
         <span className="kb-sep" />
-        <Btn label="실행 취소" disabled={!s.canUndo} onPress={() => c().undo().run()}>
+        <Btn label={t('editor.undo')} disabled={!s.canUndo} onPress={() => c().undo().run()}>
           <Undo2 size={20} />
         </Btn>
-        <Btn label="다시 실행" disabled={!s.canRedo} onPress={() => c().redo().run()}>
+        <Btn label={t('editor.redo')} disabled={!s.canRedo} onPress={() => c().redo().run()}>
           <Redo2 size={20} />
         </Btn>
-        <Btn label="키보드 닫기" onPress={() => editor.commands.blur()}>
+        <Btn label={t('editor.hideKeyboard')} onPress={() => editor.commands.blur()}>
           <ChevronDown size={20} />
         </Btn>
       </div>

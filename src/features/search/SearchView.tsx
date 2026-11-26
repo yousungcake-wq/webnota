@@ -1,10 +1,11 @@
 import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { displayTitle, pathOf } from '@/core/model/pages'
+import { displayTitle, pathOf } from '@/features/page'
 import { useAlivePages } from '@/core/store/pages'
 import { PageListItem } from '@/features/sidebar'
 import { ViewHeader } from '@/ui/ViewHeader'
 import './search.css'
+import { t } from '@/core/i18n'
 
 export function SearchView({ autoFocus = true }: { autoFocus?: boolean }) {
   const { alive, byId } = useAlivePages()
@@ -16,26 +17,26 @@ export function SearchView({ autoFocus = true }: { autoFocus?: boolean }) {
   }, [alive, q])
   return (
     <div className="view">
-      <ViewHeader title="검색" />
+      <ViewHeader title={t('common.search')} />
       <label className="search-box">
         <Search size={18} />
         <input
           autoFocus={autoFocus}
           type="search"
           enterKeyHint="search"
-          placeholder="페이지 제목 검색"
+          placeholder={t('search.placeholder')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
       </label>
       <div className="section-head">
-        <span>{q.trim() ? `결과 ${results.length}개` : '최근 수정한 페이지'}</span>
+        <span>{q.trim() ? t('search.results', { count: results.length }) : t('search.recent')}</span>
       </div>
       <div className="list">
         {results.map((p) => (
           <PageListItem key={p.id} page={p} subtitle={pathOf(p, byId) || undefined} />
         ))}
-        {!results.length && <p className="muted pad">일치하는 페이지가 없습니다.</p>}
+        {!results.length && <p className="muted pad">{t('search.noResults')}</p>}
       </div>
     </div>
   )

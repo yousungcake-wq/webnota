@@ -9,6 +9,8 @@
  * Fallback: a fine-grained personal access token pasted in Settings.
  */
 
+import { t } from '../i18n'
+
 const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID as string | undefined
 const PROXY = (import.meta.env.VITE_AUTH_PROXY_URL as string | undefined)?.replace(/\/$/, '')
 const TOKEN_KEY = 'webnota:gh-token'
@@ -34,7 +36,7 @@ export function setToken(token: string | null) {
 }
 
 export function startLogin() {
-  if (!oauthAvailable) throw new Error('OAuth가 설정되지 않았습니다.')
+  if (!oauthAvailable) throw new Error(t('auth.err.noOauth'))
   const state = crypto.randomUUID()
   sessionStorage.setItem(STATE_KEY, state)
   const url = new URL('https://github.com/login/oauth/authorize')
@@ -65,7 +67,7 @@ export async function completeLoginFromUrl(): Promise<string | null> {
   sessionStorage.removeItem(STATE_KEY)
   if (!expected || expected !== state) {
     clean()
-    throw new Error('로그인 요청을 확인할 수 없습니다. 다시 시도하세요.')
+    throw new Error(t('auth.err.state'))
   }
   try {
     const res = await fetch(`${PROXY}/token`, {
@@ -74,7 +76,7 @@ export async function completeLoginFromUrl(): Promise<string | null> {
       body: JSON.stringify({ code, redirect_uri: redirectUri() }),
     })
     const data = (await res.json()) as { access_token?: string; error?: string; error_description?: string }
-    if (!res.ok || !data.access_token) throw new Error(data.error_description || data.error || '토큰 교환 실패')
+    if (!res.ok || !data.access_token) throw new Error(data.error_description || data.error || t('auth.err.exchange'))
     setToken(data.access_token)
     return data.access_token
   } finally {

@@ -12,6 +12,7 @@ const BUDGETS = {
   initial: { kb: 125 }, // React 19 (~60KB) + Yjs + y-indexeddb + shell; see spec/10 §1.1
   css: { kb: 25 },
   editor: { kb: 210, entry: 'src/features/editor/Editor.tsx' },
+  i18n: { kb: 8, entry: 'src/core/i18n/ko.ts' }, // one language's dictionary, loaded at boot
   // Add as features land: database: { kb: 120, entry: 'src/features/database/index.ts' }, …
 }
 

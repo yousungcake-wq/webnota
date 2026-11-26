@@ -8,6 +8,7 @@ import StarterKit from '@tiptap/starter-kit'
 import { Selection, type EditorState, type Transaction } from '@tiptap/pm/state'
 import type * as Y from 'yjs'
 import { SlashCommand } from './slash'
+import { t } from '@/core/i18n'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -83,8 +84,8 @@ export function editorExtensions(doc: Y.Doc): Extensions {
     ...schemaExtensions(),
     Placeholder.configure({
       placeholder: ({ node }) => {
-        if (node.type.name === 'heading') return `제목 ${node.attrs.level}`
-        return "'/'를 입력해 명령어 사용"
+        if (node.type.name === 'heading') return t('editor.headingPlaceholder', { level: node.attrs.level as number })
+        return t('editor.placeholder')
       },
       showOnlyCurrent: true,
     }),

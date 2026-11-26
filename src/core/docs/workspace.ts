@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import type * as Y from 'yjs'
 import { createPage, pagesOf } from '../model/pages'
 import { openDoc, WORKSPACE } from './registry'
@@ -22,5 +23,5 @@ export function seedIfEmpty(): string | null {
   if (pagesOf(doc).size > 0) return null
   if (localStorage.getItem('webnota:seeded')) return null
   localStorage.setItem('webnota:seeded', '1')
-  return createPage(doc, { title: 'WebNota 시작하기', icon: '👋' })
+  return createPage(doc, { title: t('page.welcomeTitle'), icon: '👋' })
 }

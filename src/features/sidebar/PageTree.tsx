@@ -1,10 +1,12 @@
 import { ChevronRight, FileText, MoreHorizontal, Plus } from 'lucide-react'
 import { memo, useMemo, useState } from 'react'
-import { displayTitle, type PageMeta } from '@/core/model/pages'
+import { type PageMeta } from '@/core/model/pages'
+import { displayTitle } from '@/features/page'
 import { toggleExpanded, useExpanded } from '@/core/store/prefs'
 import { href } from '@/core/store/router'
 import { addPage, PageMenu } from '@/features/page'
 import './tree.css'
+import { t } from '@/core/i18n'
 
 export function usePageIndex(pages: PageMeta[]) {
   return useMemo(() => {
@@ -45,7 +47,7 @@ const Row = memo(function Row({
         <button
           type="button"
           className={`tree-toggle${open ? ' is-open' : ''}`}
-          aria-label={open ? '접기' : '펼치기'}
+          aria-label={open ? t('tree.collapse') : t('tree.expand')}
           onClick={() => toggleExpanded(page.id)}
         >
           {kids.length ? <ChevronRight size={16} /> : <span className="tree-dot" />}
@@ -58,12 +60,17 @@ const Row = memo(function Row({
           <button
             type="button"
             className="icon-btn sm"
-            aria-label="더보기"
+            aria-label={t('common.more')}
             onClick={(e) => setMenuAnchor(e.currentTarget)}
           >
             <MoreHorizontal size={16} />
           </button>
-          <button type="button" className="icon-btn sm" aria-label="하위 페이지 추가" onClick={() => addPage(page.id)}>
+          <button
+            type="button"
+            className="icon-btn sm"
+            aria-label={t('tree.addChild')}
+            onClick={() => addPage(page.id)}
+          >
             <Plus size={16} />
           </button>
         </div>
@@ -87,7 +94,7 @@ export function PageTree({ pages, currentId }: { pages: PageMeta[]; currentId?: 
   const expanded = useExpanded()
   const roots = index.children.get(null) ?? []
   if (!roots.length) {
-    return <p className="tree-empty">페이지가 없습니다</p>
+    return <p className="tree-empty">{t('tree.empty')}</p>
   }
   return (
     <ul className="tree" role="tree">

@@ -13,6 +13,7 @@ import {
 import { ws } from '@/core/docs/workspace'
 import { toggleExpanded } from '@/core/store/prefs'
 import { navigate } from '@/core/store/router'
+import { t } from '@/core/i18n'
 
 export function addPage(parentId: string | null = null) {
   const id = createPage(ws(), { parentId })
@@ -47,7 +48,7 @@ export async function duplicatePage(id: string) {
   if (!src) return
   const copyId = createPage(ws(), {
     parentId: src.parentId,
-    title: src.title ? `${src.title} (사본)` : '',
+    title: src.title ? t('page.copySuffix', { title: src.title }) : '',
     icon: src.icon,
   })
   const [from, to] = await Promise.all([openDoc(pageDocName(id)), openDoc(pageDocName(copyId))])

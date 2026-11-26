@@ -10,7 +10,7 @@
 | 컴포넌트 | 표시 컴포넌트와 데이터 연결(훅)을 분리. 비즈니스 로직은 `core/model`의 순수 함수로 |
 | 이름 | 파일: 컴포넌트 `PascalCase.tsx`, 그 외 `camelCase.ts`. 불리언 `isX/hasX/canX`. 이벤트 핸들러 `onX`, 내부 `handleX` |
 | 주석 | "왜"를 씁니다. 외부 제약(GitHub API 한도, iOS 버그)은 출처와 함께 |
-| 문자열 | 사용자에게 보이는 문자열은 전부 `t('key')` (i18n). 한국어가 기본, 영어 동시 작성 |
+| 문자열 | 사용자에게 보이는 문자열은 전부 `t('key')` (`core/i18n`). 키는 `ko.ts`에 먼저 추가하고 `en.ts`에 같은 키·같은 `{param}`으로 작성 (타입·테스트로 검사). 요소를 끼워 넣는 문장은 `tParts`. 사전 밖 한글 문자열은 `tests/unit/strings.test.ts`가 막습니다. 날짜·시간은 `toLocale*String(getLang())` |
 | 스타일 | 기능 폴더에 CSS 파일을 함께 두고 그 기능의 컴포넌트에서 import합니다 (`features/sidebar/sidebar.css`). 전역은 `styles/index.css`(tokens, base, 공용 ui, 앱 셸)만. 지연 로드 feature의 CSS는 그 청크와 함께 로드됩니다 (에디터). 색은 `styles/tokens.css`에만 쓰고, 정의되지 않은 `var(--x)`도 금지 — `tests/unit/styles.test.ts`가 검사합니다 (stylelint 대신, 의존성 절약). 간격·반경·글자 크기는 새 코드부터 토큰을 쓰고 기존 px 값은 해당 화면을 고칠 때 바꿉니다 |
 | 의존성 | 추가 전 크기·유지보수 확인, [DECISIONS.md](../DECISIONS.md)에 기록 |
 | 모듈 경계 | [01-architecture.md](01-architecture.md) §3 규칙 (eslint `import/no-restricted-paths`) |

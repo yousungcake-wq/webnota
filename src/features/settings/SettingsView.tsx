@@ -1,6 +1,7 @@
 import { LogOut, Monitor, Moon, RefreshCw, Sun, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { Fragment, useState, type ReactNode } from 'react'
 import { oauthAvailable, startLogin } from '@/core/auth/auth'
+import { getLang, getLangPref, LANG_NAMES, LANGS, setLangPref, t, tParts, type MessageKey } from '@/core/i18n'
 import { setTheme, useTheme } from '@/core/store/prefs'
 import { useSync } from '@/core/store/sync'
 import { connect, disconnect, syncNow } from '@/core/sync/controller'
@@ -16,7 +17,13 @@ function Github({ size = 18 }: { size?: number }) {
   )
 }
 
+/** Renders a message whose parameters are elements. */
+function parts(key: MessageKey, params: Record<string, ReactNode>) {
+  return tParts(key, params).map((p, i) => <Fragment key={i}>{p}</Fragment>)
+}
+
 export function SettingsView() {
+  const langPref = getLangPref()
   const theme = useTheme()
   const sync = useSync()
   const [pat, setPat] = useState('')
@@ -39,11 +46,11 @@ export function SettingsView() {
 
   return (
     <div className="view">
-      <ViewHeader title="설정" />
+      <ViewHeader title={t('common.settings')} />
 
       <section className="card">
         <h2>
-          <Github size={18} /> GitHub 동기화
+          <Github size={18} /> {t('settings.github')}
         </h2>
         {sync.account ? (
           <>
@@ -52,58 +59,52 @@ export function SettingsView() {
               <div>
                 <div className="account-name">{sync.account.login}</div>
                 <div className="muted small">
-                  비공개 저장소 <code>{`${sync.account.owner}/${sync.account.repo}`}</code>
+                  {parts('settings.privateRepo', { repo: <code>{`${sync.account.owner}/${sync.account.repo}`}</code> })}
                 </div>
               </div>
             </div>
             <div className="row-gap">
               <SyncBadge />
               {sync.lastSyncedAt && (
-                <span className="muted small">마지막 동기화 {new Date(sync.lastSyncedAt).toLocaleTimeString()}</span>
+                <span className="muted small">
+                  {t('settings.lastSynced', { time: new Date(sync.lastSyncedAt).toLocaleTimeString(getLang()) })}
+                </span>
               )}
             </div>
             {sync.error && <p className="error">{sync.error}</p>}
             <div className="row-gap">
               <button type="button" className="btn" onClick={() => void syncNow()}>
-                <RefreshCw size={16} /> 지금 동기화
+                <RefreshCw size={16} /> {t('settings.syncNow')}
               </button>
               <button
                 type="button"
                 className="btn ghost"
                 onClick={() => {
-                  if (confirm('GitHub 연결을 해제할까요? 이 기기의 노트는 그대로 남습니다.')) disconnect()
+                  if (confirm(t('settings.confirmDisconnect'))) disconnect()
                 }}
               >
-                <LogOut size={16} /> 연결 해제
+                <LogOut size={16} /> {t('settings.disconnect')}
               </button>
             </div>
           </>
         ) : (
           <>
-            <p className="muted">
-              GitHub에 로그인하면 내 계정의 비공개 저장소에 노트가 저장되고, 다른 기기와 자동으로 동기화됩니다. 서버에는
-              아무것도 저장되지 않습니다.
-            </p>
+            <p className="muted">{t('settings.githubIntro')}</p>
             {sync.error && <p className="error">{sync.error}</p>}
             {oauthAvailable && (
               <button type="button" className="btn primary full" onClick={() => startLogin()}>
-                <Github size={18} /> GitHub로 로그인
+                <Github size={18} /> {t('settings.login')}
               </button>
             )}
             <details className="pat" open={!oauthAvailable}>
-              <summary>{oauthAvailable ? '개인 액세스 토큰으로 연결 (고급)' : '개인 액세스 토큰으로 연결'}</summary>
+              <summary>{oauthAvailable ? t('settings.patAdvanced') : t('settings.pat')}</summary>
               <ol className="small muted">
-                <li>
-                  GitHub에서 비공개 저장소 <code>{repo || 'webnota-data'}</code>를 만듭니다. README 포함을 권장합니다.
-                </li>
-                <li>
-                  Settings → Developer settings → Fine-grained tokens에서 이 저장소만 선택하고,{' '}
-                  <b>Contents: Read and write</b> 권한으로 토큰을 만듭니다.
-                </li>
-                <li>아래에 붙여넣고 연결합니다. 토큰은 이 기기에만 저장됩니다.</li>
+                <li>{parts('settings.patStep1', { repo: <code>{repo || 'webnota-data'}</code> })}</li>
+                <li>{parts('settings.patStep2', { permission: <b>Contents: Read and write</b> })}</li>
+                <li>{t('settings.patStep3')}</li>
               </ol>
               <label className="field">
-                <span>저장소 이름</span>
+                <span>{t('settings.repoName')}</span>
                 <input
                   value={repo}
                   onChange={(e) => setRepo(e.target.value)}
@@ -112,7 +113,7 @@ export function SettingsView() {
                 />
               </label>
               <label className="field">
-                <span>토큰</span>
+                <span>{t('settings.token')}</span>
                 <input
                   type="password"
                   value={pat}
@@ -125,7 +126,7 @@ export function SettingsView() {
               </label>
               {err && <p className="error">{err}</p>}
               <button type="button" className="btn primary" disabled={!pat.trim() || busy} onClick={doConnect}>
-                {busy ? '연결 중…' : '연결'}
+                {busy ? t('settings.connecting') : t('settings.connect')}
               </button>
             </details>
           </>
@@ -133,13 +134,13 @@ export function SettingsView() {
       </section>
 
       <section className="card">
-        <h2>테마</h2>
-        <div className="segmented" role="radiogroup" aria-label="테마">
+        <h2>{t('settings.theme')}</h2>
+        <div className="segmented" role="radiogroup" aria-label={t('settings.theme')}>
           {(
             [
-              ['system', '시스템', Monitor],
-              ['light', '라이트', Sun],
-              ['dark', '다크', Moon],
+              ['system', t('settings.theme.system'), Monitor],
+              ['light', t('settings.theme.light'), Sun],
+              ['dark', t('settings.theme.dark'), Moon],
             ] as const
           ).map(([v, label, Icon]) => (
             <button
@@ -157,13 +158,33 @@ export function SettingsView() {
       </section>
 
       <section className="card">
-        <h2>정보</h2>
-        <p className="muted small">
-          WebNota {__APP_VERSION__}. 노트는 이 기기(IndexedDB)에 먼저 저장되고, GitHub를 연결하면 자동으로 동기화됩니다.
-          홈 화면에 추가하면 오프라인에서도 앱처럼 쓸 수 있습니다.
-        </p>
+        <h2>{t('settings.language')}</h2>
+        <div className="segmented" role="radiogroup" aria-label={t('settings.language')}>
+          {(['system', ...LANGS] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              role="radio"
+              lang={v === 'system' ? undefined : v}
+              aria-checked={langPref === v}
+              className={langPref === v ? 'is-on' : ''}
+              onClick={() => {
+                if (v === langPref) return
+                setLangPref(v)
+                location.reload() // every string, including module-level ones, is resolved at load
+              }}
+            >
+              {v === 'system' ? t('settings.language.system') : LANG_NAMES[v]}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="card">
+        <h2>{t('settings.about')}</h2>
+        <p className="muted small">{t('settings.aboutText', { version: __APP_VERSION__ })}</p>
         <a className="btn ghost" href="#/trash">
-          <Trash2 size={16} /> 휴지통
+          <Trash2 size={16} /> {t('common.trash')}
         </a>
       </section>
     </div>

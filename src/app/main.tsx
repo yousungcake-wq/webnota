@@ -2,6 +2,7 @@ import '@/styles/index.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { completeLoginFromUrl } from '@/core/auth/auth'
+import { getLang, initI18n } from '@/core/i18n'
 import { openDoc, pageDocName } from '@/core/docs/registry'
 import { initWorkspace, seedIfEmpty } from '@/core/docs/workspace'
 import { applyTheme } from '@/core/store/prefs'
@@ -10,12 +11,13 @@ import { connect, startAutoSync } from '@/core/sync/controller'
 import { loadSeed, preloadEditor } from '@/features/editor'
 import { App } from './App'
 
+document.documentElement.lang = getLang()
 applyTheme()
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyTheme())
 
 async function boot() {
   const root = createRoot(document.getElementById('root')!)
-  await initWorkspace()
+  await Promise.all([initWorkspace(), initI18n()])
 
   const welcome = seedIfEmpty()
   if (welcome) {

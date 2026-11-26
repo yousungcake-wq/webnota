@@ -7,6 +7,7 @@ import { addPage } from '@/features/page'
 import { SyncBadge } from '@/features/sync'
 import { PageListItem, PageTree } from './PageTree'
 import './sidebar.css'
+import { t } from '@/core/i18n'
 
 export function Sidebar({ route, onClose }: { route: Route; onClose: () => void }) {
   const pages = usePages()
@@ -17,23 +18,23 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
   }, [pages])
 
   return (
-    <aside className="sidebar" aria-label="사이드바">
+    <aside className="sidebar" aria-label={t('sidebar.label')}>
       <div className="sidebar-top">
         <div className="brand">
           <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={22} height={22} />
           <span>WebNota</span>
         </div>
-        <button type="button" className="icon-btn sm" aria-label="사이드바 닫기" onClick={onClose}>
+        <button type="button" className="icon-btn sm" aria-label={t('sidebar.close')} onClick={onClose}>
           <PanelLeftClose size={16} />
         </button>
       </div>
 
       <nav className="side-nav">
         <a className={`side-link${route.name === 'search' ? ' is-current' : ''}`} href={href({ name: 'search' })}>
-          <Search size={16} /> 검색
+          <Search size={16} /> {t('common.search')}
         </a>
         <a className={`side-link${route.name === 'settings' ? ' is-current' : ''}`} href={href({ name: 'settings' })}>
-          <Settings size={16} /> 설정
+          <Settings size={16} /> {t('common.settings')}
         </a>
       </nav>
 
@@ -42,7 +43,7 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
           <section className="section">
             <div className="section-head">
               <span>
-                <Star size={12} /> 즐겨찾기
+                <Star size={12} /> {t('common.favorites')}
               </span>
             </div>
             <div className="fav-list">
@@ -54,8 +55,13 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
         )}
         <section className="section">
           <div className="section-head">
-            <span>페이지</span>
-            <button type="button" className="icon-btn sm" aria-label="새 페이지" onClick={() => addPage(null)}>
+            <span>{t('common.pages')}</span>
+            <button
+              type="button"
+              className="icon-btn sm"
+              aria-label={t('common.newPage')}
+              onClick={() => addPage(null)}
+            >
               <Plus size={16} />
             </button>
           </div>
@@ -65,10 +71,10 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
 
       <div className="sidebar-bottom">
         <button type="button" className="side-link" onClick={() => addPage(null)}>
-          <Plus size={16} /> 새 페이지
+          <Plus size={16} /> {t('common.newPage')}
         </button>
         <a className={`side-link${route.name === 'trash' ? ' is-current' : ''}`} href={href({ name: 'trash' })}>
-          <Trash2 size={16} /> 휴지통
+          <Trash2 size={16} /> {t('common.trash')}
         </a>
         <div className="sidebar-sync">
           <SyncBadge />

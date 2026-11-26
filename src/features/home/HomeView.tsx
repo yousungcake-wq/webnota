@@ -4,6 +4,7 @@ import { addPage } from '@/features/page'
 import { PageTree } from '@/features/sidebar'
 import { SyncBadge } from '@/features/sync'
 import { ViewHeader } from '@/ui/ViewHeader'
+import { t } from '@/core/i18n'
 
 /** Mobile home screen: the page tree, full width. */
 export function HomeView() {
@@ -13,14 +14,14 @@ export function HomeView() {
       <ViewHeader title="WebNota" right={<SyncBadge />} />
       <section className="section">
         <div className="section-head">
-          <span>페이지</span>
-          <button type="button" className="icon-btn sm" aria-label="새 페이지" onClick={() => addPage(null)}>
+          <span>{t('common.pages')}</span>
+          <button type="button" className="icon-btn sm" aria-label={t('common.newPage')} onClick={() => addPage(null)}>
             <Plus size={16} />
           </button>
         </div>
         <PageTree pages={pages} />
       </section>
-      <button type="button" className="fab" aria-label="새 페이지" onClick={() => addPage(null)}>
+      <button type="button" className="fab" aria-label={t('common.newPage')} onClick={() => addPage(null)}>
         <Plus size={26} />
       </button>
     </div>

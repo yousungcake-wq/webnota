@@ -4,6 +4,7 @@ import { ReactRenderer } from '@tiptap/react'
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionProps } from '@tiptap/suggestion'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { filterBlocks, type BlockItem } from './blocks'
+import { t } from '@/core/i18n'
 
 export interface SlashListHandle {
   onKeyDown: (e: KeyboardEvent) => boolean
@@ -46,7 +47,7 @@ export const SlashList = forwardRef<SlashListHandle, SlashListProps>(function Sl
   if (!items.length) {
     return (
       <div className="slash-menu" role="listbox">
-        <div className="slash-empty">일치하는 블록이 없습니다</div>
+        <div className="slash-empty">{t('editor.noMatchingBlocks')}</div>
       </div>
     )
   }

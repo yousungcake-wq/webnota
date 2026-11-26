@@ -174,5 +174,5 @@ export async function syncOnce(
     result.commitSha = commit
     return result
   }
-  throw new ConflictRetryError('동기화 충돌이 계속 발생했습니다. 잠시 후 다시 시도하세요.')
+  throw new ConflictRetryError('sync conflicts persisted after retries')
 }

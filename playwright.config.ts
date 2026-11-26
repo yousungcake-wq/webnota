@@ -12,6 +12,8 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}/`,
     trace: 'off',
+    // Korean is the default UI language; English is covered by i18n.spec.ts.
+    locale: 'ko-KR',
     screenshot: 'only-on-failure',
   },
   projects: [

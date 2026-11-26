@@ -12,6 +12,7 @@ import {
   Type,
   type LucideIcon,
 } from 'lucide-react'
+import { t, type MessageKey } from '@/core/i18n'
 
 export interface BlockItem {
   id: string
@@ -23,12 +24,16 @@ export interface BlockItem {
   isActive?: (editor: Editor) => boolean
 }
 
+/** Extra search keywords from the current language (space-separated in the dictionary). */
+const kw = (key: MessageKey) => t(key).split(' ').filter(Boolean)
+
+// Built once per page load: the language only changes with a reload.
 export const BLOCKS: BlockItem[] = [
   {
     id: 'text',
-    title: '텍스트',
-    hint: '일반 텍스트',
-    keywords: ['text', 'paragraph', '텍스트', '본문', '문단'],
+    title: t('block.paragraph'),
+    hint: t('block.paragraph.hint'),
+    keywords: ['text', 'paragraph', ...kw('block.paragraph.kw')],
     icon: Type,
     run: (c) => c.setParagraph(),
     isActive: (e) =>
@@ -36,81 +41,81 @@ export const BLOCKS: BlockItem[] = [
   },
   {
     id: 'h1',
-    title: '제목 1',
-    hint: '큰 제목',
-    keywords: ['h1', 'heading', 'title', '제목', '헤딩'],
+    title: t('block.h1'),
+    hint: t('block.h1.hint'),
+    keywords: ['h1', 'heading', 'title', ...kw('block.h1.kw')],
     icon: Heading1,
     run: (c) => c.setHeading({ level: 1 }),
     isActive: (e) => e.isActive('heading', { level: 1 }),
   },
   {
     id: 'h2',
-    title: '제목 2',
-    hint: '중간 제목',
-    keywords: ['h2', 'heading', '제목', '헤딩'],
+    title: t('block.h2'),
+    hint: t('block.h2.hint'),
+    keywords: ['h2', 'heading', ...kw('block.h2.kw')],
     icon: Heading2,
     run: (c) => c.setHeading({ level: 2 }),
     isActive: (e) => e.isActive('heading', { level: 2 }),
   },
   {
     id: 'h3',
-    title: '제목 3',
-    hint: '작은 제목',
-    keywords: ['h3', 'heading', '제목', '헤딩'],
+    title: t('block.h3'),
+    hint: t('block.h3.hint'),
+    keywords: ['h3', 'heading', ...kw('block.h3.kw')],
     icon: Heading3,
     run: (c) => c.setHeading({ level: 3 }),
     isActive: (e) => e.isActive('heading', { level: 3 }),
   },
   {
     id: 'todo',
-    title: '할 일 목록',
-    hint: '체크박스로 할 일 관리',
-    keywords: ['todo', 'task', 'check', 'checkbox', '할일', '체크', '투두'],
+    title: t('block.todo'),
+    hint: t('block.todo.hint'),
+    keywords: ['todo', 'task', 'check', 'checkbox', ...kw('block.todo.kw')],
     icon: CheckSquare,
     run: (c) => c.toggleTaskList(),
     isActive: (e) => e.isActive('taskList'),
   },
   {
     id: 'bullet',
-    title: '글머리 기호 목록',
-    hint: '간단한 목록',
-    keywords: ['bullet', 'list', 'ul', '목록', '리스트', '글머리'],
+    title: t('block.bullet'),
+    hint: t('block.bullet.hint'),
+    keywords: ['bullet', 'list', 'ul', ...kw('block.bullet.kw')],
     icon: List,
     run: (c) => c.toggleBulletList(),
     isActive: (e) => e.isActive('bulletList'),
   },
   {
     id: 'numbered',
-    title: '번호 목록',
-    hint: '번호가 매겨진 목록',
-    keywords: ['number', 'ordered', 'ol', '번호', '숫자'],
+    title: t('block.numbered'),
+    hint: t('block.numbered.hint'),
+    keywords: ['number', 'ordered', 'ol', ...kw('block.numbered.kw')],
     icon: ListOrdered,
     run: (c) => c.toggleOrderedList(),
     isActive: (e) => e.isActive('orderedList'),
   },
   {
     id: 'quote',
-    title: '인용',
-    hint: '인용문',
-    keywords: ['quote', 'blockquote', '인용'],
+    title: t('block.quote'),
+    hint: t('block.quote.hint'),
+    keywords: ['quote', 'blockquote', ...kw('block.quote.kw')],
     icon: Quote,
     run: (c) => c.toggleBlockquote(),
     isActive: (e) => e.isActive('blockquote'),
   },
   {
     id: 'code',
-    title: '코드 블록',
-    hint: '코드 조각',
-    keywords: ['code', 'snippet', '코드'],
+    title: t('block.code'),
+    hint: t('block.code.hint'),
+    keywords: ['code', 'snippet', ...kw('block.code.kw')],
     icon: Code2,
     run: (c) => c.toggleCodeBlock(),
     isActive: (e) => e.isActive('codeBlock'),
   },
   {
     id: 'divider',
-    title: '구분선',
-    hint: '블록을 나누는 선',
-    keywords: ['divider', 'hr', 'line', 'separator', '구분선', '선'],
+    title: t('block.divider'),
+    hint: t('block.divider.hint'),
+    keywords: ['divider', 'hr', 'line', 'separator', ...kw('block.divider.kw')],
     icon: Minus,
     run: (c) => c.setHorizontalRule(),
   },

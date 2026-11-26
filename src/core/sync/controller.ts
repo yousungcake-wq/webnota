@@ -1,8 +1,9 @@
+import { t } from '../i18n'
 import { getToken, setToken } from '../auth/auth'
 import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc } from '../docs/registry'
 import { listPages } from '../model/pages'
 import { createStore } from '../store/createStore'
-import { syncOnce, type LocalStore, type SyncState } from './engine'
+import { ConflictRetryError, syncOnce, type LocalStore, type SyncState } from './engine'
 import { GitHubClient, GitHubError, GitHubGitApi } from './github'
 
 export type SyncStatus = 'disconnected' | 'idle' | 'pending' | 'syncing' | 'offline' | 'error'
@@ -78,10 +79,7 @@ export async function connect(token: string, repoName = DEFAULT_REPO): Promise<A
       repo = await gh.createRepo(repoName).then((r) => ({ ...r, private: true, size: 0 }))
     } catch (e) {
       if (e instanceof GitHubError && (e.status === 403 || e.status === 404)) {
-        throw new Error(
-          `저장소 "${repoName}"를 만들 권한이 없습니다. GitHub에서 비공개 저장소 "${repoName}"를 직접 만들고, 토큰에 해당 저장소의 Contents 읽기/쓰기 권한을 주세요.`,
-          { cause: e },
-        )
+        throw new Error(t('sync.err.noRepoPermission', { repo: repoName }), { cause: e })
       }
       throw e
     }
@@ -167,10 +165,13 @@ async function runSync() {
     console.error('[webnota] sync failed', e)
     if (e instanceof GitHubError && e.status === 401) {
       disconnect()
-      set({ error: 'GitHub 로그인이 만료되었습니다. 다시 연결하세요.' })
+      set({ error: t('sync.err.expired') })
       return
     }
-    set({ status: navigator.onLine ? 'error' : 'offline', error: e instanceof Error ? e.message : String(e) })
+    set({
+      status: navigator.onLine ? 'error' : 'offline',
+      error: e instanceof ConflictRetryError ? t('sync.err.conflict') : e instanceof Error ? e.message : String(e),
+    })
   }
 }
 

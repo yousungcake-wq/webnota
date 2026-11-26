@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import { base64ToBytes, bytesToBase64 } from './encoding'
 import type { GitApi, TreeEntry } from './engine'
 
@@ -61,7 +62,7 @@ export class GitHubClient {
       name,
       private: true,
       auto_init: true,
-      description: 'WebNota 노트 데이터 (WebNota 앱이 자동으로 관리합니다)',
+      description: t('sync.repoDescription'),
     })
   }
 
@@ -69,9 +70,7 @@ export class GitHubClient {
   initEmptyRepo(owner: string, repo: string) {
     return this.request('PUT', `/repos/${owner}/${repo}/contents/README.md`, {
       message: 'Initialize WebNota data repository',
-      content: bytesToBase64(
-        new TextEncoder().encode('# WebNota data\n\nWebNota 앱이 관리하는 노트 데이터입니다. 직접 수정하지 마세요.\n'),
-      ),
+      content: bytesToBase64(new TextEncoder().encode(t('sync.repoReadme'))),
     })
   }
 }
