@@ -98,3 +98,47 @@
     height: 38px;
   }
 }
+
+/* Drag & drop (WS-03) */
+.tree-row.is-dragging {
+  opacity: 0.4;
+}
+.tree-row.is-drop-inside {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.tree-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--z-toast);
+  pointer-events: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--bg-elev);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  max-width: 240px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tree-drop-line {
+  position: fixed;
+  z-index: var(--z-toast);
+  height: 2px;
+  margin-top: -1px;
+  background: var(--accent);
+  border-radius: 1px;
+  pointer-events: none;
+  display: none;
+}
+body.is-tree-dragging,
+body.is-tree-dragging * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+.tree-link {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}

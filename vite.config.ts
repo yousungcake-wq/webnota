@@ -59,6 +59,9 @@ export default defineConfig({
     target: 'es2022',
     // The manifest lets scripts/check-size.mjs measure real eager/lazy chunk graphs.
     manifest: true,
+    rolldownOptions: {
+      output: { codeSplitting: { groups: [{ name: 'app', tags: ['$initial'] }] } },
+    },
   },
   test: {
     environment: 'node',

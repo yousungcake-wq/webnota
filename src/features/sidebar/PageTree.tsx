@@ -1,5 +1,6 @@
 import { ChevronRight, MoreHorizontal, Plus } from 'lucide-react'
-import { memo, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { beginDrag, keyboardMove } from './dragStart'
 import { useViews } from '@/core/store/views'
 import { flattenTree } from './flatten'
 import { useWindow } from './useWindow'
@@ -21,12 +22,14 @@ interface RowProps {
 }
 
 /** One tree row. Memoized: re-renders only when its own view or position changes. */
-const Row = memo(function Row({ view, depth, hasChildren, open, current }: RowProps) {
+const Row = memo(function Row({ view, depth, hasChildren, open, current, index }: RowProps & { index: number }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
   return (
     <li
       role="treeitem"
       data-row
+      data-id={view.id}
+      data-index={index}
       aria-level={depth + 1}
       aria-expanded={hasChildren ? open : undefined}
       aria-selected={current}
@@ -40,7 +43,12 @@ const Row = memo(function Row({ view, depth, hasChildren, open, current }: RowPr
         >
           {hasChildren ? <ChevronRight size={16} /> : <span className="tree-dot" />}
         </button>
-        <a className="tree-link" href={href({ name: 'page', id: view.id })}>
+        <a
+          className="tree-link"
+          href={href({ name: 'page', id: view.id })}
+          draggable={false}
+          onKeyDown={(e) => keyboardMove(e, view)}
+        >
           <span className="tree-icon">
             <ViewIcon icon={view.icon} />
           </span>
@@ -71,17 +79,31 @@ export function PageTree({ spaceId, currentId }: { spaceId: string; currentId?: 
   const rows = useMemo(() => flattenTree(views, spaceId, expanded), [views, spaceId, expanded])
   const listRef = useRef<HTMLUListElement>(null)
   const { start, end, rowHeight } = useWindow(listRef, rows.length)
+  const latest = useRef({ rows, views })
+  useEffect(() => {
+    latest.current = { rows, views }
+  })
+  const onPointerDown = (e: React.PointerEvent<HTMLUListElement>) =>
+    beginDrag(
+      e,
+      listRef.current,
+      spaceId,
+      () => latest.current.rows,
+      () => latest.current.views,
+    )
   if (!rows.length) return <p className="tree-empty">{t('tree.empty')}</p>
   return (
     <ul
       ref={listRef}
       className="tree"
       role="tree"
+      onPointerDown={onPointerDown}
       style={{ paddingTop: start * rowHeight, paddingBottom: (rows.length - end) * rowHeight }}
     >
-      {rows.slice(start, end).map((r) => (
+      {rows.slice(start, end).map((r, i) => (
         <Row
           key={r.view.id}
+          index={start + i}
           view={r.view}
           depth={r.depth}
           hasChildren={r.hasChildren}

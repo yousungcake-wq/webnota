@@ -6,7 +6,7 @@
 
 ### 1.1 번들 (gzip 기준, CI `scripts/check-size.mjs`로 강제)
 
-측정 방식: Vite 빌드 매니페스트의 정적 import 그래프. "초기 진입"은 엔트리의 정적 import 전체이고, 지연 청크는 동적 import 대상 모듈의 정적 import 전체에서 초기 진입분을 뺀 값입니다. 새 지연 기능을 추가하면 `BUDGETS`에 `entry`(동적 import되는 소스 경로)를 등록합니다.
+측정 방식: Vite 빌드 매니페스트의 정적 import 그래프. 초기 모듈은 `vite.config.ts`의 `$initial` 그룹으로 한 청크에 모읍니다 (DECISIONS 018). "초기 진입"은 엔트리의 정적 import 전체이고, 지연 청크는 동적 import 대상 모듈의 정적 import 전체에서 초기 진입분을 뺀 값입니다. 새 지연 기능을 추가하면 `BUDGETS`에 `entry`(동적 import되는 소스 경로)를 등록합니다.
 
 | 청크 | 예산 | 현재 (PoC) | 로드 시점 |
 |---|---|---|---|
