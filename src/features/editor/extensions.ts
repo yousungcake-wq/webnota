@@ -8,6 +8,7 @@ import { schemaExtensions } from './schema'
 import { MentionSuggest, MentionWithView } from './mentionSuggest'
 import { EmojiSuggest } from './emojiSuggest'
 import { SubPageWithView } from './SubPageBlock'
+import { OutlineWithView } from './OutlineBlock'
 import { t } from '@/core/i18n'
 
 declare module '@tiptap/core' {
@@ -84,7 +85,9 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
         ? MentionWithView
         : e.name === 'subPage'
           ? SubPageWithView.configure({ pageId: opts.pageId ?? null })
-          : e,
+          : e.name === 'outline'
+            ? OutlineWithView
+            : e,
     ),
     Placeholder.configure({
       placeholder: ({ node }) => {

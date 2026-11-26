@@ -933,3 +933,90 @@
 .wn-editor.resize-cursor {
   cursor: col-resize;
 }
+
+/* ED-B17 columns */
+.wn-editor .columns {
+  display: flex;
+  gap: 24px;
+  margin: 4px 0;
+}
+.wn-editor .column {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.wn-editor .column-content > :first-child {
+  margin-top: 0;
+}
+.wn-editor .column-resize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -14px;
+  width: 4px;
+  border-radius: 2px;
+  cursor: col-resize;
+  touch-action: none;
+}
+.wn-editor .column:last-child .column-resize {
+  display: none;
+}
+.wn-editor .column-resize:hover {
+  background: var(--accent);
+}
+@media (max-width: 600px) {
+  .wn-editor .columns {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .wn-editor .column {
+    flex-grow: 1 !important;
+  }
+  .wn-editor .column-resize {
+    display: none;
+  }
+}
+
+/* ED-B18 outline */
+.wn-editor .outline {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  background: var(--bg-side);
+}
+.wn-editor .outline.is-selected {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.wn-editor .outline-title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+.wn-editor .outline ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.wn-editor .outline li button {
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  padding: 4px 0;
+  min-height: 32px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+.wn-editor .outline-empty {
+  color: var(--text-3);
+  margin: 0;
+}
+@media (pointer: coarse) {
+  .wn-editor .outline li button {
+    min-height: 44px;
+  }
+}

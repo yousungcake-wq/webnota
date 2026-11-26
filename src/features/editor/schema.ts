@@ -11,6 +11,8 @@ import { HighlightColor, TextColor } from './nodes/textColor'
 import { Mention } from './mention/mention'
 import { SubPage } from './nodes/subPage'
 import { TABLE_NODES } from './nodes/table'
+import { Column, Columns } from './nodes/columns'
+import { Outline } from './nodes/outline'
 import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
 
 // The document schema without React (unit tests, seeding). UI-only extensions live in extensions.ts.
@@ -46,6 +48,9 @@ export function schemaExtensions(): Extensions {
     Subscript,
     SubPage,
     ...TABLE_NODES,
+    Columns,
+    Column,
+    Outline,
   ]
 }
 

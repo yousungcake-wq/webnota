@@ -46,6 +46,9 @@ MARKS_AT_VERSION[8] = MARKS_AT_VERSION[7]
 // v9 (M2-11): simple table.
 NODES_AT_VERSION[9] = [...NODES_AT_VERSION[8]!, 'table', 'tableCell', 'tableHeader', 'tableRow'].sort()
 MARKS_AT_VERSION[9] = MARKS_AT_VERSION[8]
+// v10 (M2-12): columns and outline.
+NODES_AT_VERSION[10] = [...NODES_AT_VERSION[9]!, 'column', 'columns', 'outline'].sort()
+MARKS_AT_VERSION[10] = MARKS_AT_VERSION[9]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

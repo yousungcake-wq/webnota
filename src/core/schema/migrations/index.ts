@@ -7,6 +7,7 @@ import { v6Mention } from './006-mention'
 import { v7Scripts } from './007-scripts'
 import { v8SubPage } from './008-sub-page'
 import { v9Table } from './009-table'
+import { v10ColumnsOutline } from './010-columns-outline'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -31,4 +32,5 @@ export const MIGRATIONS: Migration[] = [
   v7Scripts, // M2-09: superscript / subscript marks (version stamp only)
   v8SubPage, // M2-10: subPage block node type (version stamp only)
   v9Table, // M2-11: table node types (version stamp only)
+  v10ColumnsOutline, // M2-12: columns / column / outline node types (version stamp only)
 ]
