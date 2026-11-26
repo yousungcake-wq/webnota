@@ -7,7 +7,7 @@
 - **마일스톤**: M2 에디터 완성 (M1 완료 — 실기기 확인은 docs/QA.md "M1", 사용자 선택)
 - **진행 상황**: M0 26/26, M1 21/21 완료. M2 0/21
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M2-12 다단 + 목차
+- **다음 할 일**: M2-13 블록 메뉴·블록 링크
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -110,3 +110,4 @@
 | 2026-11-26 | M2-09: M2-09 이모지 제안·위/아래 첨자, schema v7 | cc802ca |
 | 2026-11-26 | M2-10: M2-10 하위 페이지 블록, schema v8 | e13ee00 |
 | 2026-11-26 | M2-11: M2-11 표, schema v9 | 6cb4c4e |
+| 2026-11-26 | M2-12: M2-12 다단·목차, schema v10 | ec64b60 |
