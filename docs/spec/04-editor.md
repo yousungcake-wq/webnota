@@ -28,7 +28,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-B13 | 동영상 임베드 | `video` (YouTube/Vimeo/직접 URL) | | P1 | M3 |
 | ED-B14 | 파일 | `file` (fileId, name, size) | | P0 | M3 |
 | ED-B15 | 수식 블록 | `mathBlock` (LaTeX, KaTeX) | `$$` | P0 | M3 |
-| ED-B16 | 표 | `table`(simple table: 헤더 행/열, 열 너비, 셀 배경색, 정렬) | | P0 | M2 |
+| ED-B16 | 표 | `table`(simple table: 헤더 행/열, 열 너비, 셀 배경색, 정렬) | | P0 | ✅ M2-11 (schema v9). `/표`, Tab 이동, 표 메뉴(행·열 추가·삭제, 머리글 행·열, 셀 배경색, 정렬, 표 삭제), 열 너비 드래그. 셀 병합은 보류 |
 | ED-B17 | 다단(컬럼) | `columns`/`column` (2~5단, 비율 조절) | | P1 | M2 |
 | ED-B18 | 목차 | `outline` (제목에서 자동 생성, 클릭 이동) | | P1 | M2 |
 | ED-B19 | 하위 페이지 | `subPage` (viewId) — 생성 시 자식 뷰 생성, 블록 삭제 시 휴지통 이동 | | P0 | ✅ M2-10 (schema v8). `/페이지`로 생성 후 자식 페이지로 이동. 블록을 붙여넣으면 휴지통에서 자동 복원, 실행 취소·원격 변경으로 돌아온 블록은 "휴지통에서 복원" 버튼 표시 |

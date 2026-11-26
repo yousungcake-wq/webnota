@@ -16,6 +16,7 @@ import {
   MessageSquareQuote,
   Minus,
   Quote,
+  Table2,
   Type,
   type LucideIcon,
 } from 'lucide-react'
@@ -223,6 +224,16 @@ export const BLOCKS: BlockItem[] = [
     icon: Code2,
     run: (c) => c.toggleCodeBlock(),
     isActive: (e) => e.isActive('codeBlock'),
+  },
+  {
+    id: 'table',
+    category: 'advanced',
+    turnInto: false,
+    title: t('block.table'),
+    hint: t('block.table.hint'),
+    keywords: ['table', 'grid', ...kw('block.table.kw')],
+    icon: Table2,
+    run: (c) => c.insertTable(),
   },
   {
     id: 'page',

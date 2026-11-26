@@ -7,9 +7,10 @@ import Subscript from '@tiptap/extension-subscript'
 import Superscript from '@tiptap/extension-superscript'
 import { CodeBlockPlus } from './code/codeBlock'
 import { Callout } from './nodes/callout'
-import { HighlightColor, TextColor } from './marks/textColor'
+import { HighlightColor, TextColor } from './nodes/textColor'
 import { Mention } from './mention/mention'
 import { SubPage } from './nodes/subPage'
+import { TABLE_NODES } from './nodes/table'
 import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
 
 // The document schema without React (unit tests, seeding). UI-only extensions live in extensions.ts.
@@ -44,6 +45,7 @@ export function schemaExtensions(): Extensions {
     Superscript,
     Subscript,
     SubPage,
+    ...TABLE_NODES,
   ]
 }
 

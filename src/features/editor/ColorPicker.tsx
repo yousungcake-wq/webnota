@@ -2,7 +2,7 @@ import type { Editor as TEditor } from '@tiptap/react'
 import { t, type MessageKey } from '@/core/i18n'
 import { useLayout } from '@/platform/layout'
 import { Overlay } from '@/ui'
-import { PALETTE, colorAttrs, isPalette } from './marks/colors'
+import { PALETTE, colorAttrs, isPalette } from './nodes/colors'
 
 /** Text + background color picker for the selection (ED-I03): 9 palette colors + default + custom. */
 export function ColorPicker({

@@ -28,12 +28,15 @@ export function Menu({
   title,
   items,
   onClose,
+  onDone,
   placement,
 }: {
   anchor: HTMLElement | null
   title?: string
   items: MenuEntry[]
   onClose: () => void
+  /** Called instead of onClose after an item is chosen (a submenu closes its parents too). */
+  onDone?: () => void
   placement?: 'bottom-start' | 'right-start'
 }) {
   const phone = useLayout().layout === 'phone'
@@ -71,7 +74,7 @@ export function Menu({
       setSub({ item: it, anchor: el })
       return
     }
-    onClose()
+    ;(onDone ?? onClose)()
     it.onSelect?.()
   }
 
@@ -115,6 +118,10 @@ export function Menu({
           title={sub.item.label}
           items={sub.item.children!}
           placement="right-start"
+          onDone={() => {
+            setSub(null)
+            ;(onDone ?? onClose)()
+          }}
           onClose={() => {
             setSub(null)
             sub.anchor.focus()

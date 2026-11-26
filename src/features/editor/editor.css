@@ -650,39 +650,39 @@
 .color-swatch[data-text-color='red'] {
   color: var(--c-red-text);
 }
-.wn-editor mark[data-bg-color='gray'],
+.wn-editor [data-bg-color='gray'],
 .color-swatch[data-bg-color='gray'] {
   background: var(--c-gray-bg);
 }
-.wn-editor mark[data-bg-color='brown'],
+.wn-editor [data-bg-color='brown'],
 .color-swatch[data-bg-color='brown'] {
   background: var(--c-brown-bg);
 }
-.wn-editor mark[data-bg-color='orange'],
+.wn-editor [data-bg-color='orange'],
 .color-swatch[data-bg-color='orange'] {
   background: var(--c-orange-bg);
 }
-.wn-editor mark[data-bg-color='yellow'],
+.wn-editor [data-bg-color='yellow'],
 .color-swatch[data-bg-color='yellow'] {
   background: var(--c-yellow-bg);
 }
-.wn-editor mark[data-bg-color='green'],
+.wn-editor [data-bg-color='green'],
 .color-swatch[data-bg-color='green'] {
   background: var(--c-green-bg);
 }
-.wn-editor mark[data-bg-color='blue'],
+.wn-editor [data-bg-color='blue'],
 .color-swatch[data-bg-color='blue'] {
   background: var(--c-blue-bg);
 }
-.wn-editor mark[data-bg-color='purple'],
+.wn-editor [data-bg-color='purple'],
 .color-swatch[data-bg-color='purple'] {
   background: var(--c-purple-bg);
 }
-.wn-editor mark[data-bg-color='pink'],
+.wn-editor [data-bg-color='pink'],
 .color-swatch[data-bg-color='pink'] {
   background: var(--c-pink-bg);
 }
-.wn-editor mark[data-bg-color='red'],
+.wn-editor [data-bg-color='red'],
 .color-swatch[data-bg-color='red'] {
   background: var(--c-red-bg);
 }
@@ -877,4 +877,59 @@
   .wn-editor .sub-page-restore {
     min-height: 44px;
   }
+}
+
+/* ED-B16 simple table */
+.wn-editor .tableWrapper {
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.wn-editor table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: max-content;
+  min-width: 100%;
+}
+.wn-editor td,
+.wn-editor th {
+  border: 1px solid var(--border-strong);
+  padding: 4px 8px;
+  vertical-align: top;
+  min-width: 60px;
+  position: relative;
+  text-align: left;
+}
+.wn-editor th {
+  background: var(--bg-side);
+  font-weight: 600;
+}
+.wn-editor td > p,
+.wn-editor th > p {
+  margin: 0;
+}
+.wn-editor [data-align='center'] {
+  text-align: center;
+}
+.wn-editor [data-align='right'] {
+  text-align: right;
+}
+.wn-editor .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent-soft);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.wn-editor .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent);
+  pointer-events: none;
+}
+.wn-editor.resize-cursor {
+  cursor: col-resize;
 }

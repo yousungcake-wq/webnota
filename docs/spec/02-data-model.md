@@ -196,6 +196,7 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 | 6 | 인라인 노드 타입 `mention`(kind=page\|date, viewId, date, reminder) 추가 (버전만). 페이지 제목은 저장하지 않고 표시할 때 조회 | M2-08 |
 | 7 | 마크 타입 `superscript`·`subscript` 추가 (버전만) | M2-09 |
 | 8 | 블록 노드 타입 `subPage`(viewId) 추가 (버전만) | M2-10 |
+| 9 | 노드 타입 `table`·`tableRow`·`tableHeader`·`tableCell` 추가 (셀 속성: colspan, rowspan, colwidth, background, align). Tiptap 표와 같은 이름·속성 (버전만) | M2-11 |
 
 v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다 (M0-17).
 

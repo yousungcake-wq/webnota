@@ -28,6 +28,7 @@ import { CalloutPicker } from './CalloutPicker'
 import { ColorPicker } from './ColorPicker'
 import { LinkBubble, LinkSheet, promptLink } from './LinkBubble'
 import { KeyboardToolbar } from './KeyboardToolbar'
+import { hasTable, isCellSelection, loadTableKit, TableMenu } from './TableMenu'
 import './editor.css'
 import { t } from '@/core/i18n'
 
@@ -104,6 +105,26 @@ export function Editor({ doc, pageId, onReady, locked = false }: Props) {
     return () => wrap.removeEventListener('wn-callout-icon', onPick)
   }, [editor])
 
+  // Table editing (ED-B16) loads with the first table on the page, then stays registered.
+  useEffect(() => {
+    if (!editor) return
+    let loaded = false
+    const check = () => {
+      if (loaded || !hasTable(editor.state.doc)) return
+      loaded = true
+      void loadTableKit().then((kit) => {
+        if (editor.isDestroyed) return
+        // before the other plugins so Tab moves between cells
+        for (const p of kit.tablePlugins().reverse()) editor.registerPlugin(p, (pl, list) => [pl, ...list])
+      })
+    }
+    check()
+    editor.on('update', check)
+    return () => {
+      editor.off('update', check)
+    }
+  }, [editor])
+
   // Schema read-only gate (spec/02 §6) and unknown content (ED-B23): an older app must
   // not rewrite newer content.
   useEffect(() => {
@@ -170,6 +191,7 @@ export function Editor({ doc, pageId, onReady, locked = false }: Props) {
       )}
       {!coarse && !readOnly && <FormatBubble editor={editor} onColor={() => setColorPick(true)} />}
       {!coarse && !readOnly && <LinkBubble editor={editor} />}
+      {!readOnly && <TableMenu editor={editor} />}
       {colorPick && (
         <ColorPicker editor={editor} anchor={selectionAnchor(editor)} onClose={() => setColorPick(false)} />
       )}
@@ -235,7 +257,9 @@ function FormatBubble({ editor, onColor }: { editor: TEditor; onColor: () => voi
     <BubbleMenu
       editor={editor}
       className="bubble"
-      shouldShow={({ editor: e, from, to }) => from !== to && !e.isActive('codeBlock')}
+      shouldShow={({ editor: e, state, from, to }) =>
+        from !== to && !e.isActive('codeBlock') && !isCellSelection(state)
+      }
     >
       {btn(s.bold, t('editor.bold'), () => editor.chain().focus().toggleBold().run(), <Bold size={16} />)}
       {btn(s.italic, t('editor.italic'), () => editor.chain().focus().toggleItalic().run(), <Italic size={16} />)}
