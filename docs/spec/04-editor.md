@@ -21,7 +21,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-B06 | 토글 목록 | `toggle`(level, toggleId) > `toggleSummary` + `toggleContent`, 펼침 상태는 기기별(`toggleId`) | `>` + 공백 | P0 | ✅ M2-03 (schema v3). 요약 끝에서 Enter → 안으로, 요약 맨 앞 Backspace → 문단으로 |
 | ED-B07 | 토글 제목 | `toggle` + `level` 속성 | | P1 | ✅ M2-03 |
 | ED-B08 | 인용 | `blockquote` | `"` + 공백 | P0 | ✅ (M2-03부터 `"`+공백, `>`+공백은 토글) |
-| ED-B09 | 콜아웃 | `callout` (icon, color) | | P0 | M2 |
+| ED-B09 | 콜아웃 | `callout` (icon, color) | | P0 | ✅ M2-04 (schema v4). 아이콘을 누르면 색 10가지 + 이모지 선택 |
 | ED-B10 | 코드 블록 | `codeBlock` (language, 줄 바꿈 옵션, 복사 버튼, 하이라이트) | ` ``` ` | P0 | M2 |
 | ED-B11 | 구분선 | `horizontalRule` | `---` | P0 | ✅ |
 | ED-B12 | 이미지 | `image` (src=fileId/url, width, align, caption) | | P0 | M3 |

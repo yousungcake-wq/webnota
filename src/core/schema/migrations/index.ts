@@ -1,6 +1,7 @@
 import type { Migration } from '../migrate'
 import { v2Views } from './002-views'
 import { v3Toggle } from './003-toggle'
+import { v4Callout } from './004-callout'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -19,4 +20,5 @@ import { v3Toggle } from './003-toggle'
 export const MIGRATIONS: Migration[] = [
   v2Views, // M0-16: pages → views, FracKey, per-user favorites, default space
   v3Toggle, // M2-03: toggle node types (version stamp only)
+  v4Callout, // M2-04: callout node type (version stamp only)
 ]

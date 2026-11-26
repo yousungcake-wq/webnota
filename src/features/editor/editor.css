@@ -402,3 +402,92 @@
     height: 32px;
   }
 }
+
+/* ED-B09 callout */
+.wn-editor .callout {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  background: var(--bg-code);
+}
+.wn-editor .callout-icon {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  font-size: 20px;
+  line-height: 28px;
+  text-align: center;
+}
+.wn-editor .callout-icon:hover {
+  background: var(--bg-hover);
+}
+.wn-editor .callout-body {
+  flex: 1;
+  min-width: 0;
+}
+.wn-editor .callout-body > :first-child {
+  margin-top: 0;
+}
+.callout-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--sp-2);
+}
+.callout-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-code);
+}
+.callout-swatch.is-selected {
+  box-shadow:
+    0 0 0 2px var(--bg-elev),
+    0 0 0 4px var(--accent);
+}
+@media (pointer: coarse) {
+  .callout-swatch {
+    width: 36px;
+    height: 36px;
+  }
+}
+.wn-editor .callout[data-color='gray'],
+.callout-swatch[data-color='gray'] {
+  background: var(--c-gray-bg);
+}
+.wn-editor .callout[data-color='brown'],
+.callout-swatch[data-color='brown'] {
+  background: var(--c-brown-bg);
+}
+.wn-editor .callout[data-color='orange'],
+.callout-swatch[data-color='orange'] {
+  background: var(--c-orange-bg);
+}
+.wn-editor .callout[data-color='yellow'],
+.callout-swatch[data-color='yellow'] {
+  background: var(--c-yellow-bg);
+}
+.wn-editor .callout[data-color='green'],
+.callout-swatch[data-color='green'] {
+  background: var(--c-green-bg);
+}
+.wn-editor .callout[data-color='blue'],
+.callout-swatch[data-color='blue'] {
+  background: var(--c-blue-bg);
+}
+.wn-editor .callout[data-color='purple'],
+.callout-swatch[data-color='purple'] {
+  background: var(--c-purple-bg);
+}
+.wn-editor .callout[data-color='pink'],
+.callout-swatch[data-color='pink'] {
+  background: var(--c-pink-bg);
+}
+.wn-editor .callout[data-color='red'],
+.callout-swatch[data-color='red'] {
+  background: var(--c-red-bg);
+}

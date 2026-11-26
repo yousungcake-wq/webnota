@@ -9,6 +9,7 @@ import StarterKit from '@tiptap/starter-kit'
 import { Selection, type EditorState, type Transaction } from '@tiptap/pm/state'
 import type * as Y from 'yjs'
 import { SlashCommand } from './slash'
+import { Callout } from './nodes/callout'
 import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
 
 /** Blockquote with `"` + space as its markdown shortcut (ED-B08). Node name unchanged. */
@@ -84,6 +85,7 @@ export function schemaExtensions(): Extensions {
       link: { openOnClick: false, autolink: true },
     }),
     QuoteBlock,
+    Callout,
     Toggle,
     ToggleSummary,
     ToggleContent,

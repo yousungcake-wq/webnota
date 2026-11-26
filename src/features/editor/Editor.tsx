@@ -11,6 +11,7 @@ import { debugCrash } from '@/platform/debug'
 import { useLayout } from '@/platform/layout'
 import { docSchema, editorExtensions } from './extensions'
 import { findUnknownContent } from './unknown'
+import { CalloutPicker } from './CalloutPicker'
 import { KeyboardToolbar } from './KeyboardToolbar'
 import './editor.css'
 import { t } from '@/core/i18n'
@@ -53,6 +54,20 @@ export function Editor({ doc, onReady, locked = false }: Props) {
   useEffect(() => {
     if (editor) onReady?.(editor)
   }, [editor, onReady])
+
+  // Callout icon clicks (nodes/callout.ts) open the picker.
+  const [calloutPick, setCalloutPick] = useState<{ pos: number; anchor: HTMLElement } | null>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const wrap = wrapRef.current
+    if (!wrap || !editor) return
+    const onPick = (e: Event) => {
+      if (!editor.isEditable) return
+      setCalloutPick((e as CustomEvent<{ pos: number; anchor: HTMLElement }>).detail)
+    }
+    wrap.addEventListener('wn-callout-icon', onPick)
+    return () => wrap.removeEventListener('wn-callout-icon', onPick)
+  }, [editor])
 
   // Schema read-only gate (spec/02 §6) and unknown content (ED-B23): an older app must
   // not rewrite newer content.
@@ -100,7 +115,7 @@ export function Editor({ doc, onReady, locked = false }: Props) {
   }
 
   return (
-    <div className="editor-wrap">
+    <div className="editor-wrap" ref={wrapRef}>
       {!coarse && !readOnly && (
         <DragHandle
           editor={editor}
@@ -125,6 +140,14 @@ export function Editor({ doc, onReady, locked = false }: Props) {
         </p>
       )}
       <EditorContent editor={editor} />
+      {calloutPick && (
+        <CalloutPicker
+          editor={editor}
+          pos={calloutPick.pos}
+          anchor={calloutPick.anchor}
+          onClose={() => setCalloutPick(null)}
+        />
+      )}
       {coarse && focused && !readOnly && <KeyboardToolbar editor={editor} />}
     </div>
   )
