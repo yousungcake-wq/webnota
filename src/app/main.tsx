@@ -1,12 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { completeLoginFromUrl } from '@/core/auth/auth'
+import { openDoc, pageDocName } from '@/core/docs/registry'
+import { initWorkspace, seedIfEmpty } from '@/core/docs/workspace'
+import { applyTheme } from '@/core/store/prefs'
+import { navigate } from '@/core/store/router'
+import { connect, startAutoSync } from '@/core/sync/controller'
+import { loadSeed, preloadEditor } from '@/features/editor'
 import { App } from './App'
-import { completeLoginFromUrl } from './auth/auth'
-import { openDoc, pageDocName } from './store/docs'
-import { initWorkspace, seedIfEmpty } from './store/workspace'
-import { connect, startAutoSync } from './sync/controller'
-import { applyTheme, navigate } from './ui/hooks'
-import './styles.css'
+import '@/styles/app.css'
 
 applyTheme()
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyTheme())
@@ -17,7 +19,7 @@ async function boot() {
 
   const welcome = seedIfEmpty()
   if (welcome) {
-    const { seedWelcome } = await import('./editor/seed') // editor schema is a lazy chunk
+    const { seedWelcome } = await loadSeed() // editor schema is a lazy chunk
     seedWelcome(await openDoc(pageDocName(welcome)))
     navigate({ name: 'page', id: welcome }, { replace: true })
   }
@@ -42,7 +44,7 @@ async function boot() {
 
   // Warm the editor chunk once the shell is idle.
   const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1500))
-  idle(() => void import('./ui/PageView').then((m) => m.preloadEditor()))
+  idle(preloadEditor)
 
   // Ask the browser not to evict our IndexedDB data under storage pressure.
   void navigator.storage?.persist?.()

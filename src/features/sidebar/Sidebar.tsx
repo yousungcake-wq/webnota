@@ -1,11 +1,11 @@
 import { PanelLeftClose, Plus, Search, Settings, Star, Trash2 } from 'lucide-react'
 import { useMemo } from 'react'
-import { isAlive } from '../store/pages'
-import { usePages } from '../store/workspace'
-import { addPage } from './actions'
-import { href, type Route } from './hooks'
+import { isAlive } from '@/core/model/pages'
+import { usePages } from '@/core/store/pages'
+import { href, type Route } from '@/core/store/router'
+import { addPage } from '@/features/page'
+import { SyncBadge } from '@/features/sync'
 import { PageListItem, PageTree } from './PageTree'
-import { SyncBadge } from './SyncBadge'
 
 export function Sidebar({ route, onClose }: { route: Route; onClose: () => void }) {
   const pages = usePages()

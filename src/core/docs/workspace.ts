@@ -1,7 +1,6 @@
-import { useSyncExternalStore } from 'react'
 import type * as Y from 'yjs'
-import { openDoc, WORKSPACE } from './docs'
-import { createPage, listPages, pagesOf, type PageMeta } from './pages'
+import { createPage, listPages, pagesOf, type PageMeta } from '../model/pages'
+import { openDoc, WORKSPACE } from './registry'
 
 let wsDoc: Y.Doc | null = null
 let snapshot: PageMeta[] = []
@@ -24,14 +23,15 @@ export function ws(): Y.Doc {
   return wsDoc
 }
 
-function subscribe(cb: () => void) {
+/** External-store contract for `core/store` hooks. */
+export function subscribePages(cb: () => void) {
   listeners.add(cb)
-  return () => listeners.delete(cb)
+  return () => {
+    listeners.delete(cb)
+  }
 }
 
-export function usePages(): PageMeta[] {
-  return useSyncExternalStore(subscribe, () => snapshot)
-}
+export const getPagesSnapshot = (): PageMeta[] => snapshot
 
 /** Seeds a welcome page the very first time the app runs on this device. */
 export function seedIfEmpty(): string | null {

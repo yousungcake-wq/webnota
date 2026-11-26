@@ -2,19 +2,20 @@ import type { Editor as TEditor } from '@tiptap/react'
 import { ChevronLeft, MoreHorizontal, PanelLeft, SmilePlus, Star } from 'lucide-react'
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type * as Y from 'yjs'
-import { openDoc, pageDocName } from '../store/docs'
-import { ancestorsOf, updatePage, type PageMeta } from '../store/pages'
-import { usePages, ws } from '../store/workspace'
-import { displayTitle, toggleFavorite } from './actions'
-import { goBack, href, useMedia } from './hooks'
-import { Overlay } from './Menu'
-import { PageMenu } from './PageTree'
-import { SyncBadge } from './SyncBadge'
+import { openDoc, pageDocName } from '@/core/docs/registry'
+import { ws } from '@/core/docs/workspace'
+import { ancestorsOf, displayTitle, updatePage, type PageMeta } from '@/core/model/pages'
+import { usePages } from '@/core/store/pages'
+import { goBack, href } from '@/core/store/router'
+import { loadEditor } from '@/features/editor'
+import { SyncBadge } from '@/features/sync'
+import { useMedia } from '@/platform/media'
+import { Overlay } from '@/ui/Menu'
+import { toggleFavorite } from './actions'
+import { PageMenu } from './PageMenu'
 
 // The editor (Tiptap + ProseMirror) is the biggest chunk; load it only when a page opens.
-const Editor = lazy(() => import('../editor/Editor').then((m) => ({ default: m.Editor })))
-/** Warm the editor chunk during idle time so opening a page feels instant. */
-export const preloadEditor = () => void import('../editor/Editor')
+const Editor = lazy(() => loadEditor().then((m) => ({ default: m.Editor })))
 
 const EMOJIS = '📄📝📌📎📚📖🗂️📁🗓️✅☑️💡🔥⭐️🎯🚀🧠💼🏠🛒✈️🍳🎵🎮📷🎨🧪💻🔧📊📈💰❤️🌱☕️🐶😀👋🙌🎉'
 const emojiList = Array.from(new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(EMOJIS), (s) => s.segment)

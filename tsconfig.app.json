@@ -12,6 +12,7 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "paths": { "@/*": ["./src/*"] },
     "types": ["vite/client", "vite-plugin-pwa/client"],
     "composite": true,
     "tsBuildInfoFile": "node_modules/.tmp/app.tsbuildinfo",

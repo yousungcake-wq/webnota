@@ -56,14 +56,14 @@
 
 ```
 src/
-  app/              앱 셸: 부트, 라우터, 레이아웃(데스크탑/태블릿/폰), 전역 단축키
+  app/              앱 셸: 부트, 라우트 → 화면 매핑, 레이아웃(데스크탑/태블릿/폰), 전역 단축키
   core/
     docs/           Y.Doc 레지스트리, 더티 추적, LRU
     persistence/    IndexedDB 어댑터
     sync/           엔진(순수 로직), GitHub 어댑터, 컨트롤러(스케줄링)
     schema/         스키마 버전, 마이그레이션 레지스트리
     model/          워크스페이스, 뷰, 데이터베이스 모델 (순수 함수, React 비의존)
-    store/          React 바인딩 (useY 셀렉터 훅)
+    store/          React 바인딩 (useY 셀렉터 훅), 라우터 상태(router.ts), 기기별 설정(prefs.ts)
     auth/
     i18n/
   features/
@@ -88,9 +88,14 @@ tests/
 | `core/*` | `core/*` | `features/*`, `ui/*` |
 | `ui/*` | `ui/*`, `platform/*` | `core/*`, `features/*` |
 | `features/X` | `core/*`, `ui/*`, `platform/*`, 다른 feature의 `index.ts` 공개 API만 | 다른 feature의 내부 파일 |
+| `platform/*` | 외부 패키지만 | `core/*`, `ui/*`, `features/*`, `app/*` |
 | `app/*` | 전부 | |
 
-각 feature는 `index.ts`로 공개 API(컴포넌트, 명령)만 내보냅니다.
+각 feature는 `index.ts`로 공개 API(컴포넌트, 명령)만 내보냅니다. 지연 로드할 feature(에디터 등)는 `index.ts`에서 `() => import('./X')` 형태의 로더만 내보내서 정적 import가 무거운 청크를 끌어오지 않게 합니다.
+
+**import 경로 규칙**: 같은 최상위 모듈(같은 feature, 같은 `core/<하위>` 등) 안에서는 상대 경로, 그 밖은 `@/` 별칭(`@/core/model/pages`, `@/features/page`)을 씁니다. lint가 `../../`로 모듈 밖에 나가는 import와 `../<다른 feature>/` import를 막으므로, feature 안에서는 하위 폴더를 한 단계까지만 둡니다.
+
+**라우터 위치**: 경로 상태(`navigate`, `href`, `useRoute`)는 feature가 직접 쓰므로 `core/store/router.ts`에 둡니다. `app/`은 라우트를 화면으로 연결만 합니다 (feature는 `app/`을 import할 수 없음).
 
 ## 4. 런타임 흐름
 

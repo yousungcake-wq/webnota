@@ -1,9 +1,9 @@
-import { ChevronRight, Copy, FileText, MoreHorizontal, Plus, Star, StarOff, Trash2 } from 'lucide-react'
+import { ChevronRight, FileText, MoreHorizontal, Plus } from 'lucide-react'
 import { memo, useMemo, useState } from 'react'
-import type { PageMeta } from '../store/pages'
-import { addPage, displayTitle, duplicatePage, moveToTrash, toggleFavorite } from './actions'
-import { href, toggleExpanded, useExpanded } from './hooks'
-import { Menu } from './Menu'
+import { displayTitle, type PageMeta } from '@/core/model/pages'
+import { toggleExpanded, useExpanded } from '@/core/store/prefs'
+import { href } from '@/core/store/router'
+import { addPage, PageMenu } from '@/features/page'
 
 export function usePageIndex(pages: PageMeta[]) {
   return useMemo(() => {
@@ -20,36 +20,6 @@ export function usePageIndex(pages: PageMeta[]) {
 }
 
 type Index = ReturnType<typeof usePageIndex>
-
-export function PageMenu({
-  page,
-  anchor,
-  currentId,
-  onClose,
-}: {
-  page: PageMeta
-  anchor: HTMLElement | null
-  currentId?: string
-  onClose: () => void
-}) {
-  return (
-    <Menu
-      anchor={anchor}
-      title={displayTitle(page.title)}
-      onClose={onClose}
-      items={[
-        { label: '하위 페이지 추가', icon: Plus, onSelect: () => addPage(page.id) },
-        {
-          label: page.favorite ? '즐겨찾기에서 제거' : '즐겨찾기에 추가',
-          icon: page.favorite ? StarOff : Star,
-          onSelect: () => toggleFavorite(page.id),
-        },
-        { label: '복제', icon: Copy, onSelect: () => void duplicatePage(page.id) },
-        { label: '휴지통으로 이동', icon: Trash2, danger: true, onSelect: () => moveToTrash(page.id, currentId) },
-      ]}
-    />
-  )
-}
 
 const Row = memo(function Row({
   page,

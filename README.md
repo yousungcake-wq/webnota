@@ -16,14 +16,17 @@
 
 ```
 src/
-  store/      Y.Doc + IndexedDB 저장, 페이지 트리 조작
-  sync/       GitHub Git Data API 동기화 엔진 (engine.test.ts에 다중 기기 테스트)
-  auth/       GitHub OAuth (Worker 경유) / 개인 액세스 토큰
-  editor/     Tiptap 블록 에디터, 슬래시 메뉴, 모바일 키보드 툴바
-  ui/         사이드바, 페이지 화면, 모바일 탭 화면, 설정
+  app/        앱 셸: 부트(main.tsx), 라우트 → 화면 매핑(App.tsx)
+  core/       React를 모르는 로직 (docs, model, sync, auth) + React 바인딩(store)
+  features/   기능별 화면 (editor, page, sidebar, home, search, favorites, trash, settings, sync)
+  ui/         디자인 시스템 컴포넌트 (Menu, ViewHeader …)
+  platform/   브라우저 기능 래퍼 (미디어 쿼리 …)
+  styles/     CSS
 worker/       Cloudflare Worker: OAuth code → token 교환 (무료 플랜)
-tests/e2e.mjs Playwright 스모크 테스트 (데스크탑, Android, iPhone 에뮬레이션)
+tests/e2e/    Playwright Test (데스크탑, Android, iPhone 에뮬레이션)
 ```
+
+모듈 경계는 [spec/01 §3](docs/spec/01-architecture.md)과 `eslint.config.js`에 있습니다. 다른 최상위 모듈은 `@/` 경로로 import합니다.
 
 GitHub 저장소 안의 데이터 구조:
 

@@ -1,7 +1,6 @@
-import { useSyncExternalStore } from 'react'
 import { getToken, setToken } from '../auth/auth'
-import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc } from '../store/docs'
-import { listPages } from '../store/pages'
+import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc } from '../docs/registry'
+import { listPages } from '../model/pages'
 import { syncOnce, type LocalStore, type SyncState } from './engine'
 import { GitHubClient, GitHubError, GitHubGitApi } from './github'
 
@@ -15,7 +14,7 @@ export interface Account {
   branch: string
 }
 
-interface ControllerState {
+export interface ControllerState {
   status: SyncStatus
   account: Account | null
   lastSyncedAt: number | null
@@ -49,15 +48,15 @@ function set(patch: Partial<ControllerState>) {
   listeners.forEach((l) => l())
 }
 
-export function useSync(): ControllerState {
-  return useSyncExternalStore(
-    (cb) => {
-      listeners.add(cb)
-      return () => listeners.delete(cb)
-    },
-    () => state,
-  )
+/** External-store contract for `core/store` hooks. */
+export function subscribeSync(cb: () => void) {
+  listeners.add(cb)
+  return () => {
+    listeners.delete(cb)
+  }
 }
+
+export const getSyncState = (): ControllerState => state
 
 function stateKey(a: Account) {
   return `webnota:sync-state:${a.owner}/${a.repo}@${a.branch}`

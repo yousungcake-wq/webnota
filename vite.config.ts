@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -7,6 +8,7 @@ const base = process.env.VITE_BASE || '/'
 
 export default defineConfig({
   base,
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   define: { __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev') },
   plugins: [
     react(),

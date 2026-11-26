@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { useMedia } from './hooks'
+import { useMedia } from '@/platform/media'
 
 export interface MenuItem {
   label: string

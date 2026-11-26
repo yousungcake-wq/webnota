@@ -1,156 +1,17 @@
-import { LogOut, Monitor, Moon, Plus, RefreshCw, RotateCcw, Search, Sun, Trash2 } from 'lucide-react'
-import { useMemo, useState } from 'react'
-import { oauthAvailable, startLogin } from '../auth/auth'
-import { isAlive, type PageMeta } from '../store/pages'
-import { usePages } from '../store/workspace'
-import { connect, disconnect, syncNow, useSync } from '../sync/controller'
-import { addPage, deleteForever, displayTitle, restore } from './actions'
-import { setTheme, useTheme } from './hooks'
-import { PageListItem, PageTree } from './PageTree'
-import { SyncBadge } from './SyncBadge'
+import { LogOut, Monitor, Moon, RefreshCw, Sun, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { oauthAvailable, startLogin } from '@/core/auth/auth'
+import { setTheme, useTheme } from '@/core/store/prefs'
+import { useSync } from '@/core/store/sync'
+import { connect, disconnect, syncNow } from '@/core/sync/controller'
+import { SyncBadge } from '@/features/sync'
+import { ViewHeader } from '@/ui/ViewHeader'
 
 function Github({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
       <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
     </svg>
-  )
-}
-
-function ViewHeader({ title, right }: { title: string; right?: React.ReactNode }) {
-  return (
-    <header className="view-header">
-      <h1>{title}</h1>
-      {right}
-    </header>
-  )
-}
-
-function useAlivePages() {
-  const pages = usePages()
-  return useMemo(() => {
-    const byId = new Map(pages.map((p) => [p.id, p]))
-    return { pages, alive: pages.filter((p) => isAlive(byId, p.id)), byId }
-  }, [pages])
-}
-
-function pathOf(p: PageMeta, byId: Map<string, PageMeta>): string {
-  const parts: string[] = []
-  let cur = p.parentId ? byId.get(p.parentId) : undefined
-  while (cur && parts.length < 10) {
-    parts.unshift(displayTitle(cur.title))
-    cur = cur.parentId ? byId.get(cur.parentId) : undefined
-  }
-  return parts.join(' / ')
-}
-
-/** Mobile home screen: the page tree, full width. */
-export function HomeView() {
-  const pages = usePages()
-  return (
-    <div className="view">
-      <ViewHeader title="WebNota" right={<SyncBadge />} />
-      <section className="section">
-        <div className="section-head">
-          <span>페이지</span>
-          <button type="button" className="icon-btn sm" aria-label="새 페이지" onClick={() => addPage(null)}>
-            <Plus size={16} />
-          </button>
-        </div>
-        <PageTree pages={pages} />
-      </section>
-      <button type="button" className="fab" aria-label="새 페이지" onClick={() => addPage(null)}>
-        <Plus size={26} />
-      </button>
-    </div>
-  )
-}
-
-export function SearchView({ autoFocus = true }: { autoFocus?: boolean }) {
-  const { alive, byId } = useAlivePages()
-  const [q, setQ] = useState('')
-  const results = useMemo(() => {
-    const s = q.trim().toLowerCase()
-    const list = s ? alive.filter((p) => displayTitle(p.title).toLowerCase().includes(s)) : alive
-    return [...list].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 50)
-  }, [alive, q])
-  return (
-    <div className="view">
-      <ViewHeader title="검색" />
-      <label className="search-box">
-        <Search size={18} />
-        <input
-          autoFocus={autoFocus}
-          type="search"
-          enterKeyHint="search"
-          placeholder="페이지 제목 검색"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-      </label>
-      <div className="section-head">
-        <span>{q.trim() ? `결과 ${results.length}개` : '최근 수정한 페이지'}</span>
-      </div>
-      <div className="list">
-        {results.map((p) => (
-          <PageListItem key={p.id} page={p} subtitle={pathOf(p, byId) || undefined} />
-        ))}
-        {!results.length && <p className="muted pad">일치하는 페이지가 없습니다.</p>}
-      </div>
-    </div>
-  )
-}
-
-export function FavoritesView() {
-  const { alive, byId } = useAlivePages()
-  const favs = alive.filter((p) => p.favorite)
-  return (
-    <div className="view">
-      <ViewHeader title="즐겨찾기" />
-      <div className="list">
-        {favs.map((p) => (
-          <PageListItem key={p.id} page={p} subtitle={pathOf(p, byId) || undefined} />
-        ))}
-        {!favs.length && <p className="muted pad">페이지의 ☆ 버튼을 눌러 즐겨찾기에 추가하세요.</p>}
-      </div>
-    </div>
-  )
-}
-
-export function TrashView() {
-  const pages = usePages()
-  const trashed = pages.filter((p) => p.deletedAt).sort((a, b) => (b.deletedAt ?? 0) - (a.deletedAt ?? 0))
-  return (
-    <div className="view">
-      <ViewHeader title="휴지통" />
-      <div className="list">
-        {trashed.map((p) => (
-          <div key={p.id} className="list-item static">
-            <span className="tree-icon">{p.icon || '📄'}</span>
-            <span className="list-text">
-              <span className="list-title">{displayTitle(p.title)}</span>
-              <span className="list-sub">{new Date(p.deletedAt!).toLocaleString()} 삭제</span>
-            </span>
-            <button type="button" className="icon-btn" aria-label="복원" title="복원" onClick={() => restore(p.id)}>
-              <RotateCcw size={18} />
-            </button>
-            <button
-              type="button"
-              className="icon-btn danger"
-              aria-label="영구 삭제"
-              title="영구 삭제"
-              onClick={() => {
-                if (confirm(`"${displayTitle(p.title)}"과(와) 하위 페이지를 영구 삭제할까요? 되돌릴 수 없습니다.`))
-                  void deleteForever(p.id)
-              }}
-            >
-              <Trash2 size={18} />
-            </button>
-          </div>
-        ))}
-        {!trashed.length && <p className="muted pad">휴지통이 비어 있습니다.</p>}
-      </div>
-    </div>
   )
 }
 

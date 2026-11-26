@@ -15,3 +15,4 @@
 | 009 | 2026-11-26 | 노드 타입 추가 시 schemaVersion 증가, 구버전 읽기 전용 | y-prosemirror가 모르는 노드를 지울 위험 | 미지원 노드 플레이스홀더만 (데이터 손실 위험 남음) |
 | 010 | 2026-11-26 | TypeScript 6.0.x 고정 (7.x 미사용) | typescript-eslint가 TS < 6.1만 지원 | TS 7 네이티브 + 린트 생략 |
 | 011 | 2026-11-26 | 번들 크기는 Vite 매니페스트 그래프로 측정, 수동 청크(manualChunks) 미사용 | 수동 청크가 공유 의존성을 끌어와 지연 청크가 초기 로드에 섞임 | 파일 이름 기반 측정 |
+| 012 | 2026-11-26 | `@/` import 별칭 + 라우터 상태를 `core/store/router.ts`에 둠 | 상대 경로로는 lint가 모듈 경계를 판별할 수 없음. feature가 `app/`을 import하지 않고도 navigate/href를 쓸 수 있어야 함 | 상대 경로 유지(경계 검사 불가), 라우터를 `app/`에 둠(feature→app 의존) |

@@ -1,5 +1,5 @@
 import * as Y from 'yjs'
-import { destroyDoc, openDoc, pageDocName } from '../store/docs'
+import { destroyDoc, openDoc, pageDocName } from '@/core/docs/registry'
 import {
   createPage,
   deletePagePermanently,
@@ -9,9 +9,10 @@ import {
   restorePage,
   trashPage,
   updatePage,
-} from '../store/pages'
-import { ws } from '../store/workspace'
-import { navigate, toggleExpanded } from './hooks'
+} from '@/core/model/pages'
+import { ws } from '@/core/docs/workspace'
+import { toggleExpanded } from '@/core/store/prefs'
+import { navigate } from '@/core/store/router'
 
 export function addPage(parentId: string | null = null) {
   const id = createPage(ws(), { parentId })
@@ -52,8 +53,4 @@ export async function duplicatePage(id: string) {
   const [from, to] = await Promise.all([openDoc(pageDocName(id)), openDoc(pageDocName(copyId))])
   Y.applyUpdate(to, Y.encodeStateAsUpdate(from))
   navigate({ name: 'page', id: copyId })
-}
-
-export function displayTitle(title: string) {
-  return title.trim() || '제목 없음'
 }

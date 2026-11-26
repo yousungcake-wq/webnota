@@ -5,7 +5,7 @@ import { BubbleMenu } from '@tiptap/react/menus'
 import { Bold, Code, GripVertical, Highlighter, Italic, Plus, Strikethrough, Underline } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type * as Y from 'yjs'
-import { useMedia } from '../ui/hooks'
+import { useMedia } from '@/platform/media'
 import { editorExtensions } from './extensions'
 import { KeyboardToolbar } from './KeyboardToolbar'
 

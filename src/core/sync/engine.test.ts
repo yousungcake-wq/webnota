@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import * as Y from 'yjs'
-import { createPage, deletePagePermanently, listPages, updatePage } from '../store/pages'
+import { createPage, deletePagePermanently, listPages, updatePage } from '../model/pages'
 import { gitBlobSha } from './encoding'
 import { syncOnce, type GitApi, type LocalStore, type SyncState } from './engine'
 
