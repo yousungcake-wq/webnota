@@ -5,7 +5,7 @@ import { BubbleMenu } from '@tiptap/react/menus'
 import { Bold, Code, GripVertical, Highlighter, Italic, Plus, Strikethrough, Underline } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type * as Y from 'yjs'
-import { useMedia } from '@/platform/media'
+import { useLayout } from '@/platform/layout'
 import { editorExtensions } from './extensions'
 import { KeyboardToolbar } from './KeyboardToolbar'
 import './editor.css'
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function Editor({ doc, onReady }: Props) {
-  const coarse = useMedia('(pointer: coarse)')
+  const coarse = useLayout().isTouch
   const editor = useEditor(
     {
       extensions: editorExtensions(doc),

@@ -1,6 +1,6 @@
 import { Check, ChevronRight, type LucideIcon } from 'lucide-react'
 import { useRef, useState, type KeyboardEvent } from 'react'
-import { useMedia } from '@/platform/media'
+import { useLayout } from '@/platform/layout'
 import { Overlay } from './overlay/Overlay'
 import './menu.css'
 
@@ -36,7 +36,7 @@ export function Menu({
   onClose: () => void
   placement?: 'bottom-start' | 'right-start'
 }) {
-  const phone = useMedia('(max-width: 767px)')
+  const phone = useLayout().layout === 'phone'
   const listRef = useRef<HTMLDivElement>(null)
   const [sub, setSub] = useState<{ item: MenuItem; anchor: HTMLElement } | null>(null)
 

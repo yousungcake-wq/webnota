@@ -59,7 +59,7 @@ CSS 파일 배치 (M0-09 ✅):
 
 ## 3. 반응형 원칙
 
-- 레이아웃 분기는 `useLayout()` 하나로 합니다: `'phone' | 'tablet' | 'desktop'` + `isTouch`.
+- 레이아웃 분기는 `useLayout()` 하나로 합니다: `'phone' | 'tablet' | 'desktop'` + `isTouch`. ✅ `platform/layout.ts` (기준은 spec/08 §1: 폰 <768, 태블릿 768~1023+터치, 그 외 데스크탑). 화면 크기 미디어 쿼리를 컴포넌트에서 직접 쓰지 않습니다. 태블릿 전용 화면(드로어 사이드바)은 M1-12에서 만들며, 그 전까지 태블릿은 데스크탑 셸을 씁니다.
 - 같은 기능을 두 번 구현하지 않습니다. 데이터·로직 훅은 공유하고, 표시 컴포넌트만 레이아웃별로 둡니다 (예: `GridDesktop`, `GridPhone`가 `useGridModel()` 공유).
 
 ## 4. 접근성

@@ -9,7 +9,7 @@ import { SearchView } from '@/features/search'
 import { SettingsView } from '@/features/settings'
 import { Sidebar } from '@/features/sidebar'
 import { TrashView } from '@/features/trash'
-import { useMedia } from '@/platform/media'
+import { useLayout } from '@/platform/layout'
 import { t } from '@/core/i18n'
 import { EmptyState } from '@/ui'
 
@@ -17,7 +17,7 @@ const LAST_KEY = 'webnota:last-page'
 
 export function App() {
   const route = useRoute()
-  const phone = useMedia('(max-width: 767px)')
+  const phone = useLayout().layout === 'phone'
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const pages = usePages()
 

@@ -10,7 +10,7 @@ import { usePages } from '@/core/store/pages'
 import { goBack, href } from '@/core/store/router'
 import { loadEditor } from '@/features/editor'
 import { SyncBadge } from '@/features/sync'
-import { useMedia } from '@/platform/media'
+import { useLayout } from '@/platform/layout'
 import { Button, EmptyState, IconButton, LinkButton, Overlay, Skeleton } from '@/ui'
 import { toggleFavorite } from './actions'
 import { PageMenu } from './PageMenu'
@@ -34,7 +34,7 @@ export function PageView({
 }) {
   const pages = usePages()
   const page = pages.find((p) => p.id === id)
-  const phone = useMedia('(max-width: 767px)')
+  const phone = useLayout().layout === 'phone'
   const [loaded, setLoaded] = useState<{ id: string; doc: Y.Doc } | null>(null)
   const doc = loaded?.id === id ? loaded.doc : null
   const editorRef = useRef<TEditor | null>(null)
@@ -139,7 +139,7 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
   const focused = useRef(false)
   const taRef = useRef<HTMLTextAreaElement>(null)
   const [picker, setPicker] = useState<HTMLElement | null>(null)
-  const phone = useMedia('(max-width: 767px)')
+  const phone = useLayout().layout === 'phone'
 
   // Follow remote/other-tab title changes unless the user is typing here.
   useEffect(() => {
