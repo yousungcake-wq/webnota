@@ -16,6 +16,10 @@ export const ko = {
   'common.back': '뒤로',
   'common.close': '닫기',
   'common.icon': '아이콘',
+  'common.ok': '확인',
+  'common.cancel': '취소',
+  'common.dismiss': '닫기',
+  'common.undo': '실행 취소',
 
   // app shell
   'app.selectPage': '왼쪽에서 페이지를 선택하거나 새 페이지를 만드세요.',
@@ -46,6 +50,7 @@ export const ko = {
   'page.removeIcon': '아이콘 제거',
   'page.titleLabel': '페이지 제목',
   'page.welcomeTitle': 'WebNota 시작하기',
+  'page.movedToTrash': '"{title}"을(를) 휴지통으로 옮겼습니다',
 
   // editor
   'editor.body': '페이지 본문',
@@ -113,6 +118,7 @@ export const ko = {
   'trash.deleteForever': '영구 삭제',
   'trash.confirmDelete': '"{title}"과(와) 하위 페이지를 영구 삭제할까요? 되돌릴 수 없습니다.',
   'trash.empty': '휴지통이 비어 있습니다.',
+  'trash.deleteTitle': '영구 삭제',
 
   // sync
   'sync.localOnly': '이 기기에만 저장됨',
@@ -141,6 +147,7 @@ export const ko = {
   'settings.lastSynced': '마지막 동기화 {time}',
   'settings.syncNow': '지금 동기화',
   'settings.disconnect': '연결 해제',
+  'settings.disconnectTitle': 'GitHub 연결 해제',
   'settings.confirmDisconnect': 'GitHub 연결을 해제할까요? 이 기기의 노트는 그대로 남습니다.',
   'settings.githubIntro':
     'GitHub에 로그인하면 내 계정의 비공개 저장소에 노트가 저장되고, 다른 기기와 자동으로 동기화됩니다. 서버에는 아무것도 저장되지 않습니다.',

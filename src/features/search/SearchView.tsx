@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { displayTitle, pathOf } from '@/features/page'
 import { useAlivePages } from '@/core/store/pages'
 import { PageListItem } from '@/features/sidebar'
-import { ViewHeader } from '@/ui/ViewHeader'
+import { ViewHeader } from '@/ui'
 import './search.css'
 import { t } from '@/core/i18n'
 

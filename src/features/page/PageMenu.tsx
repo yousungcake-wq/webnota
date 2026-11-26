@@ -1,7 +1,7 @@
 import { Copy, Plus, Star, StarOff, Trash2 } from 'lucide-react'
 import { type PageMeta } from '@/core/model/pages'
 import { displayTitle } from './titles'
-import { Menu } from '@/ui/Menu'
+import { Menu } from '@/ui'
 import { addPage, duplicatePage, moveToTrash, toggleFavorite } from './actions'
 import { t } from '@/core/i18n'
 

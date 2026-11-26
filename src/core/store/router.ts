@@ -1,3 +1,4 @@
+import { historyBusy, whenHistoryIdle } from '@/platform/history'
 import { createStore } from './createStore'
 import { shallowEqual } from './equality'
 import { useStore } from './useStore'
@@ -50,6 +51,12 @@ window.addEventListener('hashchange', () => {
 })
 
 export function navigate(route: Route, opts: { replace?: boolean } = {}) {
+  // An overlay that just closed may still be popping its history entry (MB-14); navigating
+  // before that pop lands would let the pop undo the navigation.
+  if (historyBusy()) {
+    void whenHistoryIdle().then(() => navigate(route, opts))
+    return
+  }
   const target = href(route)
   if (opts.replace) {
     history.replaceState({ wnDepth: depth }, '', target)
@@ -61,6 +68,10 @@ export function navigate(route: Route, opts: { replace?: boolean } = {}) {
 
 /** Back within the app; if the app was opened directly on this screen, go to home instead of leaving. */
 export function goBack() {
+  if (historyBusy()) {
+    void whenHistoryIdle().then(goBack)
+    return
+  }
   if (depth > 0) history.back()
   else navigate({ name: 'home' }, { replace: true })
 }

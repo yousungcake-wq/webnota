@@ -6,7 +6,7 @@ import { setTheme, useTheme } from '@/core/store/prefs'
 import { useSync } from '@/core/store/sync'
 import { connect, disconnect, syncNow } from '@/core/sync/controller'
 import { SyncBadge } from '@/features/sync'
-import { ViewHeader } from '@/ui/ViewHeader'
+import { confirmDialog, ViewHeader } from '@/ui'
 import './settings.css'
 
 function Github({ size = 18 }: { size?: number }) {
@@ -80,7 +80,13 @@ export function SettingsView() {
                 type="button"
                 className="btn ghost"
                 onClick={() => {
-                  if (confirm(t('settings.confirmDisconnect'))) disconnect()
+                  void confirmDialog({
+                    title: t('settings.disconnectTitle'),
+                    message: t('settings.confirmDisconnect'),
+                    confirmLabel: t('settings.disconnect'),
+                  }).then((ok) => {
+                    if (ok) disconnect()
+                  })
                 }}
               >
                 <LogOut size={16} /> {t('settings.disconnect')}

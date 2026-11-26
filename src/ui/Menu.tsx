@@ -1,109 +1,126 @@
-import type { LucideIcon } from 'lucide-react'
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
+import { Check, ChevronRight, type LucideIcon } from 'lucide-react'
+import { useRef, useState, type KeyboardEvent } from 'react'
 import { useMedia } from '@/platform/media'
+import { Overlay } from './overlay/Overlay'
 import './menu.css'
 
 export interface MenuItem {
   label: string
   icon?: LucideIcon
   danger?: boolean
-  onSelect: () => void
+  disabled?: boolean
+  /** Shows a check mark (single/multi choice menus). */
+  checked?: boolean
+  /** Display-only shortcut hint, e.g. "⌘D". Hidden on phones. */
+  shortcut?: string
+  /** Opens a submenu instead of running onSelect. */
+  children?: MenuEntry[]
+  onSelect?: () => void
 }
+export type MenuEntry = MenuItem | 'separator'
 
-/** Desktop: popover next to the anchor. Phones: bottom sheet (like AppFlowy mobile). */
+/**
+ * Desktop: popover next to the anchor. Phones: bottom sheet (like AppFlowy mobile).
+ * Keyboard: ↑/↓/Home/End move, Enter/Space select, → opens a submenu, ←/Esc closes it.
+ */
 export function Menu({
   anchor,
   title,
   items,
   onClose,
+  placement,
 }: {
   anchor: HTMLElement | null
   title?: string
-  items: MenuItem[]
+  items: MenuEntry[]
   onClose: () => void
+  placement?: 'bottom-start' | 'right-start'
 }) {
   const phone = useMedia('(max-width: 767px)')
+  const listRef = useRef<HTMLDivElement>(null)
+  const [sub, setSub] = useState<{ item: MenuItem; anchor: HTMLElement } | null>(null)
+
+  const buttons = () => [
+    ...(listRef.current?.querySelectorAll<HTMLButtonElement>('[role^="menuitem"]:not(:disabled)') ?? []),
+  ]
+  const move = (delta: number | 'first' | 'last') => {
+    const all = buttons()
+    if (!all.length) return
+    const i = all.indexOf(document.activeElement as HTMLButtonElement)
+    const next =
+      delta === 'first' ? 0 : delta === 'last' ? all.length - 1 : (i + (delta as number) + all.length) % all.length
+    all[next]!.focus()
+  }
+  const onKeyDown = (e: KeyboardEvent) => {
+    const keys: Record<string, () => void> = {
+      ArrowDown: () => move(1),
+      ArrowUp: () => move(-1),
+      Home: () => move('first'),
+      End: () => move('last'),
+      ArrowLeft: () => placement === 'right-start' && onClose(),
+    }
+    const fn = keys[e.key]
+    if (fn) {
+      e.preventDefault()
+      fn()
+    }
+  }
+
+  const activate = (it: MenuItem, el: HTMLElement) => {
+    if (it.children) {
+      setSub({ item: it, anchor: el })
+      return
+    }
+    onClose()
+    it.onSelect?.()
+  }
+
   return (
-    <Overlay anchor={anchor} title={title} onClose={onClose} sheet={phone}>
-      <div className="menu-list" role="menu">
-        {items.map((it) => {
-          const Icon = it.icon
-          return (
-            <button
-              key={it.label}
-              type="button"
-              role="menuitem"
-              className={`menu-item${it.danger ? ' is-danger' : ''}`}
-              onClick={() => {
-                onClose()
-                it.onSelect()
-              }}
-            >
-              {Icon && <Icon size={18} />}
-              <span>{it.label}</span>
-            </button>
-          )
-        })}
-      </div>
-    </Overlay>
-  )
-}
-
-export function Overlay({
-  anchor,
-  title,
-  onClose,
-  sheet,
-  children,
-}: {
-  anchor: HTMLElement | null
-  title?: string
-  onClose: () => void
-  sheet: boolean
-  children: ReactNode
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
-
-  useLayoutEffect(() => {
-    if (sheet || !anchor || !ref.current) return
-    const r = anchor.getBoundingClientRect()
-    const el = ref.current
-    const w = el.offsetWidth
-    const h = el.offsetHeight
-    let top = r.bottom + 4
-    if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 4)
-    const left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8))
-    setPos({ top, left })
-  }, [anchor, sheet])
-
-  // On phones, close the on-screen keyboard (and its toolbar) before showing a sheet.
-  useEffect(() => {
-    if (sheet && document.activeElement instanceof HTMLElement) document.activeElement.blur()
-  }, [sheet])
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
-  return createPortal(
-    <div
-      className={sheet ? 'sheet-backdrop' : 'popover-backdrop'}
-      onPointerDown={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div
-        ref={ref}
-        className={sheet ? 'sheet' : 'popover'}
-        style={sheet ? undefined : { top: pos?.top ?? -9999, left: pos?.left ?? -9999 }}
-      >
-        {sheet && <div className="sheet-grabber" aria-hidden />}
-        {sheet && title && <div className="sheet-title">{title}</div>}
-        {children}
-      </div>
-    </div>,
-    document.body,
+    <>
+      <Overlay anchor={anchor} title={title} onClose={onClose} sheet={phone} placement={placement}>
+        <div ref={listRef} className="menu-list" role="menu" aria-label={title} onKeyDown={onKeyDown}>
+          {items.map((it, i) => {
+            if (it === 'separator') return <div key={`sep-${i}`} className="menu-sep" role="separator" />
+            const Icon = it.icon
+            return (
+              <button
+                key={it.label}
+                type="button"
+                role={it.checked === undefined ? 'menuitem' : 'menuitemcheckbox'}
+                aria-checked={it.checked}
+                aria-haspopup={it.children ? 'menu' : undefined}
+                disabled={it.disabled}
+                className={`menu-item${it.danger ? ' is-danger' : ''}`}
+                onClick={(e) => activate(it, e.currentTarget)}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowRight' && it.children) {
+                    e.preventDefault()
+                    activate(it, e.currentTarget)
+                  }
+                }}
+              >
+                {Icon && <Icon size={18} />}
+                <span className="menu-label">{it.label}</span>
+                {it.shortcut && !phone && <kbd className="menu-shortcut">{it.shortcut}</kbd>}
+                {it.checked && <Check size={16} className="menu-check" />}
+                {it.children && <ChevronRight size={16} className="menu-chevron" />}
+              </button>
+            )
+          })}
+        </div>
+      </Overlay>
+      {sub && (
+        <Menu
+          anchor={sub.anchor}
+          title={sub.item.label}
+          items={sub.item.children!}
+          placement="right-start"
+          onClose={() => {
+            setSub(null)
+            sub.anchor.focus()
+          }}
+        />
+      )}
+    </>
   )
 }

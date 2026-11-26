@@ -2,7 +2,7 @@ import { RotateCcw, Trash2 } from 'lucide-react'
 import { displayTitle } from '@/features/page'
 import { usePages } from '@/core/store/pages'
 import { deleteForever, restore } from '@/features/page'
-import { ViewHeader } from '@/ui/ViewHeader'
+import { confirmDialog, ViewHeader } from '@/ui'
 import { t, getLang } from '@/core/i18n'
 
 export function TrashView() {
@@ -36,7 +36,14 @@ export function TrashView() {
               aria-label={t('trash.deleteForever')}
               title={t('trash.deleteForever')}
               onClick={() => {
-                if (confirm(t('trash.confirmDelete', { title: displayTitle(p.title) }))) void deleteForever(p.id)
+                void confirmDialog({
+                  title: t('trash.deleteTitle'),
+                  message: t('trash.confirmDelete', { title: displayTitle(p.title) }),
+                  confirmLabel: t('trash.deleteForever'),
+                  danger: true,
+                }).then((ok) => {
+                  if (ok) void deleteForever(p.id)
+                })
               }}
             >
               <Trash2 size={18} />

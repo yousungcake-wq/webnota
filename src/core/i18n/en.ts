@@ -13,6 +13,10 @@ export const en: Record<MessageKey, string> = {
   'common.back': 'Back',
   'common.close': 'Close',
   'common.icon': 'Icon',
+  'common.ok': 'OK',
+  'common.cancel': 'Cancel',
+  'common.dismiss': 'Dismiss',
+  'common.undo': 'Undo',
 
   'app.selectPage': 'Select a page on the left or create a new one.',
   'app.tabbar': 'Bottom navigation',
@@ -40,6 +44,7 @@ export const en: Record<MessageKey, string> = {
   'page.removeIcon': 'Remove icon',
   'page.titleLabel': 'Page title',
   'page.welcomeTitle': 'Getting started with WebNota',
+  'page.movedToTrash': 'Moved "{title}" to trash',
 
   'editor.body': 'Page content',
   'editor.addBelow': 'Add block below',
@@ -104,6 +109,7 @@ export const en: Record<MessageKey, string> = {
   'trash.deleteForever': 'Delete forever',
   'trash.confirmDelete': 'Permanently delete "{title}" and its subpages? This cannot be undone.',
   'trash.empty': 'Trash is empty.',
+  'trash.deleteTitle': 'Delete forever',
 
   'sync.localOnly': 'Saved on this device only',
   'sync.localOnlyHint': 'Connect GitHub to sync across devices',
@@ -129,6 +135,7 @@ export const en: Record<MessageKey, string> = {
   'settings.lastSynced': 'Last synced {time}',
   'settings.syncNow': 'Sync now',
   'settings.disconnect': 'Disconnect',
+  'settings.disconnectTitle': 'Disconnect GitHub',
   'settings.confirmDisconnect': 'Disconnect GitHub? Notes on this device are kept.',
   'settings.githubIntro':
     'Sign in with GitHub to store your notes in a private repository in your account and sync them across devices. Nothing is stored on our servers.',

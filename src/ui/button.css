@@ -44,6 +44,19 @@
 .btn.primary:hover {
   filter: brightness(1.06);
 }
+.btn.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--text-on-accent);
+}
+.btn.danger:hover {
+  filter: brightness(1.06);
+}
+.btn.sm {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: var(--fs-sm);
+}
 .btn.ghost {
   border-color: transparent;
   background: transparent;

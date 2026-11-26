@@ -14,6 +14,8 @@ import { ws } from '@/core/docs/workspace'
 import { toggleExpanded } from '@/core/store/prefs'
 import { navigate } from '@/core/store/router'
 import { t } from '@/core/i18n'
+import { toast } from '@/ui'
+import { displayTitle } from './titles'
 
 export function addPage(parentId: string | null = null) {
   const id = createPage(ws(), { parentId })
@@ -28,7 +30,11 @@ export function toggleFavorite(id: string) {
 }
 
 export function moveToTrash(id: string, currentPageId?: string) {
+  const page = getPage(ws(), id)
   trashPage(ws(), id)
+  toast(t('page.movedToTrash', { title: displayTitle(page?.title ?? '') }), {
+    action: { label: t('common.undo'), onClick: () => restorePage(ws(), id) },
+  })
   if (currentPageId && (currentPageId === id || descendantsOf(listPages(ws()), id).includes(currentPageId))) {
     navigate({ name: 'home' }, { replace: true })
   }

@@ -3,7 +3,7 @@ import { usePages } from '@/core/store/pages'
 import { addPage } from '@/features/page'
 import { PageTree } from '@/features/sidebar'
 import { SyncBadge } from '@/features/sync'
-import { ViewHeader } from '@/ui/ViewHeader'
+import { ViewHeader } from '@/ui'
 import { t } from '@/core/i18n'
 
 /** Mobile home screen: the page tree, full width. */
