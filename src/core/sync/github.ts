@@ -16,10 +16,27 @@ export class GitHubError extends Error {
   }
 }
 
+/**
+ * ETag cache for conditional GETs (SY-02h): a 304 answer does not count against the rate
+ * limit. Module-level because a client is created per sync. Blobs and trees are
+ * addressed by sha (immutable, large) and are not cached here.
+ */
+const etags = new Map<string, { etag: string; body: unknown }>()
+const MAX_ETAGS = 50
+
+export function clearEtagCache() {
+  etags.clear()
+}
+
+const conditional = (method: string, path: string) =>
+  method === 'GET' && !path.includes('/git/blobs/') && !path.includes('/git/trees/')
+
 export class GitHubClient {
   constructor(private token: string) {}
 
   async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    const key = `${this.token.slice(-8)} ${path}`
+    const cached = conditional(method, path) ? etags.get(key) : undefined
     const res = await fetch(`${API}${path}`, {
       method,
       cache: 'no-store',
@@ -28,9 +45,14 @@ export class GitHubClient {
         Authorization: `Bearer ${this.token}`,
         'X-GitHub-Api-Version': '2022-11-28',
         ...(body ? { 'Content-Type': 'application/json' } : {}),
+        ...(cached ? { 'If-None-Match': cached.etag } : {}),
       },
       body: body ? JSON.stringify(body) : undefined,
     })
+    if (res.status === 304) {
+      if (cached) return cached.body as T
+      throw new GitHubError(304, 'Not Modified without a cached response')
+    }
     if (!res.ok) {
       let msg = res.statusText
       try {
@@ -41,7 +63,14 @@ export class GitHubClient {
       throw new GitHubError(res.status, msg, retryAfter(res.status, res.headers, Date.now()))
     }
     if (res.status === 204) return undefined as T
-    return (await res.json()) as T
+    const data = (await res.json()) as T
+    const etag = res.headers.get('etag')
+    if (etag && conditional(method, path)) {
+      etags.delete(key)
+      etags.set(key, { etag, body: data })
+      if (etags.size > MAX_ETAGS) etags.delete(etags.keys().next().value!)
+    }
+    return data
   }
 
   getUser() {

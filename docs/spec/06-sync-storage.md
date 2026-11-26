@@ -22,7 +22,7 @@
 | SY-02e | 탭 간 조정: 같은 브라우저의 여러 탭 중 하나만 동기화 (`navigator.locks` 또는 BroadcastChannel 리더 선출) | M0 |
 | SY-02f | 큰 파일 경고: 파일 50MB 초과 시 경고, 90MB 초과 시 업로드 중단 (GitHub 100MB 제한) | M4 |
 | SY-02g | 트리 truncated 대응: 하위 트리 단위 조회 | M4 |
-| SY-02h | 조건부 요청 (ETag, `If-None-Match`): 304는 rate limit을 소모하지 않음 | M0 |
+| SY-02h | 조건부 요청 (ETag, `If-None-Match`): 304는 rate limit을 소모하지 않음 — ✅ M0-22: blob·tree(sha 주소, 불변) 외 GET에 적용, 캐시는 모듈 수준(메모리, 최대 50개, 토큰별). 앱 재시작 후 첫 요청은 일반 요청 | M0 |
 
 ### API 사용량 예산
 
