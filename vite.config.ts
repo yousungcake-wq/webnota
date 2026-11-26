@@ -14,7 +14,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg'],
+      includeAssets: ['icon.svg', 'icons/apple-touch-icon-180.png'],
       manifest: {
         name: 'WebNota',
         short_name: 'WebNota',
@@ -25,13 +25,32 @@ export default defineConfig({
         display: 'standalone',
         start_url: base,
         scope: base,
+        // PNGs first: some Android launchers ignore SVG icons (MB-42). Regenerate with scripts/gen-icons.mjs.
         icons: [
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icons/maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: 'icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: 'icon-maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
+        ],
+        // MB-44: long-press shortcuts. Names stay Korean like the rest of the manifest (lang: ko).
+        shortcuts: [
+          {
+            name: '새 페이지',
+            short_name: '새 페이지',
+            url: `${base}?action=new-page`,
+            icons: [{ src: 'icons/shortcut-new-96.png', sizes: '96x96', type: 'image/png' }],
+          },
+          {
+            name: '검색',
+            short_name: '검색',
+            url: `${base}#/search`,
+            icons: [{ src: 'icons/shortcut-search-96.png', sizes: '96x96', type: 'image/png' }],
+          },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,woff2,png}'],
         navigateFallback: `${base}index.html`,
       },
     }),

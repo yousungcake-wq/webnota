@@ -12,6 +12,7 @@ import { applyTheme } from '@/core/store/prefs'
 import { navigate } from '@/core/store/router'
 import { connect, startAutoSync } from '@/core/sync/controller'
 import { loadSeed, preloadEditor } from '@/features/editor'
+import { addPage } from '@/features/page'
 import { configureUi, ErrorBoundary, OverlayHost, toast } from '@/ui'
 import { App } from './App'
 import { installGlobalErrorToasts } from './errors'
@@ -50,6 +51,11 @@ async function boot() {
     seedWelcome(await openDoc(pageDocName(welcome)))
     navigate({ name: 'page', id: welcome }, { replace: true })
   }
+
+  // Home-screen shortcut "new page" (MB-44): `?action=new-page`, removed from the URL.
+  const action = new URLSearchParams(location.search).get('action')
+  if (action) history.replaceState(history.state, '', location.pathname + location.hash)
+  if (action === 'new-page' && !isReadOnly()) addPage(null)
 
   root.render(
     <StrictMode>
