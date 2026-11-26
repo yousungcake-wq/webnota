@@ -16,6 +16,7 @@ export const ko = {
   'common.back': '뒤로',
   'common.close': '닫기',
   'common.save': '저장',
+  'home.recent': '최근 항목',
   'common.icon': '아이콘',
   'common.ok': '확인',
   'common.cancel': '취소',

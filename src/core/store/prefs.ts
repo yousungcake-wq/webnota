@@ -73,3 +73,25 @@ export function setCurrentSpace(id: string) {
   write(SPACE_KEY, id)
   spacePrefStore.set(id)
 }
+
+/** Recently opened views, newest first, per device (WS-05). */
+const RECENT_KEY = 'webnota:recent'
+const RECENT_MAX = 30
+export const recentStore = createStore<string[]>(
+  (() => {
+    try {
+      const v = JSON.parse(read(RECENT_KEY) || '[]') as unknown
+      return Array.isArray(v) ? (v as string[]).slice(0, RECENT_MAX) : []
+    } catch {
+      return []
+    }
+  })(),
+)
+export function pushRecent(id: string) {
+  const prev = recentStore.get()
+  if (prev[0] === id) return
+  const next = [id, ...prev.filter((x) => x !== id)].slice(0, RECENT_MAX)
+  write(RECENT_KEY, JSON.stringify(next))
+  recentStore.set(next)
+}
+export const useRecent = (): string[] => useStore(recentStore)

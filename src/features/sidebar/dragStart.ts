@@ -58,6 +58,19 @@ const pressedId = (e: ReactPointerEvent<HTMLElement>) => {
   return target.closest<HTMLElement>('[data-id]')?.dataset.id ?? null
 }
 
+/** Runs `run` once the drag module is loaded — unless the pointer was released meanwhile. */
+function whenLoaded(run: (m: Awaited<ReturnType<typeof preloadDrag>>) => void) {
+  let released = false
+  const up = () => (released = true)
+  window.addEventListener('pointerup', up, { once: true })
+  window.addEventListener('pointercancel', up, { once: true })
+  void preloadDrag().then((m) => {
+    window.removeEventListener('pointerup', up)
+    window.removeEventListener('pointercancel', up)
+    if (!released) run(m)
+  })
+}
+
 export function beginDrag(
   e: ReactPointerEvent<HTMLElement>,
   list: HTMLElement | null,
@@ -84,7 +97,8 @@ export function beginListDrag(
 ) {
   const id = pressedId(e)
   if (!list || !id) return
-  onPress(e, (x, y, touch) => void preloadDrag().then((m) => m.startListDrag({ list, id, x, y, touch, onDrop })))
+  if (onPress(e, (x, y, touch) => whenLoaded((m) => m.startListDrag({ list, id, x, y, touch, onDrop }))))
+    void preloadDrag()
 }
 
 /** Keyboard moves on a focused row (WS-03): Alt+Shift+↑/↓ reorder, →/← indent/outdent. */

@@ -2,6 +2,7 @@ import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { displayTitle, pathOf } from '@/features/page'
 import { useAliveViews } from '@/core/store/views'
+import { useRecent } from '@/core/store/prefs'
 import { PageListItem } from '@/features/sidebar'
 import { ViewHeader } from '@/ui'
 import './search.css'
@@ -10,11 +11,18 @@ import { t } from '@/core/i18n'
 export function SearchView({ autoFocus = true }: { autoFocus?: boolean }) {
   const { alive, byId } = useAliveViews()
   const [q, setQ] = useState('')
+  const recent = useRecent()
   const results = useMemo(() => {
     const s = q.trim().toLowerCase()
-    const list = s ? alive.filter((p) => displayTitle(p.title).toLowerCase().includes(s)) : alive
+    if (!s) {
+      // No query: recently opened on this device (WS-05), else recently edited.
+      const byIdAlive = new Map(alive.map((p) => [p.id, p]))
+      const recents = recent.flatMap((id) => byIdAlive.get(id) ?? [])
+      return recents.length ? recents : [...alive].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 30)
+    }
+    const list = alive.filter((p) => displayTitle(p.title).toLowerCase().includes(s))
     return [...list].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 50)
-  }, [alive, q])
+  }, [alive, q, recent])
   return (
     <div className="view">
       <ViewHeader title={t('common.search')} />

@@ -1,2 +1,2 @@
-export { FavoritesList, PageListItem, PageTree } from './PageTree'
+export { FavoritesList, PageListItem, PageTree, RecentList } from './PageTree'
 export { Sidebar } from './Sidebar'

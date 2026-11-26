@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react'
 import { useCurrentSpace } from '@/core/store/views'
 import { addPage } from '@/features/page'
-import { PageTree } from '@/features/sidebar'
+import { PageTree, RecentList } from '@/features/sidebar'
 import { SpaceSwitcher } from '@/features/spaces'
 import { SyncBadge } from '@/features/sync'
 import { IconButton, ViewHeader } from '@/ui'
@@ -13,6 +13,14 @@ export function HomeView() {
   return (
     <div className="view">
       <ViewHeader title="WebNota" right={<SyncBadge />} />
+      <RecentList
+        max={5}
+        header={
+          <div className="section-head">
+            <span>{t('home.recent')}</span>
+          </div>
+        }
+      />
       <section className="section">
         <div className="section-head">
           <SpaceSwitcher />

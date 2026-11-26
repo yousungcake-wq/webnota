@@ -13,6 +13,7 @@ export const en: Record<MessageKey, string> = {
   'common.back': 'Back',
   'common.close': 'Close',
   'common.save': 'Save',
+  'home.recent': 'Recent',
   'common.icon': 'Icon',
   'common.ok': 'OK',
   'common.cancel': 'Cancel',

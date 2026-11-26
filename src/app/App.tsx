@@ -1,6 +1,7 @@
 import { Home, Search, Settings, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useViews } from '@/core/store/views'
+import { pushRecent } from '@/core/store/prefs'
 import { href, navigate, useRoute, type Route } from '@/core/store/router'
 import { FavoritesView } from '@/features/favorites'
 import { HomeView } from '@/features/home'
@@ -24,7 +25,9 @@ export function App() {
 
   // Remember the last opened page so desktop opens straight into it.
   useEffect(() => {
-    if (route.name === 'page') localStorage.setItem(LAST_KEY, route.id)
+    if (route.name !== 'page') return
+    localStorage.setItem(LAST_KEY, route.id)
+    pushRecent(route.id)
   }, [route])
   useEffect(() => {
     if (route.name !== 'home' || phone) return
