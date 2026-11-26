@@ -9,6 +9,7 @@ import { v8SubPage } from './008-sub-page'
 import { v9Table } from './009-table'
 import { v10ColumnsOutline } from './010-columns-outline'
 import { v11BlockAttrs } from './011-block-attrs'
+import { v12TextDirection } from './012-text-direction'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -35,4 +36,5 @@ export const MIGRATIONS: Migration[] = [
   v9Table, // M2-11: table node types (version stamp only)
   v10ColumnsOutline, // M2-12: columns / column / outline node types (version stamp only)
   v11BlockAttrs, // M2-13: blockId / textColor / bgColor / textAlign attributes (version stamp only)
+  v12TextDirection, // M2-17: dir attribute (version stamp only)
 ]

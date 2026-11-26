@@ -11,6 +11,7 @@ import {
   Copy,
   Link2,
   Merge,
+  Languages,
   PaintBucket,
   Repeat,
   Trash2,
@@ -120,6 +121,23 @@ export function BlockMenu({
         align('center', 'table.alignCenter', AlignCenter),
         align('right', 'table.alignRight', AlignRight),
       ],
+    },
+    {
+      label: t('blockMenu.direction'),
+      icon: Languages,
+      disabled: !supportsAttr(node, 'dir'),
+      children: (
+        [
+          [null, 'blockMenu.dirDefault'],
+          ['auto', 'blockMenu.dirAuto'],
+          ['ltr', 'blockMenu.dirLtr'],
+          ['rtl', 'blockMenu.dirRtl'],
+        ] as const
+      ).map(([value, label]) => ({
+        label: t(label),
+        checked: (node.attrs.dir ?? null) === value,
+        onSelect: () => apply(setBlockAttr(editor.state, pos, 'dir', value)),
+      })),
     },
     'separator',
     {

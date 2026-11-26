@@ -32,7 +32,7 @@ export function schemaExtensions(): Extensions {
       blockquote: false, // re-added below: `"` + space (`>` + space makes a toggle, spec/04)
       codeBlock: false, // CodeBlockPlus: language, wrap, copy, lazy highlighting
       heading: { levels: [1, 2, 3, 4, 5, 6] },
-      link: { openOnClick: false, autolink: true },
+      link: { openOnClick: false, autolink: true, markdownLinks: true }, // [text](url) → link (ED-F16)
     }),
     QuoteBlock,
     CodeBlockPlus,

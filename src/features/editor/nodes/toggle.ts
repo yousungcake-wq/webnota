@@ -1,6 +1,7 @@
 import { InputRule, mergeAttributes, Node } from '@tiptap/core'
 import { Fragment, type Node as PMNode } from '@tiptap/pm/model'
 import { TextSelection } from '@tiptap/pm/state'
+import type { EditorView } from '@tiptap/pm/view'
 import { t } from '@/core/i18n'
 
 /**
@@ -29,6 +30,16 @@ function setOpen(id: string, open: boolean) {
     /* ignore */
   }
 }
+/** Opens a toggle (expanded state is per device) and its DOM right away. */
+export function openToggle(view: EditorView, pos: number) {
+  const node = view.state.doc.nodeAt(pos)
+  const tid = node?.attrs.toggleId as string | null | undefined
+  if (!tid || !closed.has(tid)) return
+  setOpen(tid, true)
+  const dom = view.nodeDOM(pos)
+  if (dom instanceof HTMLElement) dom.classList.add('is-open')
+}
+
 const newToggleId = () => Math.random().toString(36).slice(2, 12)
 
 declare module '@tiptap/core' {

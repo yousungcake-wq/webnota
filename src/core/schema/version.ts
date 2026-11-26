@@ -6,7 +6,7 @@ import type * as Y from 'yjs'
  * including every new ProseMirror node or mark type (older apps must go read-only
  * instead of dropping content they don't know).
  */
-export const SCHEMA_VERSION = 11
+export const SCHEMA_VERSION = 12
 
 /** Version of PoC data, which predates `meta.schemaVersion`. */
 export const LEGACY_VERSION = 1

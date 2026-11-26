@@ -14,6 +14,7 @@ import { BlockSelection } from './blockSelection'
 import { PasteRules } from './pasteRules'
 import { FindReplace } from './findReplace'
 import { UndoGroups } from './undoGroups'
+import { IndentBlocks } from './nodes/indent'
 import { t } from '@/core/i18n'
 
 declare module '@tiptap/core' {
@@ -112,6 +113,7 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
     PasteRules,
     FindReplace,
     UndoGroups,
+    IndentBlocks,
     EmojiSuggest,
     BlockMove,
     BlockSelection, // priority 50: menus (slash, mentions) handle Esc / arrows first

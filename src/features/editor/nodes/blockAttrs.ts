@@ -7,6 +7,7 @@ import { colorAttrs, elementColor } from './colors'
  *   when a block is split (the second half is a new block).
  * - `textColor` / `bgColor`: whole-block colors (palette id or `#rrggbb`, like the marks).
  * - `textAlign`: left (null) / center / right for paragraphs and headings.
+ * - `dir` (v12, ED-F13): text direction — null (page default), `auto`, `ltr`, `rtl`.
  */
 export const LINKABLE = [
   'paragraph',
@@ -57,6 +58,14 @@ export const BlockAttrs = Extension.create({
             default: null,
             parseHTML: (el) => (el.hasAttribute('data-block-bg') ? elementColor(el, 'bg') : null),
             renderHTML: (a) => (a.bgColor ? { ...colorAttrs('bg', a.bgColor as string), 'data-block-bg': '' } : {}),
+          },
+          dir: {
+            default: null,
+            parseHTML: (el) => {
+              const v = el.getAttribute('dir')
+              return v === 'ltr' || v === 'rtl' || v === 'auto' ? v : null
+            },
+            renderHTML: (a) => (a.dir ? { dir: a.dir as string } : {}),
           },
         },
       },

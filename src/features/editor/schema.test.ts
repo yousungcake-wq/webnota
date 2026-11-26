@@ -52,6 +52,9 @@ MARKS_AT_VERSION[10] = MARKS_AT_VERSION[9]
 // v11 (M2-13): attributes only (blockId, textColor, bgColor, textAlign) — no new names.
 NODES_AT_VERSION[11] = NODES_AT_VERSION[10]
 MARKS_AT_VERSION[11] = MARKS_AT_VERSION[10]
+// v12 (M2-17): `dir` attribute only.
+NODES_AT_VERSION[12] = NODES_AT_VERSION[11]
+MARKS_AT_VERSION[12] = MARKS_AT_VERSION[11]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

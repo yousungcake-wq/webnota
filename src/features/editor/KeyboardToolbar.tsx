@@ -155,10 +155,13 @@ export function KeyboardToolbar({ editor, onColor }: { editor: Editor; onColor: 
         <Btn label={t('block.bullet')} active={s.bullet} onPress={() => c().toggleBulletList().run()}>
           <List size={20} />
         </Btn>
-        <Btn label={t('editor.indent')} disabled={!s.inList} onPress={() => c().sinkListItem(itemType).run()}>
+        <Btn
+          label={t('editor.indent')}
+          onPress={() => (s.inList ? c().sinkListItem(itemType).run() : c().indentBlock().run())}
+        >
           <IndentIncrease size={20} />
         </Btn>
-        <Btn label={t('editor.outdent')} disabled={!s.inList} onPress={() => c().liftListItem(itemType).run()}>
+        <Btn label={t('editor.outdent')} onPress={() => c().liftListItem(itemType).run() || c().outdentBlock().run()}>
           <IndentDecrease size={20} />
         </Btn>
         <span className="kb-sep" />
