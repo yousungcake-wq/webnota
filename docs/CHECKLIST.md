@@ -51,7 +51,7 @@
 ## M1 워크스페이스와 탐색
 > M0에서 넘어온 사항: 모델은 이미 v2(`views`/`spaces`/`users`)이고 `core/model/pages.ts`가 UI용 `PageMeta`로 감쌈 (스페이스 부모는 `parentId: null`로 숨김). 현재 사용자는 `local` (DECISIONS 015). 페이지 전환 187ms로 목표(150ms) 초과 (perf-history). 초기 번들 여유 4.4KB — M1 기능은 지연 로드 기본.
 - [x] M1-01 뷰 모델 API (`core/model/views.ts`): `pages.ts`를 views/spaces 모델로 정리(스페이스 부모 노출, IconValue 전체), create/update/move/trash/restore/delete/duplicate + 테스트. 기존 `PageMeta` 사용처 이전 — e530a72
-- [ ] M1-02 사이드바 재작성: 가상 스크롤 트리 + 셀렉터 구독 (WS-03)
+- [x] M1-02 사이드바 재작성: 가상 스크롤 트리 + 셀렉터 구독 (WS-03) — c35f052
 - [ ] M1-03 트리 DnD (dnd-kit, 마우스·터치·키보드, 위/아래/안으로) (WS-03)
 - [ ] M1-04 인라인 이름 바꾸기, F2, 더보기 메뉴 전체 항목 (WS-03)
 - [ ] M1-05 스페이스: 생성/수정/삭제/전환/정렬 (WS-02)
