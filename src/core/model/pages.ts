@@ -1,4 +1,7 @@
 import * as Y from 'yjs'
+import { assertWritable } from './guard'
+
+export { ReadOnlyError } from './guard'
 
 /**
  * Pure operations on the workspace Y.Doc. Each page's metadata is its own
@@ -58,6 +61,7 @@ export function createPage(
   doc: Y.Doc,
   opts: { parentId?: string | null; title?: string; icon?: string; id?: string } = {},
 ): string {
+  assertWritable()
   const id = opts.id ?? newId()
   const parentId = opts.parentId ?? null
   const siblings = listPages(doc).filter((p) => p.parentId === parentId)
@@ -79,6 +83,7 @@ export function createPage(
 }
 
 export function updatePage(doc: Y.Doc, id: string, patch: Partial<Omit<PageMeta, 'id'>>) {
+  assertWritable()
   const m = pagesOf(doc).get(id)
   if (!m) return
   doc.transact(() => {
@@ -144,6 +149,7 @@ export function restorePage(doc: Y.Doc, id: string) {
 
 /** Removes a page and all of its descendants. Returns removed ids. */
 export function deletePagePermanently(doc: Y.Doc, id: string): string[] {
+  assertWritable()
   const ids = [id, ...descendantsOf(listPages(doc), id)]
   doc.transact(() => ids.forEach((pid) => pagesOf(doc).delete(pid)))
   return ids

@@ -22,6 +22,10 @@ export const en: Record<MessageKey, string> = {
   'error.sidebar': 'Sidebar error',
   'error.retry': 'Try again',
   'error.unexpected': 'Something went wrong: {message}',
+  'schema.newer': 'This data was saved by a newer version of WebNota. It opens read-only until you update the app.',
+  'schema.failed': 'Your data could not be upgraded, so it opens read-only. Nothing was lost.',
+  'schema.update': 'Update app',
+  'schema.readOnlyToast': 'Changes are disabled in read-only mode',
 
   'app.selectPage': 'Select a page on the left or create a new one.',
   'app.tabbar': 'Bottom navigation',

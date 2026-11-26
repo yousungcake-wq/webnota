@@ -5,6 +5,8 @@ import { completeLoginFromUrl } from '@/core/auth/auth'
 import { getLang, initI18n, t } from '@/core/i18n'
 import { openDoc, pageDocName } from '@/core/docs/registry'
 import { initWorkspace, seedIfEmpty } from '@/core/docs/workspace'
+import { initSchema, isReadOnly } from '@/core/schema'
+import { debugFlag } from '@/platform/debug'
 import { applyTheme } from '@/core/store/prefs'
 import { navigate } from '@/core/store/router'
 import { connect, startAutoSync } from '@/core/sync/controller'
@@ -19,7 +21,10 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 
 async function boot() {
   const root = createRoot(document.getElementById('root')!)
-  await Promise.all([initWorkspace(), initI18n()])
+  const [wsDoc] = await Promise.all([initWorkspace(), initI18n()])
+  // Migrate or gate before anything reads or writes the workspace (spec/02 §6).
+  // QA: `webnota:debug=schema-newer` pretends the data is newer than this build.
+  initSchema(wsDoc, debugFlag('schema-newer') ? { appVersion: 0 } : {})
   configureUi({
     ok: t('common.ok'),
     cancel: t('common.cancel'),
@@ -30,7 +35,7 @@ async function boot() {
   })
   installGlobalErrorToasts()
 
-  const welcome = seedIfEmpty()
+  const welcome = isReadOnly() ? null : seedIfEmpty()
   if (welcome) {
     const { seedWelcome } = await loadSeed() // editor schema is a lazy chunk
     seedWelcome(await openDoc(pageDocName(welcome)))

@@ -4,6 +4,8 @@ import { EditorContent, useEditor, useEditorState, type Editor as TEditor } from
 import { BubbleMenu } from '@tiptap/react/menus'
 import { Bold, Code, GripVertical, Highlighter, Italic, Plus, Strikethrough, Underline } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { schemaStore } from '@/core/schema'
+import { useStore } from '@/core/store/useStore'
 import type * as Y from 'yjs'
 import { debugCrash } from '@/platform/debug'
 import { useLayout } from '@/platform/layout'
@@ -20,9 +22,11 @@ interface Props {
 export function Editor({ doc, onReady }: Props) {
   debugCrash('editor')
   const coarse = useLayout().isTouch
+  const readOnly = useStore(schemaStore, selectReadOnly)
   const editor = useEditor(
     {
       extensions: editorExtensions(doc),
+      editable: !readOnly,
       editorProps: {
         attributes: {
           class: 'wn-editor',
@@ -38,6 +42,11 @@ export function Editor({ doc, onReady }: Props) {
   useEffect(() => {
     if (editor) onReady?.(editor)
   }, [editor, onReady])
+
+  // Schema read-only gate (spec/02 §6): an older app must not rewrite newer content.
+  useEffect(() => {
+    if (editor && editor.isEditable === readOnly) editor.setEditable(!readOnly)
+  }, [editor, readOnly])
 
   const hovered = useRef<{ node: PMNode | null; pos: number }>({ node: null, pos: -1 })
   const [focused, setFocused] = useState(false)
@@ -80,7 +89,7 @@ export function Editor({ doc, onReady }: Props) {
 
   return (
     <div className="editor-wrap">
-      {!coarse && (
+      {!coarse && !readOnly && (
         <DragHandle
           editor={editor}
           onNodeChange={({ node, pos }) => {
@@ -97,12 +106,14 @@ export function Editor({ doc, onReady }: Props) {
           </div>
         </DragHandle>
       )}
-      {!coarse && <FormatBubble editor={editor} />}
+      {!coarse && !readOnly && <FormatBubble editor={editor} />}
       <EditorContent editor={editor} />
-      {coarse && focused && <KeyboardToolbar editor={editor} />}
+      {coarse && focused && !readOnly && <KeyboardToolbar editor={editor} />}
     </div>
   )
 }
+
+const selectReadOnly = (s: { readOnly: boolean }) => s.readOnly
 
 function FormatBubble({ editor }: { editor: TEditor }) {
   const s = useEditorState({

@@ -7,6 +7,8 @@ import { ws } from '@/core/docs/workspace'
 import { ancestorsOf, updatePage, type PageMeta } from '@/core/model/pages'
 import { displayTitle } from './titles'
 import { usePages } from '@/core/store/pages'
+import { schemaStore } from '@/core/schema'
+import { useStore } from '@/core/store/useStore'
 import { goBack, href } from '@/core/store/router'
 import { loadEditor } from '@/features/editor'
 import { SyncBadge } from '@/features/sync'
@@ -141,6 +143,7 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
   const focused = useRef(false)
   const taRef = useRef<HTMLTextAreaElement>(null)
   const [picker, setPicker] = useState<HTMLElement | null>(null)
+  const readOnly = useStore(schemaStore).readOnly
   const phone = useLayout().layout === 'phone'
 
   // Follow remote/other-tab title changes unless the user is typing here.
@@ -162,14 +165,17 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
           type="button"
           className="page-icon"
           aria-label={t('page.changeIcon')}
+          disabled={readOnly}
           onClick={(e) => setPicker(e.currentTarget)}
         >
           {page.icon}
         </button>
       ) : (
-        <button type="button" className="add-icon" onClick={(e) => setPicker(e.currentTarget)}>
-          <SmilePlus size={16} /> {t('page.addIcon')}
-        </button>
+        !readOnly && (
+          <button type="button" className="add-icon" onClick={(e) => setPicker(e.currentTarget)}>
+            <SmilePlus size={16} /> {t('page.addIcon')}
+          </button>
+        )
       )}
       <textarea
         ref={taRef}
@@ -178,6 +184,7 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
         placeholder={t('common.untitled')}
         value={title}
         aria-label={t('page.titleLabel')}
+        readOnly={readOnly}
         onFocus={() => (focused.current = true)}
         onBlur={() => {
           focused.current = false

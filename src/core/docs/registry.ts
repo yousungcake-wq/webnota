@@ -11,6 +11,7 @@ import { IndexeddbPersistence } from 'y-indexeddb'
 
 /** Origin used when applying updates that came from GitHub, so they don't mark docs dirty. */
 import { REMOTE_ORIGIN } from '../sync/engine'
+import { isReadOnly } from '../schema/gate'
 export { REMOTE_ORIGIN }
 
 export const WORKSPACE = 'workspace'
@@ -78,6 +79,9 @@ export function openDoc(name: string): Promise<Y.Doc> {
   const persistence = new IndexeddbPersistence(`webnota:${name}`, doc)
   doc.on('update', (_update: Uint8Array, origin: unknown) => {
     if (origin === REMOTE_ORIGIN || origin === persistence) return
+    // Read-only (spec/02 §6): nothing local may be queued for upload. Backstop — the
+    // editor and core/model already refuse writes; the sync controller skips pushes.
+    if (isReadOnly()) return
     markDirty(name)
   })
   const ready = persistence.whenSynced.then(() => doc)

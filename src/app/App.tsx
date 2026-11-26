@@ -12,6 +12,7 @@ import { TrashView } from '@/features/trash'
 import { useLayout } from '@/platform/layout'
 import { t } from '@/core/i18n'
 import { EmptyState, ErrorBoundary } from '@/ui'
+import { SchemaBanner } from './SchemaBanner'
 
 const LAST_KEY = 'webnota:last-page'
 
@@ -42,6 +43,7 @@ export function App() {
         </ErrorBoundary>
       )}
       <main className="main">
+        <SchemaBanner />
         <ErrorBoundary key={href(route)}>
           <MainContent route={route} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(true)} />
         </ErrorBoundary>
@@ -80,6 +82,7 @@ function PhoneShell({ route }: { route: Route }) {
   if (route.name === 'page') {
     return (
       <div className="phone">
+        <SchemaBanner />
         <ErrorBoundary key={route.id}>
           <PageView id={route.id} />
         </ErrorBoundary>
@@ -94,6 +97,7 @@ function PhoneShell({ route }: { route: Route }) {
   ]
   return (
     <div className="phone">
+      <SchemaBanner />
       <div className="phone-content">
         <ErrorBoundary key={href(route)}>
           {route.name === 'favorites' ? (

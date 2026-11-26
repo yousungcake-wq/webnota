@@ -1,4 +1,5 @@
 import { t } from '@/core/i18n'
+import { ReadOnlyError } from '@/core/model/pages'
 import { toast } from '@/ui'
 
 /** Benign browser noise that should never reach the user. */
@@ -13,6 +14,10 @@ const DEDUPE_MS = 5000
 export function installGlobalErrorToasts() {
   const lastShown = new Map<string, number>()
   const report = (reason: unknown) => {
+    if (reason instanceof ReadOnlyError) {
+      toast(t('schema.readOnlyToast'), { tone: 'error' })
+      return
+    }
     const message = reason instanceof Error ? reason.message : typeof reason === 'string' ? reason : String(reason)
     if (!message || IGNORED.some((re) => re.test(message))) return
     const now = Date.now()

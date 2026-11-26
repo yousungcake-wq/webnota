@@ -19,7 +19,7 @@
 
 ### QA용 디버그 플래그
 
-브라우저 콘솔에서 `localStorage.setItem('webnota:debug', 'crash-editor')` 후 새로고침하면 에디터 렌더링 오류를 흉내 냅니다 (`crash-sidebar`도 가능, 쉼표로 여러 개). 확인 후 `localStorage.removeItem('webnota:debug')`.
+브라우저 콘솔에서 `localStorage.setItem('webnota:debug', 'crash-editor')` 후 새로고침하면 에디터 렌더링 오류를 흉내 냅니다 (`crash-sidebar`도 가능, 쉼표로 여러 개). `schema-newer`는 데이터가 앱보다 새 버전인 상황(읽기 전용 + 업데이트 배너, spec/02 §6)을 흉내 냅니다 — 데이터는 바꾸지 않습니다. 확인 후 `localStorage.removeItem('webnota:debug')`.
 
 ## 마일스톤별 추가 항목
 

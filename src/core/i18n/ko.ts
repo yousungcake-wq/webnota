@@ -25,6 +25,10 @@ export const ko = {
   'error.sidebar': '사이드바 오류',
   'error.retry': '다시 시도',
   'error.unexpected': '오류가 발생했습니다: {message}',
+  'schema.newer': '이 데이터는 더 새로운 버전의 WebNota로 저장되었습니다. 앱을 업데이트할 때까지 읽기 전용으로 엽니다.',
+  'schema.failed': '데이터를 새 형식으로 바꾸지 못해 읽기 전용으로 엽니다. 데이터는 그대로 있습니다.',
+  'schema.update': '앱 업데이트',
+  'schema.readOnlyToast': '읽기 전용 모드에서는 바꿀 수 없습니다',
 
   // app shell
   'app.selectPage': '왼쪽에서 페이지를 선택하거나 새 페이지를 만드세요.',

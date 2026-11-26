@@ -49,3 +49,28 @@
 .tab.is-active {
   color: var(--accent);
 }
+
+/* Schema read-only gate (spec/02 §6) */
+.schema-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-yellow-bg);
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.schema-banner > svg {
+  color: var(--warn);
+  flex-shrink: 0;
+}
+.schema-banner-text {
+  flex: 1;
+  min-width: 12em;
+}
+.phone .schema-banner .btn {
+  min-height: 44px;
+}

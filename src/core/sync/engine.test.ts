@@ -231,4 +231,29 @@ describe('sync engine', () => {
     expect(remote.files()).toEqual(['data/workspace.yjs'])
     expect(listPages(b.ws)).toEqual([])
   })
+  it('pulls but does not push while canPush() is false (schema read-only gate)', async () => {
+    const remote = new FakeRemote()
+    const a = new Device()
+    const b = new Device()
+    createPage(a.ws, { title: 'from a' })
+    await syncOnce(remote, a)
+    const headBefore = remote.head
+
+    createPage(b.ws, { title: 'local on b' })
+    const r = await syncOnce(remote, b, { canPush: () => false })
+    expect(r.pulled).toBe(1)
+    expect(r.pushed).toBe(0)
+    expect(remote.head).toBe(headBefore)
+    expect(Object.keys(b.dirty)).toEqual(['workspace']) // stays dirty for later
+
+    // the gate is checked after the pull, so a newer version pulled in that round blocks the push
+    let pulledYet = false
+    const c = new Device()
+    createPage(c.ws, { title: 'local on c' })
+    c.ws.on('update', (_u: Uint8Array, origin: unknown) => {
+      if (origin === 'webnota-remote') pulledYet = true
+    })
+    await syncOnce(remote, c, { canPush: () => !pulledYet })
+    expect(remote.head).toBe(headBefore)
+  })
 })

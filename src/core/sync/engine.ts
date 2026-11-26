@@ -76,7 +76,12 @@ export class ConflictRetryError extends Error {}
 export async function syncOnce(
   api: GitApi,
   store: LocalStore,
-  opts: { maxAttempts?: number; deviceName?: string } = {},
+  opts: {
+    maxAttempts?: number
+    deviceName?: string
+    /** Checked after each pull; false skips pushing (schema read-only gate). Docs stay dirty. */
+    canPush?: () => boolean
+  } = {},
 ): Promise<SyncResult> {
   const maxAttempts = opts.maxAttempts ?? 5
   const result: SyncResult = { pulled: 0, pushed: 0, deleted: 0, commitSha: null, attempts: 0 }
@@ -114,6 +119,8 @@ export async function syncOnce(
     }
     state.headSha = head?.commitSha ?? null
     store.saveState(state)
+
+    if (opts.canPush && !opts.canPush()) return result
 
     // ---- decide what to push ----
     const ws = await store.getDoc('workspace')

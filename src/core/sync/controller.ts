@@ -4,6 +4,7 @@ import { getToken, setToken } from '../auth/auth'
 import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc } from '../docs/registry'
 import { listPages } from '../model/pages'
 import { createStore } from '../store/createStore'
+import { isReadOnly } from '../schema/gate'
 import { ConflictRetryError, syncOnce, type LocalStore, type SyncState } from './engine'
 import { GitHubClient, GitHubError, GitHubGitApi } from './github'
 
@@ -162,7 +163,10 @@ async function runSync() {
     const api = new GitHubGitApi(new GitHubClient(token), account.owner, account.repo, account.branch)
     const started = performance.now()
     debugLog('sync', 'start', `${account.owner}/${account.repo}@${account.branch}`, 'dirty:', Object.keys(getDirty()))
-    const result = await syncOnce(api, localStore(account), { deviceName: deviceLabel() })
+    const result = await syncOnce(api, localStore(account), {
+      deviceName: deviceLabel(),
+      canPush: () => !isReadOnly(),
+    })
     debugLog('sync', 'done', result, `${Math.round(performance.now() - started)}ms`)
     set({ status: Object.keys(getDirty()).length ? 'pending' : 'idle', lastSyncedAt: Date.now() })
   } catch (e) {
