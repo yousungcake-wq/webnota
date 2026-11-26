@@ -5,7 +5,9 @@ async function paste(page: Page, data: Record<string, string>) {
   await page.evaluate((d) => {
     const dt = new DataTransfer()
     for (const [type, value] of Object.entries(d)) dt.setData(type, value)
-    document.querySelector('.wn-editor')!.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true }))
+    document
+      .querySelector('.wn-editor')!
+      .dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true }))
   }, data)
 }
 
@@ -20,7 +22,8 @@ test('Markdown text becomes blocks (ED-F06)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
   const ed = page.locator('.wn-editor')
   await paste(page, {
-    'text/plain': '# 제목\n\n- [ ] 할 일\n- [x] 끝\n\n1. 하나\n2. 둘\n\n> 인용\n\n```js\nlet a = 1\n```\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n**굵게** 와 [링크](https://example.com)',
+    'text/plain':
+      '# 제목\n\n- [ ] 할 일\n- [x] 끝\n\n1. 하나\n2. 둘\n\n> 인용\n\n```js\nlet a = 1\n```\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n**굵게** 와 [링크](https://example.com)',
   })
   await expect(ed.locator('h1')).toHaveText('제목')
   await expect(ed.locator('ul[data-type="taskList"] li')).toHaveCount(2)
@@ -38,7 +41,8 @@ test('code editor HTML pastes as plain text; plain text stays text', async ({ pa
   const ed = page.locator('.wn-editor')
   await paste(page, {
     'text/plain': 'const x = 1\nconst y = 2',
-    'text/html': '<div style="color: #d4d4d4;white-space: pre;"><div><span style="color: #569cd6;">const</span> x = 1</div><div>const y = 2</div></div>',
+    'text/html':
+      '<div style="color: #d4d4d4;white-space: pre;"><div><span style="color: #569cd6;">const</span> x = 1</div><div>const y = 2</div></div>',
   })
   await expect(ed.locator('p')).toHaveText(['const x = 1', 'const y = 2'])
   await expect(ed.locator('span[style*="color"]')).toHaveCount(0)

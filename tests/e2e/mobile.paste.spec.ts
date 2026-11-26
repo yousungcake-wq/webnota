@@ -9,7 +9,9 @@ test('phone: pasted Markdown becomes blocks (ED-F06)', async ({ page }) => {
   await page.evaluate(() => {
     const dt = new DataTransfer()
     dt.setData('text/plain', '## 폰 제목\n- 항목')
-    document.querySelector('.wn-editor')!.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true }))
+    document
+      .querySelector('.wn-editor')!
+      .dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true }))
   })
   await expect(page.locator('.wn-editor h2', { hasText: '폰 제목' })).toHaveCount(1)
 })
