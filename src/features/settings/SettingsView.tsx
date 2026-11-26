@@ -10,6 +10,7 @@ import { connect, disconnect, syncNow } from '@/core/sync/controller'
 import { SyncBadge } from '@/features/sync'
 import { Button, confirmDialog, Input, LinkButton, Segmented, Switch, ViewHeader } from '@/ui'
 import './settings.css'
+import { SyncLog } from './SyncLog'
 
 function Github({ size = 18 }: { size?: number }) {
   return (
@@ -94,6 +95,7 @@ export function SettingsView() {
                 {t('settings.disconnect')}
               </Button>
             </div>
+            <SyncLog />
           </>
         ) : (
           <>

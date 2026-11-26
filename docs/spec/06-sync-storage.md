@@ -18,7 +18,7 @@
 | SY-02a | 경로 체계 v2 (`data/docs/`, `data/dbs/`), 구 경로 이전 — ✅ M0-17: `pathForDoc`/`docForPath`(spec/02 §1 전체), 구 `data/pages/` 파일은 병합 후 같은 커밋에서 이동·삭제 | M0 |
 | SY-02b | 스케줄: 입력 후 8초 디바운스, 최대 대기 60초(계속 입력 중이어도 푸시), 화면 숨김 시 즉시, 1분 주기 풀 (화면 표시 중), 온라인 복귀 시 — ✅ M0-21 (`core/sync/schedule.ts`) | M0 |
 | SY-02c | 백오프: 실패 시 지수 백오프 (10s → 5분), 403 rate limit은 `x-ratelimit-reset`까지 대기 — ✅ M0-21: 403/429의 `retry-after` 또는 `x-ratelimit-remaining: 0` + reset까지 아무 동기화도 하지 않음. 일반 백오프 중에도 온라인 복귀·화면 숨김/표시·수동 버튼은 즉시 시도, 1분 주기 풀은 대기. 로그인 만료(401)는 자동 재시도 안 함 | M0 |
-| SY-02d | 동기화 로그 (최근 50건: 시각, 결과, 파일 수, 오류) — 설정 화면 | M0 |
+| SY-02d | 동기화 로그 (최근 50건: 시각, 결과, 파일 수, 오류) — 설정 화면 — ✅ M0-24: `core/sync/log.ts`, localStorage `webnota:sync-log`(모든 탭 공유). 변경 없는 실행과 같은 오류의 연속은 한 항목으로 접고 횟수·기간 표시. 설정 → GitHub 동기화 카드의 "동기화 기록" | M0 |
 | SY-02e | 탭 간 조정: 같은 브라우저의 여러 탭 중 하나만 동기화 (`navigator.locks` 또는 BroadcastChannel 리더 선출) — ✅ M0-23: Web Lock `webnota:sync-leader:<wsId>`를 가진 탭만 동기화(미지원 브라우저는 모든 탭). 탭마다 Y.Doc이 따로라서 BroadcastChannel `webnota:<wsId>`로 열린 문서의 업데이트를 실시간 중계(`core/docs/tabs.ts`), 더티 표시는 `storage` 이벤트로 공유, 다른 탭의 동기화 요청은 리더에게 전달, 리더의 상태는 다른 탭에 표시 | M0 |
 | SY-02f | 큰 파일 경고: 파일 50MB 초과 시 경고, 90MB 초과 시 업로드 중단 (GitHub 100MB 제한) | M4 |
 | SY-02g | 트리 truncated 대응: 하위 트리 단위 조회 | M4 |

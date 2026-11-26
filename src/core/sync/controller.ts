@@ -9,6 +9,7 @@ import { isReadOnly } from '../schema/gate'
 import { ConflictRetryError, syncOnce, type LocalStore, type SyncState } from './engine'
 import { GitHubClient, GitHubError, GitHubGitApi } from './github'
 import { electLeader } from './leader'
+import { recordSync } from './log'
 import { createScheduler, PULL_INTERVAL_MS, type SyncOutcome, type SyncReason } from './schedule'
 
 export type SyncStatus = 'disconnected' | 'idle' | 'pending' | 'syncing' | 'offline' | 'error'
@@ -173,11 +174,22 @@ async function runSync(): Promise<SyncOutcome> {
       deviceName: deviceLabel(),
       canPush: () => !isReadOnly(),
     })
-    debugLog('sync', 'done', result, `${Math.round(performance.now() - started)}ms`)
+    const ms = Math.round(performance.now() - started)
+    debugLog('sync', 'done', result, `${ms}ms`)
+    recordSync({ at: Date.now(), ok: true, pulled: result.pulled, pushed: result.pushed, deleted: result.deleted, ms })
     set({ status: Object.keys(getDirty()).length ? 'pending' : 'idle', lastSyncedAt: Date.now() })
     return { ok: true }
   } catch (e) {
     console.error('[webnota] sync failed', e)
+    recordSync({
+      at: Date.now(),
+      ok: false,
+      pulled: 0,
+      pushed: 0,
+      deleted: 0,
+      ms: 0,
+      error: e instanceof Error ? `${e instanceof GitHubError ? `${e.status} ` : ''}${e.message}` : String(e),
+    })
     if (e instanceof GitHubError && e.status === 401) {
       disconnect()
       set({ error: t('sync.err.expired') })
