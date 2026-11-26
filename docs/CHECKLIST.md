@@ -33,7 +33,7 @@
 - [x] M0-16 마이그레이션 v2: pages→views, FracKey, 즐겨찾기 사용자별, 기본 스페이스, `page/`→`doc/` IndexedDB 복사 (spec/02 §7) — e71fe99
 - [x] M0-17 동기화 경로 v2 + 구 경로 이전 (SY-02a), FakeRemote 테스트 — 087a184
 - [x] M0-18 IndexedDB 이름 공간 `wn:<wsId>:` (SY-05 대비) — b672776
-- [ ] M0-19 문서 레지스트리 LRU 언로드 (SY-01)
+- [x] M0-19 문서 레지스트리 LRU 언로드 (SY-01) — e2a1b3b
 - [ ] M0-20 `unknown` 노드 보존 처리 (ED-B23)
 
 ### 동기화 보강
