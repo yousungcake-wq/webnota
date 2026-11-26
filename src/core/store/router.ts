@@ -6,7 +6,7 @@ import { useStore } from './useStore'
 
 export type Route =
   | { name: 'home' }
-  | { name: 'page'; id: string }
+  | { name: 'page'; id: string; block?: string }
   | { name: 'search' }
   | { name: 'favorites' }
   | { name: 'trash' }
@@ -16,16 +16,19 @@ export type Route =
  * Routes (spec/03, M1-17): a view is `#/w/<workspace>/v/<viewId>`. The workspace part is
  * this device's slot id: a link from another device carries an unknown id and simply
  * opens the view in the current workspace; a known other workspace is switched to
- * (reload). PoC links `#/page/<id>` still work and are rewritten.
+ * (reload). PoC links `#/page/<id>` still work and are rewritten. A block link (ED-F15)
+ * appends `/b/<blockId>`.
  */
 function parse(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/')
   switch (parts[0]) {
     case 'w': {
-      const [, ws, kind, id] = parts
+      const [, ws, kind, id, b, block] = parts
       if (kind !== 'v' || !id) return { name: 'home' }
       if (ws && ws !== currentWorkspaceId() && listSlots().some((s) => s.id === ws)) switchSlot(ws, true)
-      return { name: 'page', id: decodeURIComponent(id) }
+      return b === 'b' && block
+        ? { name: 'page', id: decodeURIComponent(id), block: decodeURIComponent(block) }
+        : { name: 'page', id: decodeURIComponent(id) }
     }
     case 'page':
       return parts[1] ? { name: 'page', id: decodeURIComponent(parts[1]) } : { name: 'home' }
@@ -41,7 +44,8 @@ function parse(hash: string): Route {
 
 export function href(route: Route): string {
   return route.name === 'page'
-    ? `#/w/${currentWorkspaceId()}/v/${encodeURIComponent(route.id)}`
+    ? `#/w/${currentWorkspaceId()}/v/${encodeURIComponent(route.id)}` +
+        (route.block ? `/b/${encodeURIComponent(route.block)}` : '')
     : route.name === 'home'
       ? '#/'
       : `#/${route.name}`

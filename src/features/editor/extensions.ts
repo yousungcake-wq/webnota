@@ -9,6 +9,7 @@ import { MentionSuggest, MentionWithView } from './mentionSuggest'
 import { EmojiSuggest } from './emojiSuggest'
 import { SubPageWithView } from './SubPageBlock'
 import { OutlineWithView } from './OutlineBlock'
+import { BlockFlash } from './blockFlash'
 import { t } from '@/core/i18n'
 
 declare module '@tiptap/core' {
@@ -103,6 +104,7 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
     }),
     SlashCommand,
     MentionSuggest,
+    BlockFlash,
     EmojiSuggest,
     BlockMove,
   ]

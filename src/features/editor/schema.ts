@@ -13,6 +13,7 @@ import { SubPage } from './nodes/subPage'
 import { TABLE_NODES } from './nodes/table'
 import { Column, Columns } from './nodes/columns'
 import { Outline } from './nodes/outline'
+import { BlockAttrs } from './nodes/blockAttrs'
 import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
 
 // The document schema without React (unit tests, seeding). UI-only extensions live in extensions.ts.
@@ -51,6 +52,7 @@ export function schemaExtensions(): Extensions {
     Columns,
     Column,
     Outline,
+    BlockAttrs,
   ]
 }
 

@@ -5,10 +5,9 @@ import { Check, Copy, ExternalLink, Pencil, Unlink } from 'lucide-react'
 import { useState } from 'react'
 import { t } from '@/core/i18n'
 import { Menu, promptDialog, toast } from '@/ui'
-import { normalizeUrl } from './link'
+import { normalizeUrl, openHref as open } from './link'
 
 const linkHref = (e: TEditor) => (e.getAttributes('link').href as string | undefined) ?? ''
-const open = (href: string) => window.open(href, '_blank', 'noopener')
 const copy = (href: string) =>
   void navigator.clipboard?.writeText(href).then(
     () => toast(t('page.linkCopied')),

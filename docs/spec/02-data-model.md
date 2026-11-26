@@ -198,6 +198,7 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 | 8 | 블록 노드 타입 `subPage`(viewId) 추가 (버전만) | M2-10 |
 | 9 | 노드 타입 `table`·`tableRow`·`tableHeader`·`tableCell` 추가 (셀 속성: colspan, rowspan, colwidth, background, align). Tiptap 표와 같은 이름·속성 (버전만) | M2-11 |
 | 10 | 노드 타입 `columns`·`column`(width = 비율) ·`outline` 추가 (버전만) | M2-12 |
+| 11 | 블록 속성 `blockId`(블록 링크, 링크 복사 시에만 부여, 블록을 나누면 뒤쪽은 새 블록), `textColor`·`bgColor`(블록 색), `textAlign`(문단·제목) 추가 (버전만) | M2-13 |
 
 v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다 (M0-17).
 

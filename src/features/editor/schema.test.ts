@@ -49,6 +49,9 @@ MARKS_AT_VERSION[9] = MARKS_AT_VERSION[8]
 // v10 (M2-12): columns and outline.
 NODES_AT_VERSION[10] = [...NODES_AT_VERSION[9]!, 'column', 'columns', 'outline'].sort()
 MARKS_AT_VERSION[10] = MARKS_AT_VERSION[9]
+// v11 (M2-13): attributes only (blockId, textColor, bgColor, textAlign) — no new names.
+NODES_AT_VERSION[11] = NODES_AT_VERSION[10]
+MARKS_AT_VERSION[11] = MARKS_AT_VERSION[10]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

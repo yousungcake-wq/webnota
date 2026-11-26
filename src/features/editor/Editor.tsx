@@ -27,6 +27,9 @@ import { findUnknownContent } from './unknown'
 import { CalloutPicker } from './CalloutPicker'
 import { ColorPicker } from './ColorPicker'
 import { LinkBubble, LinkSheet, promptLink } from './LinkBubble'
+import { openHref } from './link'
+import { BlockMenu } from './BlockMenu'
+import { findBlock } from './blockOps'
 import { KeyboardToolbar } from './KeyboardToolbar'
 import { hasTable, isCellSelection, loadTableKit, TableMenu } from './TableMenu'
 import './editor.css'
@@ -36,12 +39,14 @@ interface Props {
   doc: Y.Doc
   /** The page's view id (parent of sub-page blocks). */
   pageId?: string
+  /** Block to scroll to and flash (block link, ED-F15). */
+  focusBlock?: string
   /** Locked page (WS-13): read-only until unlocked. */
   locked?: boolean
   onReady?: (editor: TEditor) => void
 }
 
-export function Editor({ doc, pageId, onReady, locked = false }: Props) {
+export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Props) {
   debugCrash('editor')
   const coarse = useLayout().isTouch
   const schemaReadOnly = useStore(schemaStore, selectReadOnly)
@@ -87,7 +92,7 @@ export function Editor({ doc, pageId, onReady, locked = false }: Props) {
       const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('.wn-editor a[href]')
       if (!a) return
       e.preventDefault()
-      if (!editor.isEditable || e.metaKey || e.ctrlKey) window.open(a.href, '_blank', 'noopener')
+      if (!editor.isEditable || e.metaKey || e.ctrlKey) openHref(a.getAttribute('href') ?? '')
       else if (coarse) setLinkTap({ href: a.getAttribute('href') ?? '', anchor: a })
     }
     wrap.addEventListener('click', onClick)
@@ -104,6 +109,31 @@ export function Editor({ doc, pageId, onReady, locked = false }: Props) {
     wrap.addEventListener('wn-callout-icon', onPick)
     return () => wrap.removeEventListener('wn-callout-icon', onPick)
   }, [editor])
+
+  // Block link target (ED-F15): scroll to it and flash it. y-sync fills the editor a tick
+  // after creation, so keep looking on updates until the block shows up.
+  useEffect(() => {
+    if (!editor || !focusBlock) return
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const tryFocus = () => {
+      const pos = findBlock(editor.state.doc, focusBlock)
+      const dom = pos >= 0 ? editor.view.nodeDOM(pos) : null
+      if (!(dom instanceof HTMLElement)) return
+      editor.off('update', tryFocus)
+      dom.scrollIntoView({ block: 'center' })
+      editor.commands.flashBlock(focusBlock)
+      timer = setTimeout(() => !editor.isDestroyed && editor.commands.flashBlock(null), 2000)
+    }
+    editor.on('update', tryFocus)
+    tryFocus()
+    return () => {
+      editor.off('update', tryFocus)
+      clearTimeout(timer)
+    }
+  }, [editor, focusBlock])
+
+  // Block menu (ED-F03): the drag handle's grip opens it for the hovered block.
+  const [blockMenu, setBlockMenu] = useState<{ pos: number; anchor: HTMLElement } | null>(null)
 
   // Table editing (ED-B16) loads with the first table on the page, then stays registered.
   useEffect(() => {
@@ -183,15 +213,33 @@ export function Editor({ doc, pageId, onReady, locked = false }: Props) {
             <button type="button" className="block-btn" title={t('editor.addBelow')} onClick={addBlockBelow}>
               <Plus size={16} />
             </button>
-            <div className="block-btn grip" title={t('editor.dragToMove')}>
+            <button
+              type="button"
+              className="block-btn grip"
+              title={t('editor.dragToMove')}
+              aria-label={t('blockMenu.title')}
+              onClick={(e) => {
+                const { pos } = hovered.current
+                if (pos >= 0) setBlockMenu({ pos, anchor: e.currentTarget })
+              }}
+            >
               <GripVertical size={16} />
-            </div>
+            </button>
           </div>
         </DragHandle>
       )}
       {!coarse && !readOnly && <FormatBubble editor={editor} onColor={() => setColorPick(true)} />}
       {!coarse && !readOnly && <LinkBubble editor={editor} />}
       {!readOnly && <TableMenu editor={editor} />}
+      {blockMenu && (
+        <BlockMenu
+          editor={editor}
+          pos={blockMenu.pos}
+          pageId={pageId}
+          anchor={blockMenu.anchor}
+          onClose={() => setBlockMenu(null)}
+        />
+      )}
       {colorPick && (
         <ColorPicker editor={editor} anchor={selectionAnchor(editor)} onClose={() => setColorPick(false)} />
       )}

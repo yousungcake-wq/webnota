@@ -12,7 +12,7 @@ import { ViewIcon } from './ViewIcon'
 import { useViews } from '@/core/store/views'
 import { schemaStore } from '@/core/schema'
 import { useStore } from '@/core/store/useStore'
-import { goBack, href, navigate } from '@/core/store/router'
+import { goBack, href, navigate, useRoute } from '@/core/store/router'
 import { loadEditor } from '@/features/editor'
 import { SyncBadge } from '@/features/sync'
 import { useLayout } from '@/platform/layout'
@@ -37,6 +37,8 @@ export function PageView({
 }) {
   const pages = useViews()
   const page = pages.find((p) => p.id === id)
+  const route = useRoute()
+  const block = route.name === 'page' && route.id === id ? route.block : undefined
   const phone = useLayout().layout === 'phone'
   const [loaded, setLoaded] = useState<{ id: string; doc: Y.Doc } | null>(null)
   const doc = loaded?.id === id ? loaded.doc : null
@@ -157,7 +159,14 @@ export function PageView({
           {doc ? (
             <Suspense fallback={<Skeleton className="editor-loading" />}>
               <ErrorBoundary key={id} title={t('error.editor')}>
-                <Editor key={id} doc={doc} pageId={id} onReady={onReady} locked={page.locked || inTrash} />
+                <Editor
+                  key={id}
+                  doc={doc}
+                  pageId={id}
+                  focusBlock={block}
+                  onReady={onReady}
+                  locked={page.locked || inTrash}
+                />
               </ErrorBoundary>
             </Suspense>
           ) : (

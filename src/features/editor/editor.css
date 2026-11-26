@@ -160,6 +160,9 @@
 .block-btn {
   display: grid;
   place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
   width: 22px;
   height: 24px;
   border-radius: 4px;
@@ -1018,5 +1021,20 @@
 @media (pointer: coarse) {
   .wn-editor .outline li button {
     min-height: 44px;
+  }
+}
+
+/* ED-F15 block link target */
+.wn-editor .block-flash {
+  animation: wn-block-flash 2s ease-out;
+  border-radius: var(--r-sm);
+}
+@keyframes wn-block-flash {
+  0%,
+  40% {
+    background-color: var(--accent-soft);
+  }
+  100% {
+    background-color: transparent;
   }
 }
