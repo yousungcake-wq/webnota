@@ -74,3 +74,79 @@
 .phone .schema-banner .btn {
   min-height: 44px;
 }
+
+/* WS-10: docked sidebar with resizer, hover / drawer overlays */
+.sidebar-dock {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+.sidebar-dock > .sidebar {
+  flex: 1;
+  min-width: 0;
+}
+.sidebar-resizer {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  z-index: var(--z-sticky);
+}
+.sidebar-resizer:hover,
+.sidebar-resizer:focus-visible,
+body.is-resizing .sidebar-resizer {
+  background: var(--accent);
+  opacity: 0.5;
+}
+body.is-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+.sidebar-hover-zone {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 10px;
+  z-index: var(--z-sticky);
+}
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--side-w);
+  display: flex;
+  z-index: var(--z-popover);
+  box-shadow: var(--shadow-lg);
+  animation: sidebar-in var(--dur-fast) ease-out;
+}
+.sidebar-overlay.is-hover {
+  top: 48px;
+  bottom: 12px;
+  border-radius: 0 var(--r) var(--r) 0;
+  overflow: hidden;
+}
+.sidebar-overlay > .sidebar {
+  flex: 1;
+  min-width: 0;
+}
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  z-index: var(--z-popover);
+}
+@keyframes sidebar-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-overlay {
+    animation: none;
+  }
+}

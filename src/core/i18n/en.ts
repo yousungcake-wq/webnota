@@ -36,6 +36,7 @@ export const en: Record<MessageKey, string> = {
   'sidebar.label': 'Sidebar',
   'sidebar.close': 'Close sidebar',
   'sidebar.open': 'Open sidebar',
+  'sidebar.resize': 'Resize sidebar',
   'tree.empty': 'No pages',
   'tree.collapse': 'Collapse',
   'tree.expand': 'Expand',

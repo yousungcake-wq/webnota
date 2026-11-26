@@ -41,6 +41,7 @@ export const ko = {
   'sidebar.label': '사이드바',
   'sidebar.close': '사이드바 닫기',
   'sidebar.open': '사이드바 열기',
+  'sidebar.resize': '사이드바 폭 조절',
   'tree.empty': '페이지가 없습니다',
   'tree.collapse': '접기',
   'tree.expand': '펼치기',

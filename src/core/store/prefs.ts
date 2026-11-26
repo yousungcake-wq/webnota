@@ -103,3 +103,25 @@ export function pushRecent(id: string) {
   recentStore.set(next)
 }
 export const useRecent = (): string[] => useStore(recentStore)
+
+/** Desktop sidebar: docked or collapsed, and its width (WS-10), per device. */
+const SIDEBAR_KEY = 'webnota:sidebar'
+export const SIDEBAR_MIN = 200
+export const SIDEBAR_MAX = 480
+export const SIDEBAR_DEFAULT = 264
+export const sidebarStore = createStore<{ open: boolean; width: number }>(
+  (() => {
+    try {
+      const v = JSON.parse(read(SIDEBAR_KEY) || '{}') as { open?: unknown; width?: unknown }
+      const width =
+        typeof v.width === 'number' ? Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, v.width)) : SIDEBAR_DEFAULT
+      return { open: v.open !== false, width }
+    } catch {
+      return { open: true, width: SIDEBAR_DEFAULT }
+    }
+  })(),
+)
+export function setSidebar(patch: Partial<{ open: boolean; width: number }>) {
+  sidebarStore.set((s) => ({ ...s, ...patch }))
+  write(SIDEBAR_KEY, JSON.stringify(sidebarStore.get()))
+}

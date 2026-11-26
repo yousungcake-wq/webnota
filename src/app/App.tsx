@@ -1,5 +1,5 @@
 import { Home, Search, Settings, Star } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useViews } from '@/core/store/views'
 import { pushRecent } from '@/core/store/prefs'
 import { href, navigate, useRoute, type Route } from '@/core/store/router'
@@ -8,19 +8,19 @@ import { HomeView } from '@/features/home'
 import { PageOverlays, PageView } from '@/features/page'
 import { PaletteHost, SearchView } from '@/features/search'
 import { SettingsView } from '@/features/settings'
-import { Sidebar } from '@/features/sidebar'
 import { TrashView } from '@/features/trash'
 import { useLayout } from '@/platform/layout'
 import { t } from '@/core/i18n'
 import { EmptyState, ErrorBoundary } from '@/ui'
+import { DesktopShell } from './DesktopShell'
 import { SchemaBanner } from './SchemaBanner'
 
 const LAST_KEY = 'webnota:last-page'
 
 export function App() {
   const route = useRoute()
-  const phone = useLayout().layout === 'phone'
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const layout = useLayout().layout
+  const phone = layout === 'phone'
   const pages = useViews()
 
   // Remember the last opened page so desktop opens straight into it.
@@ -45,21 +45,20 @@ export function App() {
     )
 
   return (
-    <div className={`desktop${sidebarOpen ? '' : ' sidebar-collapsed'}`}>
-      {sidebarOpen && (
-        <ErrorBoundary compact title={t('error.sidebar')}>
-          <Sidebar route={route} onClose={() => setSidebarOpen(false)} />
-        </ErrorBoundary>
-      )}
-      <main className="main">
-        <SchemaBanner />
-        <ErrorBoundary key={href(route)}>
-          <MainContent route={route} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(true)} />
-        </ErrorBoundary>
-      </main>
+    <>
+      <DesktopShell route={route} tablet={layout === 'tablet'}>
+        {(hidden, openSidebar) => (
+          <>
+            <SchemaBanner />
+            <ErrorBoundary key={href(route)}>
+              <MainContent route={route} sidebarOpen={!hidden} onToggleSidebar={openSidebar} />
+            </ErrorBoundary>
+          </>
+        )}
+      </DesktopShell>
       <PageOverlays />
       <PaletteHost />
-    </div>
+    </>
   )
 }
 
