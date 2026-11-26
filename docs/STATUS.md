@@ -7,7 +7,7 @@
 - **마일스톤**: M1 워크스페이스와 탐색 (M0 완료, 실기기 확인은 사용자 선택)
 - **진행 상황**: M0 26개 모두 완료 (M0-01~26: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2, IndexedDB 이름 공간, 문서 LRU, 모르는 노드 보존, 동기화 스케줄, ETag, 탭 리더, 동기화 로그, PWA 아이콘, 회귀 e2e·성능 기준선)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M1-03 트리 DnD (마우스·터치·키보드). 초기 번들 여유 3KB — DnD는 지연 로드
+- **다음 할 일**: M1-04 인라인 이름 바꾸기, F2, 더보기 메뉴 전체 항목
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -76,3 +76,4 @@
 | 2026-11-26 | M0-25: PoC 회귀 e2e 5개 + 성능 기준선(tests/perf, perf-history). M0 마무리: M1 체크리스트 보강, QA.md M0 실기기 항목 | 6695af5 |
 | 2026-11-26 | M1-01: 뷰 모델 API 정리(views.ts, 스페이스·즐겨찾기 순서·IconValue) | e530a72 |
 | 2026-11-26 | M1-02: 가상 스크롤 트리(flatten + useWindow), 뷰 객체 안정화, QA seed-many | c35f052 |
+| 2026-11-26 | M1-03: 트리 DnD(마우스·터치·키보드), 초기 청크 통합(DECISIONS 018) | 2fbedea |
