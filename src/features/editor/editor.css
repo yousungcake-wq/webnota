@@ -18,7 +18,10 @@
 }
 .wn-editor h1,
 .wn-editor h2,
-.wn-editor h3 {
+.wn-editor h3,
+.wn-editor h4,
+.wn-editor h5,
+.wn-editor h6 {
   line-height: 1.3;
   margin: 18px 0 4px;
 }
@@ -30,6 +33,29 @@
 }
 .wn-editor h3 {
   font-size: 18px;
+}
+.wn-editor h4 {
+  font-size: 16px;
+}
+.wn-editor h5 {
+  font-size: 15px;
+}
+.wn-editor h6 {
+  font-size: 14px;
+  color: var(--text-2);
+}
+/* ED-B05: numbered lists cycle 1 → a → i by nesting level */
+.wn-editor ol {
+  list-style-type: decimal;
+}
+.wn-editor ol ol {
+  list-style-type: lower-alpha;
+}
+.wn-editor ol ol ol {
+  list-style-type: lower-roman;
+}
+.wn-editor ol ol ol ol {
+  list-style-type: decimal;
 }
 .wn-editor ul,
 .wn-editor ol {

@@ -70,7 +70,7 @@ export function schemaExtensions(): Extensions {
   return [
     StarterKit.configure({
       undoRedo: false, // Yjs provides collaborative undo
-      heading: { levels: [1, 2, 3] },
+      heading: { levels: [1, 2, 3, 4, 5, 6] },
       link: { openOnClick: false, autolink: true },
     }),
     TaskList,

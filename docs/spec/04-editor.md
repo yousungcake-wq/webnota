@@ -14,10 +14,10 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ID | 블록 | Tiptap 노드 | Markdown 단축 | 우선 | 마일스톤 |
 |---|---|---|---|---|---|
 | ED-B01 | 문단 | `paragraph` | — | P0 | ✅ PoC |
-| ED-B02 | 제목 1~6 | `heading` (levels 1–6) | `#`~`######` | P0 | M2 (현재 1–3) |
+| ED-B02 | 제목 1~6 | `heading` (levels 1–6) | `#`~`######` | P0 | ✅ M2-02 (구버전은 4~6을 h1로 그리지만 속성은 보존 → schema 변경 없음) |
 | ED-B03 | 할 일 목록 | `taskList`/`taskItem` | `[]`, `[ ]` | P0 | ✅ PoC |
 | ED-B04 | 글머리 기호 목록 | `bulletList` | `-`, `*`, `+` | P0 | ✅ |
-| ED-B05 | 번호 목록 | `orderedList` (시작 번호, 스타일 1/a/i 순환) | `1.` | P0 | ✅ / 스타일 M2 |
+| ED-B05 | 번호 목록 | `orderedList` (시작 번호, 스타일 1/a/i 순환) | `1.` | P0 | ✅ M2-02 (중첩 깊이별 CSS: 1 → a → i) |
 | ED-B06 | 토글 목록 | `toggle` (summary + content, 펼침 상태는 로컬) | `>` + 공백 | P0 | M2 |
 | ED-B07 | 토글 제목 | `toggle` + `level` 속성 | | P1 | M2 |
 | ED-B08 | 인용 | `blockquote` | `"` + 공백 | P0 | ✅ |
