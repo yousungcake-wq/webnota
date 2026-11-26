@@ -12,6 +12,8 @@ import { OutlineWithView } from './OutlineBlock'
 import { BlockFlash } from './blockFlash'
 import { BlockSelection } from './blockSelection'
 import { PasteRules } from './pasteRules'
+import { FindReplace } from './findReplace'
+import { UndoGroups } from './undoGroups'
 import { t } from '@/core/i18n'
 
 declare module '@tiptap/core' {
@@ -108,6 +110,8 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
     MentionSuggest,
     BlockFlash,
     PasteRules,
+    FindReplace,
+    UndoGroups,
     EmojiSuggest,
     BlockMove,
     BlockSelection, // priority 50: menus (slash, mentions) handle Esc / arrows first

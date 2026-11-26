@@ -52,10 +52,24 @@ test('URL paste: link on an empty selection, links the selected text otherwise',
   const ed = page.locator('.wn-editor')
   await paste(page, { 'text/plain': 'https://example.com/x' })
   await expect(ed.locator('a')).toHaveAttribute('href', 'https://example.com/x')
-  await page.keyboard.type(' 그리고 여기')
+  await page.keyboard.type(' and here')
+  await expect(ed.locator('p')).toHaveText('https://example.com/x and here')
   await expect(ed.locator('a')).toHaveText('https://example.com/x')
-  await page.keyboard.press('Shift+ArrowLeft')
-  await page.keyboard.press('Shift+ArrowLeft')
+  for (let i = 0; i < 4; i++) await page.keyboard.press('Shift+ArrowLeft')
+  // wait for the editor (not just the DOM) to have the selection: selectionchange is async
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const dom = document.querySelector('.wn-editor') as unknown as {
+          editor: {
+            state: { selection: { from: number; to: number }; doc: { textBetween: (a: number, b: number) => string } }
+          }
+        }
+        const { from, to } = dom.editor.state.selection
+        return dom.editor.state.doc.textBetween(from, to)
+      }),
+    )
+    .toBe('here')
   await paste(page, { 'text/plain': 'https://example.org' })
-  await expect(ed.locator('a[href="https://example.org"]')).toHaveText('여기')
+  await expect(ed.locator('a[href="https://example.org"]')).toHaveText('here')
 })

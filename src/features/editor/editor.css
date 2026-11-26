@@ -1051,3 +1051,80 @@
   border-radius: var(--r-sm);
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
+
+/* ED-F07 find & replace */
+.find-bar {
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 8px auto;
+  width: min(440px, 100%);
+  padding: 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+.find-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.find-input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+}
+.find-count {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  min-width: 3em;
+  text-align: center;
+}
+.find-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.find-btn:hover:not(:disabled),
+.find-btn.is-active {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.find-btn:disabled {
+  opacity: 0.4;
+}
+.find-action {
+  white-space: nowrap;
+}
+.wn-editor .find-match {
+  background: var(--c-yellow-bg);
+  border-radius: 2px;
+}
+.wn-editor .find-match.is-current {
+  background: var(--c-orange-bg);
+  box-shadow: 0 0 0 1px var(--c-orange-text);
+}
+@media (pointer: coarse) {
+  .find-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .find-input {
+    min-height: 44px;
+  }
+}

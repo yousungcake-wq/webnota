@@ -50,6 +50,7 @@
 - 첫 실행 시 환영 페이지 시드가 에디터 청크를 기다려서 에디터 표시까지 약 1초 (재방문은 빠름). M0-25 성능 기준선에서 측정·개선 검토.
 - React Compiler 린트 규칙(react-hooks 7)이 수동 메모이제이션을 엄격하게 검사함. 간단한 계산은 useMemo 없이 `core` 순수 함수로.
 - 작업 환경의 `gh`는 이 저장소 범위 API만 허용됨 (Pages 설정 API 등은 불가).
+- e2e 선택 후 동작: DOM 선택이 바뀌어도 ProseMirror 선택은 selectionchange 뒤에 따라옴 → 선택에 의존하는 붙여넣기 등은 `.wn-editor`의 `editor.state.selection`을 poll한 뒤 실행 (desktop.paste 참고).
 - e2e 드래그 테스트는 드래그 시작(`.tree-ghost`)과 드롭 선(`.tree-drop-line`)이 보일 때까지 기다린 뒤 놓을 것 — 부하 중에는 포인터 이벤트 처리보다 테스트가 앞서서 드래그가 무시될 수 있음 (M2-15에서 favorites 테스트 수정).
 
 ## 작업 기록

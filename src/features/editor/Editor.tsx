@@ -29,6 +29,7 @@ import { ColorPicker } from './ColorPicker'
 import { LinkBubble, LinkSheet, promptLink } from './LinkBubble'
 import { openHref } from './link'
 import { BlockMenu } from './BlockMenu'
+import { FindBar } from './FindBar'
 import { findBlock } from './blockOps'
 import { blockRangeOf, blockRangePositions, selectedBlockPositions } from './blockSelection'
 import { KeyboardToolbar } from './KeyboardToolbar'
@@ -132,6 +133,26 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
       clearTimeout(timer)
     }
   }, [editor, focusBlock])
+
+  // Find & replace (ED-F07): ⌘F while this page is shown, or the page menu (phones).
+  const [finding, setFinding] = useState(false)
+  useEffect(() => {
+    const open = () => setFinding(true)
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === 'f') {
+        const active = document.activeElement
+        if (active && active !== document.body && !wrapRef.current?.closest('.page')?.contains(active)) return
+        e.preventDefault()
+        setFinding(true)
+      }
+    }
+    window.addEventListener('webnota:find', open)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('webnota:find', open)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [])
 
   // Block menu (ED-F03): the drag handle's grip opens it for the hovered block.
   const [blockMenu, setBlockMenu] = useState<{
@@ -284,6 +305,7 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
       {!coarse && !readOnly && <FormatBubble editor={editor} onColor={() => setColorPick(true)} />}
       {!coarse && !readOnly && <LinkBubble editor={editor} />}
       {!readOnly && <TableMenu editor={editor} />}
+      {finding && <FindBar editor={editor} onClose={() => setFinding(false)} />}
       {blockMenu && (
         <BlockMenu
           editor={editor}

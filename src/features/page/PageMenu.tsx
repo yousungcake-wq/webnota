@@ -7,6 +7,7 @@ import {
   Lock,
   LockOpen,
   Pencil,
+  Search,
   Plus,
   SmilePlus,
   Star,
@@ -21,7 +22,7 @@ import { useLayout } from '@/platform/layout'
 import { Menu, toast, type MenuEntry } from '@/ui'
 import { addPage, duplicatePage, moveToTrash, toggleFavorite } from './actions'
 import { openIconPicker, openMoveDialog, openViewInfo } from './overlays'
-import { renameView } from './rename'
+import { afterMenuClosed, renameView } from './rename'
 import { displayTitle } from './titles'
 
 export const pageUrl = (id: string) => `${location.origin}${location.pathname}${href({ name: 'page', id })}`
@@ -69,6 +70,17 @@ export function PageMenu({
       onSelect: () => updateView(ws(), page.id, { locked: !page.locked }),
     },
     { label: t('page.info'), icon: Info, onSelect: () => openViewInfo(page.id) },
+    ...(where === 'page'
+      ? [
+          {
+            label: t('find.inPage'),
+            icon: Search,
+            shortcut: '⌘F',
+            // the editor opens its find bar (ED-F07); wait for the phone sheet to close first
+            onSelect: () => void afterMenuClosed().then(() => window.dispatchEvent(new Event('webnota:find'))),
+          },
+        ]
+      : []),
     'separator',
     { label: t('page.moveToTrash'), icon: Trash2, danger: true, onSelect: () => moveToTrash(page.id) },
   ]
