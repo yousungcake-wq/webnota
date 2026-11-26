@@ -6,35 +6,11 @@
 
 - **마일스톤**: M0 기반 정비
 - **진행 상황**: M0 26개 중 14개 완료 (M0-01~14: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그)
-- **진행 중 항목**: 세 세션 병렬 진행 중 — 아래 "병렬 작업" 참고
-- **다음 할 일**: 세션별 트랙의 첫 `[ ]` 항목
+- **진행 중 항목**: (없음)
+- **다음 할 일**: M0-15 스키마 버전 + 마이그레이션 레지스트리 + 읽기 전용 게이트 (spec/02 §6). **데이터 작업 시작 — spec/02 전체 필독**, 마이그레이션은 테스트 먼저. 이후 M0-16 마이그레이션 v2(pages→views 등)
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
-
-## 병렬 작업 (2026-11-26~, 세 세션)
-
-남은 M0를 세 트랙으로 나눠 동시에 진행합니다. **자기 트랙 항목만** 하고, 다른 트랙 파일은 꼭 필요할 때만 최소로 고칩니다.
-
-| 트랙 | 항목 (순서대로) | 주로 고치는 곳 | 건드리지 않을 곳 |
-|---|---|---|---|
-| A 데이터 | M0-15 → 16 → 17 → 18 → 19 | `core/schema`(신규), `core/model`, `core/docs`, `core/sync/engine.ts`(경로), 마이그레이션 테스트 | 동기화 스케줄·ETag·리더 선출 (`controller.ts`의 타이머 로직) |
-| B 동기화 보강 | M0-21 → 22 → 23 → 24 | `core/sync/controller.ts`, `core/sync/github.ts`, 동기화 로그, 설정 화면의 동기화 카드 | `engine.ts`의 경로·문서 이름 (A 담당), 스키마 |
-| C 에디터·마무리 | M0-20 → 26 → (A·B 모두 끝난 뒤) 25 + 마일스톤 마무리 | `features/editor`, `public/`, `vite.config.ts`(manifest), `tests/e2e`, `docs/perf-history.md` | `core/*` 데이터·동기화 |
-
-공통 규칙:
-1. 커밋 직전 `git pull --rebase origin main` → 충돌 해결 → **다시 `npm run verify`** → 푸시. 푸시가 거절되면 같은 순서로 반복.
-2. 충돌이 잦은 파일: `docs/STATUS.md`, `docs/CHECKLIST.md`, `core/i18n/ko.ts`·`en.ts`. 작업 기록 표는 **양쪽 행을 모두 남기고**, 체크리스트는 자기 항목 줄만 고치고, i18n 키는 자기 영역 접두사(`schema.*`, `sync.*`, `editor.*` 등) 근처에 추가합니다.
-3. "현재 위치"의 진행 상황 숫자는 rebase 시 최신 값 기준으로 다시 셉니다. 진행 중 항목은 아래 트랙 표의 자기 행에만 적습니다.
-4. 번들 초기 예산 여유가 약 11KB로 세 트랙이 공유합니다. 새 코드는 지연 로드를 기본으로.
-5. A의 M0-16(문서 이름 `page/`→`doc/`)이 푸시되면 B·C는 rebase 후 문서 이름을 쓰는 코드가 있으면 맞춥니다.
-6. C의 M0-25와 마일스톤 마무리(M1 체크리스트 펼치기, QA.md, 사용자에게 실기기 확인 요청)는 체크리스트에서 M0-15~24, 26이 모두 `[x]`인 것을 확인한 뒤에만 합니다.
-
-| 트랙 | 진행 중 |
-|---|---|
-| A | (없음) |
-| B | (없음) |
-| C | (없음) |
 
 ## 완료된 것 (요약)
 
