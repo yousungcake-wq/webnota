@@ -7,7 +7,7 @@
 - **마일스톤**: M2 에디터 완성 (M1 완료 — 실기기 확인은 docs/QA.md "M1", 사용자 선택)
 - **진행 상황**: M0 26/26, M1 21/21 완료. M2 0/21
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M2-08 페이지 멘션·날짜 멘션 (schema 증가)
+- **다음 할 일**: M2-09 이모지 제안 : + 위·아래 첨자
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -105,3 +105,4 @@
 | 2026-11-26 | M2-05: 코드 블록(언어·줄 바꿈·복사·지연 하이라이트) | f46a2b8 |
 | 2026-11-26 | M2-06: M2-06 링크 팝오버·폰 링크 시트 (e2e 82 통과) | 83e746b |
 | 2026-11-26 | M2-07: M2-07 글자 색·배경색, schema v5 | ac56b11 |
+| 2026-11-26 | M2-08: M2-08 페이지·날짜 멘션, schema v6 | eb1742f |
