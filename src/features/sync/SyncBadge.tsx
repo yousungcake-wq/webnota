@@ -2,6 +2,7 @@ import { AlertCircle, Check, CloudOff, Loader2, RefreshCw } from 'lucide-react'
 import { href } from '@/core/store/router'
 import { useSync } from '@/core/store/sync'
 import { syncNow } from '@/core/sync/controller'
+import './sync.css'
 
 export function SyncBadge({ compact }: { compact?: boolean }) {
   const s = useSync()

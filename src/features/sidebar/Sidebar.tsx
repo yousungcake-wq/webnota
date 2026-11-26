@@ -6,6 +6,7 @@ import { href, type Route } from '@/core/store/router'
 import { addPage } from '@/features/page'
 import { SyncBadge } from '@/features/sync'
 import { PageListItem, PageTree } from './PageTree'
+import './sidebar.css'
 
 export function Sidebar({ route, onClose }: { route: Route; onClose: () => void }) {
   const pages = usePages()

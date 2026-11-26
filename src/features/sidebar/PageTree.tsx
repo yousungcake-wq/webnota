@@ -4,6 +4,7 @@ import { displayTitle, type PageMeta } from '@/core/model/pages'
 import { toggleExpanded, useExpanded } from '@/core/store/prefs'
 import { href } from '@/core/store/router'
 import { addPage, PageMenu } from '@/features/page'
+import './tree.css'
 
 export function usePageIndex(pages: PageMeta[]) {
   return useMemo(() => {

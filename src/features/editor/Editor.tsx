@@ -8,6 +8,7 @@ import type * as Y from 'yjs'
 import { useMedia } from '@/platform/media'
 import { editorExtensions } from './extensions'
 import { KeyboardToolbar } from './KeyboardToolbar'
+import './editor.css'
 
 interface Props {
   doc: Y.Doc

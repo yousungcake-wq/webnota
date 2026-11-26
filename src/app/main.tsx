@@ -1,3 +1,4 @@
+import '@/styles/index.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { completeLoginFromUrl } from '@/core/auth/auth'
@@ -8,7 +9,6 @@ import { navigate } from '@/core/store/router'
 import { connect, startAutoSync } from '@/core/sync/controller'
 import { loadSeed, preloadEditor } from '@/features/editor'
 import { App } from './App'
-import '@/styles/app.css'
 
 applyTheme()
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyTheme())

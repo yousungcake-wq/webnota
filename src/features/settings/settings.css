@@ -1,0 +1,23 @@
+.account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.account img {
+  border-radius: 50%;
+}
+.account-name {
+  font-weight: 600;
+}
+.pat {
+  margin-top: 12px;
+}
+.pat summary {
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 14px;
+  padding: 6px 0;
+}
+.pat ol {
+  padding-left: 18px;
+}

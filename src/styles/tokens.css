@@ -1,0 +1,188 @@
+/*
+ * Design tokens (docs/spec/12-design-system.md §1). The only file with raw colours —
+ * everything else uses var(--…). tests/unit/styles.test.ts enforces this and keeps
+ * the two dark blocks identical.
+ */
+:root {
+  /* background */
+  --bg: #ffffff;
+  --bg-side: #f7f8fa;
+  --bg-hover: #eef0f4;
+  --bg-active: #e3ebff;
+  --bg-elev: #ffffff;
+  --bg-code: #f4f5f7;
+  --bg-overlay: rgba(0, 0, 0, 0.32);
+  /* text */
+  --text: #1f2329;
+  --text-2: #5c6370;
+  --text-3: #9aa0aa;
+  --text-on-accent: #ffffff;
+  /* lines */
+  --border: #e4e6eb;
+  --border-strong: #cfd3da;
+  /* accent (user-customisable later, ST-05) */
+  --accent: #2f6bff;
+  --accent-soft: #e8efff;
+  --accent-hover: #1f5af0;
+  /* status */
+  --ok: #2e9e5b;
+  --warn: #c98a00;
+  --danger: #e5484d;
+  --info: #2f6bff;
+  --star: #f5a623;
+  /* block colours: editor text/background colour, select options */
+  --c-gray-text: #787774;
+  --c-gray-bg: #f1f1ef;
+  --c-brown-text: #9f6b53;
+  --c-brown-bg: #f4eeee;
+  --c-orange-text: #d9730d;
+  --c-orange-bg: #fbecdd;
+  --c-yellow-text: #b7800b;
+  --c-yellow-bg: #fff1a8;
+  --c-green-text: #448361;
+  --c-green-bg: #edf3ec;
+  --c-blue-text: #337ea9;
+  --c-blue-bg: #e7f3f8;
+  --c-purple-text: #9065b0;
+  --c-purple-bg: #f6f3f9;
+  --c-pink-text: #c14c8a;
+  --c-pink-bg: #faf1f5;
+  --c-red-text: #d44c47;
+  --c-red-bg: #fdebec;
+  /* shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow: 0 8px 28px rgba(15, 23, 42, 0.14), 0 1px 3px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 16px 48px rgba(15, 23, 42, 0.2), 0 2px 6px rgba(15, 23, 42, 0.1);
+  color-scheme: light;
+  /* spacing (4px grid) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  /* radius */
+  --r-sm: 4px;
+  --r: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  /* type */
+  --font:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', Roboto,
+    sans-serif;
+  --font-serif: 'Noto Serif KR', 'Apple SD Gothic Neo', Georgia, serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'D2Coding', monospace;
+  --scale: 1;
+  --fs-xs: calc(12px * var(--scale));
+  --fs-sm: calc(13px * var(--scale));
+  --fs-md: calc(15px * var(--scale));
+  --fs-lg: calc(16px * var(--scale));
+  --fs-xl: calc(20px * var(--scale));
+  --fs-2xl: calc(26px * var(--scale));
+  --fs-3xl: calc(36px * var(--scale));
+  /* stacking */
+  --z-sticky: 10;
+  --z-toolbar: 50;
+  --z-popover: 70;
+  --z-sheet: 80;
+  --z-toast: 90;
+  /* motion */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  /* layout */
+  --side-w: 264px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+
+/* dark: keep these two blocks identical */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #1b1c1f;
+    --bg-side: #222327;
+    --bg-hover: #2c2e33;
+    --bg-active: #273556;
+    --bg-elev: #26282c;
+    --bg-code: #2a2c31;
+    --bg-overlay: rgba(0, 0, 0, 0.5);
+    --text: #e8e9ec;
+    --text-2: #a9adb6;
+    --text-3: #6f747d;
+    --border: #34363c;
+    --border-strong: #4a4d55;
+    --accent: #5b8cff;
+    --accent-soft: #263457;
+    --accent-hover: #7aa2ff;
+    --info: #5b8cff;
+    --c-gray-text: #9b9b9b;
+    --c-gray-bg: #2f2f2f;
+    --c-brown-text: #ba856f;
+    --c-brown-bg: #4a3228;
+    --c-orange-text: #c77d48;
+    --c-orange-bg: #5c3b23;
+    --c-yellow-text: #ca9849;
+    --c-yellow-bg: #5a4d12;
+    --c-green-text: #529e72;
+    --c-green-bg: #243d30;
+    --c-blue-text: #5e9fe8;
+    --c-blue-bg: #143a4e;
+    --c-purple-text: #9d68d3;
+    --c-purple-bg: #3c2d49;
+    --c-pink-text: #d15796;
+    --c-pink-bg: #4e2c3c;
+    --c-red-text: #df5452;
+    --c-red-bg: #522e2a;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --bg: #1b1c1f;
+  --bg-side: #222327;
+  --bg-hover: #2c2e33;
+  --bg-active: #273556;
+  --bg-elev: #26282c;
+  --bg-code: #2a2c31;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --text: #e8e9ec;
+  --text-2: #a9adb6;
+  --text-3: #6f747d;
+  --border: #34363c;
+  --border-strong: #4a4d55;
+  --accent: #5b8cff;
+  --accent-soft: #263457;
+  --accent-hover: #7aa2ff;
+  --info: #5b8cff;
+  --c-gray-text: #9b9b9b;
+  --c-gray-bg: #2f2f2f;
+  --c-brown-text: #ba856f;
+  --c-brown-bg: #4a3228;
+  --c-orange-text: #c77d48;
+  --c-orange-bg: #5c3b23;
+  --c-yellow-text: #ca9849;
+  --c-yellow-bg: #5a4d12;
+  --c-green-text: #529e72;
+  --c-green-bg: #243d30;
+  --c-blue-text: #5e9fe8;
+  --c-blue-bg: #143a4e;
+  --c-purple-text: #9d68d3;
+  --c-purple-bg: #3c2d49;
+  --c-pink-text: #d15796;
+  --c-pink-bg: #4e2c3c;
+  --c-red-text: #df5452;
+  --c-red-bg: #522e2a;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur: 0ms;
+  }
+}

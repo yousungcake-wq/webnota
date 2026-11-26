@@ -13,6 +13,7 @@ import { useMedia } from '@/platform/media'
 import { Overlay } from '@/ui/Menu'
 import { toggleFavorite } from './actions'
 import { PageMenu } from './PageMenu'
+import './page.css'
 
 // The editor (Tiptap + ProseMirror) is the biggest chunk; load it only when a page opens.
 const Editor = lazy(() => loadEditor().then((m) => ({ default: m.Editor })))

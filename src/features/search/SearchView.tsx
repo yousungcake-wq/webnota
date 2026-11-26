@@ -4,6 +4,7 @@ import { displayTitle, pathOf } from '@/core/model/pages'
 import { useAlivePages } from '@/core/store/pages'
 import { PageListItem } from '@/features/sidebar'
 import { ViewHeader } from '@/ui/ViewHeader'
+import './search.css'
 
 export function SearchView({ autoFocus = true }: { autoFocus?: boolean }) {
   const { alive, byId } = useAlivePages()

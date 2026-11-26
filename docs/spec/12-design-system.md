@@ -10,7 +10,7 @@ AppFlowy의 정돈된 느낌(밝은 회색 사이드바, 둥근 모서리, 절�
 | 글자 | `--text`, `--text-2`, `--text-3`, `--text-on-accent` | 대비: 본문 4.5:1 이상 |
 | 선 | `--border`, `--border-strong` | |
 | 강조 | `--accent`, `--accent-soft`, `--accent-hover` | 사용자 지정 가능 (ST-05) |
-| 상태 | `--ok`, `--warn`, `--danger`, `--info` | |
+| 상태 | `--ok`, `--warn`, `--danger`, `--info`, `--star`(즐겨찾기 별) | |
 | 블록 색 | `--c-<name>-text`, `--c-<name>-bg` (gray, brown, orange, yellow, green, blue, purple, pink, red) | 에디터 글자/배경색, select 옵션 |
 | 간격 | `--sp-1`(4) `--sp-2`(8) `--sp-3`(12) `--sp-4`(16) `--sp-6`(24) `--sp-8`(32) | 4px 단위 |
 | 반경 | `--r-sm`(4) `--r`(8) `--r-lg`(12) `--r-xl`(16) | |
@@ -19,7 +19,16 @@ AppFlowy의 정돈된 느낌(밝은 회색 사이드바, 둥근 모서리, 절�
 | z-index | `--z-sticky`(10) `--z-toolbar`(50) `--z-popover`(70) `--z-sheet`(80) `--z-toast`(90) | |
 | 모션 | `--ease`, `--dur-fast`(120ms) `--dur`(200ms) | `prefers-reduced-motion` 시 0 |
 
-다크 테마는 같은 토큰을 다시 정의합니다 (`prefers-color-scheme` + `[data-theme]`) ✅.
+다크 테마는 같은 토큰을 다시 정의합니다 (`prefers-color-scheme` + `[data-theme]`) ✅. 두 다크 블록은 같아야 하며 테스트로 검사합니다.
+
+CSS 파일 배치 (M0-09 ✅):
+
+| 파일 | 내용 |
+|---|---|
+| `styles/tokens.css`, `styles/base.css` | 토큰, 리셋·유틸리티 (`styles/index.css`가 묶어 `app/main.tsx`에서 한 번 로드) |
+| `ui/button.css`, `ui/list.css`, `ui/view.css`, `ui/menu.css` | 공용 컴포넌트 |
+| `app/shell.css` | 데스크탑 그리드, 폰 셸, 탭 바 |
+| `features/<기능>/<이름>.css` | 기능 전용. 폰·태블릿 재정의(`.phone .x`, `@media`)도 그 기능 파일에 둡니다 |
 
 ## 2. 컴포넌트 (`src/ui/`)
 

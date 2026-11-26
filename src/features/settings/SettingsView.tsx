@@ -6,6 +6,7 @@ import { useSync } from '@/core/store/sync'
 import { connect, disconnect, syncNow } from '@/core/sync/controller'
 import { SyncBadge } from '@/features/sync'
 import { ViewHeader } from '@/ui/ViewHeader'
+import './settings.css'
 
 function Github({ size = 18 }: { size?: number }) {
   return (

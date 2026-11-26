@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useMedia } from '@/platform/media'
+import './menu.css'
 
 export interface MenuItem {
   label: string

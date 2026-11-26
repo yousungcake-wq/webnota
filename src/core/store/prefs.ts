@@ -29,8 +29,9 @@ export function applyTheme(t: Theme = getTheme()) {
   const root = document.documentElement
   if (t === 'system') root.removeAttribute('data-theme')
   else root.setAttribute('data-theme', t)
-  const dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#1b1c1f' : '#ffffff')
+  // Browser chrome follows the page background token (styles/tokens.css).
+  const bg = getComputedStyle(root).getPropertyValue('--bg').trim()
+  if (bg) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg)
 }
 
 export function setTheme(t: Theme) {
