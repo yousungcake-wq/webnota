@@ -1,0 +1,33 @@
+import { Plus, Settings2 } from 'lucide-react'
+import { t } from '@/core/i18n'
+import { visibleSpaces } from '@/core/model/views'
+import { setCurrentSpace } from '@/core/store/prefs'
+import { useSpaces } from '@/core/store/views'
+import { Menu, type MenuEntry } from '@/ui'
+
+/** Space list + "new space" / "space settings" (WS-02). Lazy. */
+export default function SpaceMenu({
+  anchor,
+  currentId,
+  onClose,
+  onEdit,
+}: {
+  anchor: HTMLElement
+  currentId: string
+  onClose: () => void
+  /** Opens the space dialog: an id to edit, null to create. */
+  onEdit: (id: string | null) => void
+}) {
+  const spaces = visibleSpaces(useSpaces())
+  const items: MenuEntry[] = [
+    ...spaces.map((s) => ({
+      label: s.name || t('space.untitled'),
+      checked: s.id === currentId,
+      onSelect: () => setCurrentSpace(s.id),
+    })),
+    'separator',
+    { label: t('space.new'), icon: Plus, onSelect: () => onEdit(null) },
+    { label: t('space.settings'), icon: Settings2, onSelect: () => onEdit(currentId) },
+  ]
+  return <Menu anchor={anchor} title={t('space.title')} items={items} onClose={onClose} />
+}

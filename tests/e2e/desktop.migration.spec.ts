@@ -13,7 +13,7 @@ test('upgrades PoC data: tree, order, favorites, icons and page bodies survive',
   })
   await page.goto('/')
 
-  const tree = page.locator('.section').filter({ hasText: '페이지' }).locator('.tree-title')
+  const tree = page.locator('.sidebar .tree .tree-title')
   await expect(tree).toHaveText(['Old page', 'Second page']) // v1 order kept, child collapsed
   await expect(page.locator('.fav-list')).toContainText('Old page')
   await expect(page.locator('.tree-row', { hasText: 'Old page' }).locator('.tree-icon')).toHaveText('📘')

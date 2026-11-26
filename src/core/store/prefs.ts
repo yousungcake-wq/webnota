@@ -65,3 +65,11 @@ export function toggleExpanded(id: string, value?: boolean) {
 }
 
 export const useExpanded = (): Set<string> => useStore(expandedStore)
+
+/** Space shown in the sidebar, per device (WS-02). Validated against the workspace by `useCurrentSpace`. */
+const SPACE_KEY = 'webnota:space'
+export const spacePrefStore = createStore<string | null>(read(SPACE_KEY))
+export function setCurrentSpace(id: string) {
+  write(SPACE_KEY, id)
+  spacePrefStore.set(id)
+}

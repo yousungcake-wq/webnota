@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { ws } from '../docs/workspace'
-import { isAlive, listSpaces, listViews, rootSpaceId, type ViewMeta } from '../model/views'
+import { isAlive, listSpaces, listViews, rootSpaceId, visibleSpaces, type ViewMeta } from '../model/views'
+import { spacePrefStore } from './prefs'
+import { useStore } from './useStore'
 import { shallowEqual, shallowItemsEqual } from './equality'
 import { useY } from './useY'
 
@@ -26,9 +28,12 @@ export function useViews(): ViewMeta[] {
   return useY(ws(), listViewsStable, shallowItemsEqual)
 }
 
-/** The space shown in the sidebar (switching arrives with M1-05): the first visible one. */
+/** The space shown in the sidebar: the device's choice if it still exists and is visible, else the first one. */
 export function useCurrentSpace(): string {
-  return useY(ws(), rootSpaceId)
+  const pref = useStore(spacePrefStore)
+  const spaces = useSpaces()
+  const root = useY(ws(), rootSpaceId)
+  return pref && visibleSpaces(spaces).some((s) => s.id === pref) ? pref : root
 }
 
 /** All spaces, sorted. */

@@ -4,6 +4,7 @@ import { isAlive } from '@/core/model/views'
 import { useCurrentSpace, useViews } from '@/core/store/views'
 import { href, type Route } from '@/core/store/router'
 import { addPage } from '@/features/page'
+import { SpaceSwitcher } from '@/features/spaces'
 import { SyncBadge } from '@/features/sync'
 import { PageListItem, PageTree } from './PageTree'
 import './sidebar.css'
@@ -57,15 +58,15 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
         )}
         <section className="section">
           <div className="section-head">
-            <span>{t('common.pages')}</span>
-            <IconButton size="sm" icon={Plus} label={t('common.newPage')} onClick={() => addPage(null)} />
+            <SpaceSwitcher />
+            <IconButton size="sm" icon={Plus} label={t('common.newPage')} onClick={() => addPage(null, spaceId)} />
           </div>
           <PageTree spaceId={spaceId} currentId={currentId} />
         </section>
       </div>
 
       <div className="sidebar-bottom">
-        <button type="button" className="side-link" onClick={() => addPage(null)}>
+        <button type="button" className="side-link" onClick={() => addPage(null, spaceId)}>
           <Plus size={16} /> {t('common.newPage')}
         </button>
         <a className={`side-link${route.name === 'trash' ? ' is-current' : ''}`} href={href({ name: 'trash' })}>

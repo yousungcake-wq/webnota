@@ -1,0 +1,91 @@
+.space-badge {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 6px;
+  font-weight: 600;
+  line-height: 1;
+}
+.space-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 32px;
+  padding: 2px 6px 2px 2px;
+  margin-left: -2px;
+  border-radius: 6px;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.space-switcher:hover {
+  background: var(--bg-hover);
+}
+.space-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.phone .space-switcher {
+  min-height: 44px;
+  font-size: 16px;
+}
+.space-form {
+  display: grid;
+  gap: var(--sp-4);
+}
+.space-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.space-form legend {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: var(--sp-2);
+}
+.space-form-head {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: flex-end;
+}
+.space-form-head .field {
+  flex: 1;
+}
+.space-emojis,
+.space-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.space-emojis .emoji-btn.is-selected {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.space-color {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+.space-color.is-selected {
+  box-shadow:
+    0 0 0 2px var(--bg-elev),
+    0 0 0 4px var(--accent);
+}
+.space-form-actions {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.space-form-actions .btn {
+  margin-left: auto;
+}
+@media (pointer: coarse) {
+  .space-color {
+    width: 44px;
+    height: 44px;
+  }
+}

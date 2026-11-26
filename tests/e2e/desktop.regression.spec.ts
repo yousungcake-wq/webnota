@@ -63,7 +63,7 @@ test.describe('PoC regression (desktop)', () => {
 
   test('new pages keep creation order in the sidebar across reloads (FracKey order)', async ({ page }) => {
     for (const t of ['첫째', '둘째', '셋째']) await newPage(page, t)
-    const titles = page.locator('.section').filter({ hasText: '페이지' }).locator('.tree-title')
+    const titles = page.locator('.sidebar .tree .tree-title')
     await expect(titles).toHaveText(['WebNota 시작하기', '첫째', '둘째', '셋째'])
     await page.reload()
     await expect(titles).toHaveText(['WebNota 시작하기', '첫째', '둘째', '셋째'])
