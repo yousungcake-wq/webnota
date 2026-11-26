@@ -44,7 +44,7 @@
 
 ### 마무리
 - [ ] M0-25 PoC 기능 회귀 e2e 전부 통과, 성능 기준선 측정 → `docs/perf-history.md`
-- [ ] M0-26 PWA 아이콘 PNG(192/512/maskable/apple 180), manifest shortcuts (MB-42, MB-44)
+- [x] M0-26 PWA 아이콘 PNG(192/512/maskable/apple 180), manifest shortcuts (MB-42, MB-44) — 85511df
 
 ---
 
