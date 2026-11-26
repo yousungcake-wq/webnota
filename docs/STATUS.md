@@ -7,7 +7,7 @@
 - **마일스톤**: M1 워크스페이스와 탐색 (M0 완료, 실기기 확인은 사용자 선택)
 - **진행 상황**: M0 26개 모두 완료 (M0-01~26: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2, IndexedDB 이름 공간, 문서 LRU, 모르는 노드 보존, 동기화 스케줄, ETag, 탭 리더, 동기화 로그, PWA 아이콘, 회귀 e2e·성능 기준선)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M1-21 페이지 전환 150ms 이내, 그다음 M1-19 e2e + 실기기 QA
+- **다음 할 일**: M1-19 e2e + 실기기 QA → M1 마무리(M2 체크리스트 펼치기, QA.md M1 항목)
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -95,3 +95,4 @@
 | 2026-11-26 | M1-17: 라우팅 v2(#/w/:ws/v/:id), 구 경로·다른 기기 링크 처리 | 3d0010e |
 | 2026-11-26 | M1-18: 전역 단축키(새 페이지·테마·뒤로/앞으로·도움말) | 40094b7 |
 | 2026-11-26 | M1-20: 새 뷰 만들기(레이아웃 목록, 하나뿐이면 즉시 생성) | ed16886 |
+| 2026-11-26 | M1-21: 페이지 전환 75ms 확인(측정 보정), M1 성능 기록 | 6dff226 |
