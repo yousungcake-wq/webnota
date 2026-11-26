@@ -1,0 +1,8 @@
+name = "webnota-auth"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+[vars]
+# Comma separated list of origins allowed to call /token (no trailing slash).
+# e.g. "https://<your-github-id>.github.io,http://localhost:5173"
+ALLOWED_ORIGINS = "http://localhost:5173"

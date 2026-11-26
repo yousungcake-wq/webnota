@@ -1,0 +1,46 @@
+{
+  "name": "webnota",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@tiptap/core": "^3.35.0",
+    "@tiptap/extension-collaboration": "^3.35.0",
+    "@tiptap/extension-collaboration-caret": "^3.35.0",
+    "@tiptap/extension-drag-handle": "^3.35.0",
+    "@tiptap/extension-drag-handle-react": "^3.35.0",
+    "@tiptap/extension-highlight": "^3.35.0",
+    "@tiptap/extension-node-range": "^3.35.0",
+    "@tiptap/extension-task-item": "^3.35.0",
+    "@tiptap/extension-task-list": "^3.35.0",
+    "@tiptap/extensions": "^3.35.0",
+    "@tiptap/pm": "^3.35.0",
+    "@tiptap/react": "^3.35.0",
+    "@tiptap/starter-kit": "^3.35.0",
+    "@tiptap/suggestion": "^3.35.0",
+    "@tiptap/y-tiptap": "^3.3.1",
+    "lucide-react": "^1.81.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "y-indexeddb": "^9.0.12",
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.6.33"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.3",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "fake-indexeddb": "^6.2.8",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.1.2"
+  }
+}
