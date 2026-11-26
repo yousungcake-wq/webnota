@@ -7,7 +7,7 @@
 - **마일스톤**: M2 에디터 완성 (M1 완료 — 실기기 확인은 docs/QA.md "M1", 사용자 선택)
 - **진행 상황**: M0 26/26, M1 21/21 완료. M2 0/21
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M2-15 붙여넣기 HTML/Markdown
+- **다음 할 일**: M2-16 찾기/바꾸기 + 실행 취소 묶음
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -113,3 +113,4 @@
 | 2026-11-26 | M2-12: M2-12 다단·목차, schema v10 | ec64b60 |
 | 2026-11-26 | M2-13: M2-13 블록 메뉴·블록 링크, schema v11 | 16280ad |
 | 2026-11-26 | M2-14: M2-14 다중 블록 선택 | 7804fe8 |
+| 2026-11-26 | M2-15: M2-15 붙여넣기 Markdown/URL, favorites e2e 안정화 | a46d39c |
