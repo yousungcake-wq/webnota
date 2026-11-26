@@ -1,3 +1,4 @@
+import type * as DragNs from './drag'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { ws } from '@/core/docs/workspace'
 import { listViews, moveView, type ViewMeta } from '@/core/model/views'
@@ -13,7 +14,13 @@ const MOUSE_SLOP = 5
 const TOUCH_SLOP = 8
 const LONG_PRESS = 400
 
-export const preloadDrag = () => import('./drag')
+type DragModule = typeof DragNs
+let loaded: DragModule | null = null
+export const preloadDrag = () =>
+  import('./drag').then((m) => {
+    loaded = m
+    return m
+  })
 
 /**
  * Turns a press into a drag: mouse after moving 5px, touch after a 400ms long press
@@ -59,7 +66,9 @@ const pressedId = (e: ReactPointerEvent<HTMLElement>) => {
 }
 
 /** Runs `run` once the drag module is loaded — unless the pointer was released meanwhile. */
-function whenLoaded(run: (m: Awaited<ReturnType<typeof preloadDrag>>) => void) {
+function whenLoaded(run: (m: DragModule) => void) {
+  // Already loaded (hover preloads it): start synchronously, before the next pointer event.
+  if (loaded) return run(loaded)
   let released = false
   const up = () => (released = true)
   window.addEventListener('pointerup', up, { once: true })

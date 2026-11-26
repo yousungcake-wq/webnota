@@ -16,7 +16,8 @@ import { goBack, href, navigate } from '@/core/store/router'
 import { loadEditor } from '@/features/editor'
 import { SyncBadge } from '@/features/sync'
 import { useLayout } from '@/platform/layout'
-import { Button, confirmDialog, EmptyState, ErrorBoundary, IconButton, LinkButton, Skeleton } from '@/ui'
+import { Button, confirmDialog, EmptyState, ErrorBoundary, IconButton, LinkButton, Menu, Skeleton } from '@/ui'
+import { collapseCrumbs } from './crumbs'
 import { deleteForever, restore, toggleFavorite } from './actions'
 import { PageMenu } from './LazyPageMenu'
 import './page.css'
@@ -79,20 +80,7 @@ export function PageView({
           !sidebarOpen && <IconButton icon={PanelLeft} label={t('sidebar.open')} onClick={onToggleSidebar} />
         )}
         <nav className="crumbs" aria-label={t('page.breadcrumbs')}>
-          {!phone &&
-            crumbs.map((c) => (
-              <span key={c.id} className="crumb">
-                <a href={href({ name: 'page', id: c.id })}>
-                  {c.icon && (
-                    <span>
-                      <ViewIcon icon={c.icon} />
-                    </span>
-                  )}
-                  {displayTitle(c.title)}
-                </a>
-                <span className="crumb-sep">/</span>
-              </span>
-            ))}
+          {!phone && <Crumbs crumbs={crumbs} />}
           <span className="crumb is-current">
             {page.icon && (
               <span>
@@ -263,4 +251,60 @@ function restoreWithAncestors(views: ViewMeta[], id: string) {
   const view = views.find((v) => v.id === id)
   if (!view) return
   for (const v of [...ancestorsOf(views, view.parentId), view]) if (v.deletedAt) restore(v.id)
+}
+
+function Crumb({ c }: { c: ViewMeta }) {
+  return (
+    <span className="crumb">
+      <a href={href({ name: 'page', id: c.id })}>
+        {c.icon && (
+          <span>
+            <ViewIcon icon={c.icon} />
+          </span>
+        )}
+        {displayTitle(c.title)}
+      </a>
+      <span className="crumb-sep">/</span>
+    </span>
+  )
+}
+
+/** Ancestors, middle-collapsed into "…" (a menu) when the trail is long (WS-09). */
+function Crumbs({ crumbs }: { crumbs: ViewMeta[] }) {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { head, hidden, tail } = collapseCrumbs(crumbs)
+  return (
+    <>
+      {head.map((c) => (
+        <Crumb key={c.id} c={c} />
+      ))}
+      {hidden.length > 0 && (
+        <span className="crumb">
+          <button
+            type="button"
+            className="crumb-more"
+            aria-label={t('page.breadcrumbsMore')}
+            onClick={(e) => setAnchor(e.currentTarget)}
+          >
+            …
+          </button>
+          <span className="crumb-sep">/</span>
+          {anchor && (
+            <Menu
+              anchor={anchor}
+              title={t('page.breadcrumbs')}
+              onClose={() => setAnchor(null)}
+              items={hidden.map((c) => ({
+                label: displayTitle(c.title),
+                onSelect: () => navigate({ name: 'page', id: c.id }),
+              }))}
+            />
+          )}
+        </span>
+      )}
+      {tail.map((c) => (
+        <Crumb key={c.id} c={c} />
+      ))}
+    </>
+  )
 }

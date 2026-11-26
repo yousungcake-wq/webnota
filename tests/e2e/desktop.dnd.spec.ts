@@ -15,6 +15,7 @@ async function drag(page: Page, from: string, to: string, where: 'before' | 'ins
   const b = (await row(page, to).boundingBox())!
   const y = where === 'before' ? b.y + 3 : where === 'after' ? b.y + b.height - 3 : b.y + b.height / 2
   await page.mouse.move(a.x + 60, a.y + a.height / 2)
+  await page.waitForTimeout(200) // hovering preloads the drag module
   await page.mouse.down()
   await page.mouse.move(a.x + 60, a.y + a.height / 2 + 10, { steps: 3 })
   await page.mouse.move(b.x + 60, y, { steps: 8 })

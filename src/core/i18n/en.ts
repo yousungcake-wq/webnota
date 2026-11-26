@@ -90,6 +90,7 @@ export const en: Record<MessageKey, string> = {
   'page.notFoundHint': 'If it was created on another device, it will appear after syncing.',
   'page.goHome': 'Go home',
   'page.breadcrumbs': 'Breadcrumbs',
+  'page.breadcrumbsMore': 'Hidden parent pages',
   'page.changeIcon': 'Change icon',
   'page.addIcon': 'Add icon',
   'page.removeIcon': 'Remove icon',

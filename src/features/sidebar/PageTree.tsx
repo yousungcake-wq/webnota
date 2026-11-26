@@ -1,6 +1,6 @@
 import { ChevronRight, MoreHorizontal, Plus } from 'lucide-react'
 import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { beginDrag, beginListDrag, keyboardMove } from './dragStart'
+import { beginDrag, beginListDrag, keyboardMove, preloadDrag } from './dragStart'
 import { useAliveViews, useFavoriteIds, useViews } from '@/core/store/views'
 import { flattenTree } from './flatten'
 import { useWindow } from './useWindow'
@@ -144,6 +144,7 @@ export function PageTree({ spaceId, currentId }: { spaceId: string; currentId?: 
       ref={listRef}
       className="tree"
       role="tree"
+      onPointerEnter={(e) => e.pointerType === 'mouse' && void preloadDrag()}
       onPointerDown={onPointerDown}
       style={{ paddingTop: start * rowHeight, paddingBottom: (rows.length - end) * rowHeight }}
     >
@@ -197,6 +198,7 @@ export function FavoritesList({
     <div
       ref={listRef}
       className="fav-list"
+      onPointerEnter={(e) => e.pointerType === 'mouse' && void preloadDrag()}
       onPointerDown={(e) =>
         beginListDrag(e, listRef.current, (id, index) =>
           moveFavorite(

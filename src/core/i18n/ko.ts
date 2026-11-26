@@ -95,6 +95,7 @@ export const ko = {
   'page.notFoundHint': '다른 기기에서 만든 페이지라면 동기화가 끝난 뒤 나타납니다.',
   'page.goHome': '홈으로',
   'page.breadcrumbs': '경로',
+  'page.breadcrumbsMore': '숨겨진 상위 페이지',
   'page.changeIcon': '아이콘 변경',
   'page.addIcon': '아이콘 추가',
   'page.removeIcon': '아이콘 제거',

@@ -17,6 +17,7 @@ test('favorites keep their order and can be reordered by drag (WS-04)', async ({
   const from = (await page.locator('.sidebar .fav-list .list-item', { hasText: 'Zulu' }).boundingBox())!
   const to = (await page.locator('.sidebar .fav-list .list-item', { hasText: 'Xray' }).boundingBox())!
   await page.mouse.move(from.x + 40, from.y + from.height / 2)
+  await page.waitForTimeout(200) // hovering preloads the drag module
   await page.mouse.down()
   await page.mouse.move(from.x + 40, from.y + from.height / 2 - 10, { steps: 3 })
   await page.mouse.move(to.x + 40, to.y + 4, { steps: 8 })
