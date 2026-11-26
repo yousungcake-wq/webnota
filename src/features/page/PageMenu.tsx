@@ -8,6 +8,7 @@ import {
   LockOpen,
   Pencil,
   Search,
+  Type,
   Plus,
   SmilePlus,
   Star,
@@ -72,6 +73,11 @@ export function PageMenu({
     { label: t('page.info'), icon: Info, onSelect: () => openViewInfo(page.id) },
     ...(where === 'page'
       ? [
+          {
+            label: t('pageStyle.title'),
+            icon: Type,
+            onSelect: () => void afterMenuClosed().then(() => window.dispatchEvent(new Event('webnota:page-style'))),
+          },
           {
             label: t('find.inPage'),
             icon: Search,

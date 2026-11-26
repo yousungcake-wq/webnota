@@ -76,7 +76,7 @@ doc (Y.Doc)
     fullWidth: boolean
 ```
 
-블록 스키마는 [04-editor.md](04-editor.md) §2에 정의합니다. 모든 블록 노드는 `id` 속성(블록 링크용, nanoid 10자)을 가집니다.
+블록 스키마는 [04-editor.md](04-editor.md) §2에 정의합니다. 블록 링크용 `blockId` 속성은 링크를 복사할 때만 부여합니다 (M2-13, schema v11). `page` 맵의 키는 각각 따로 저장해서 동시 변경이 합쳐집니다 (M2-18: `core/model/page.ts`). 구버전 앱은 `page` 맵을 건드리지 않으므로 schemaVersion 변경이 없습니다.
 
 ## 4. 데이터베이스 문서
 

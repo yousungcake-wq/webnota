@@ -1,7 +1,6 @@
 import type { Editor as TEditor } from '@tiptap/react'
-import { ChevronLeft, Lock, MoreHorizontal, PanelLeft, SmilePlus, Star } from 'lucide-react'
+import { ChevronLeft, ImagePlus, Lock, MoreHorizontal, PanelLeft, SmilePlus, Star } from 'lucide-react'
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import type * as Y from 'yjs'
 import { openDoc, pageDocName, retainDoc } from '@/core/docs/registry'
 import { ws } from '@/core/docs/workspace'
 import { ancestorsOf, updateView, type ViewMeta } from '@/core/model/views'
@@ -14,6 +13,9 @@ import { schemaStore } from '@/core/schema'
 import { useStore } from '@/core/store/useStore'
 import { goBack, href, navigate, useRoute } from '@/core/store/router'
 import { loadEditor } from '@/features/editor'
+import * as Y from 'yjs'
+import { setCover } from '@/core/model/page'
+import { coverBackground, usePageMeta } from './pageMeta'
 import { SyncBadge } from '@/features/sync'
 import { useLayout } from '@/platform/layout'
 import { Button, confirmDialog, EmptyState, ErrorBoundary, IconButton, LinkButton, Menu, Skeleton } from '@/ui'
@@ -25,6 +27,10 @@ import { t } from '@/core/i18n'
 
 // The editor (Tiptap + ProseMirror) is the biggest chunk; load it only when a page opens.
 const Editor = lazy(() => loadEditor().then((m) => ({ default: m.Editor })))
+const PageCover = lazy(() => import('./PageCover').then((m) => ({ default: m.PageCover })))
+const PageStylePanel = lazy(() => import('./pageStyleViews').then((m) => ({ default: m.PageStylePanel })))
+/** Stand-in until the page document is loaded (hooks need a doc). */
+const NO_DOC = new Y.Doc()
 
 export function PageView({
   id,
@@ -62,6 +68,16 @@ export function PageView({
   const crumbs = ancestorsOf(pages, parentId) // O(n), cheap; recomputed per render
 
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
+  const [moreButton, setMoreButton] = useState<HTMLElement | null>(null)
+  const { style, cover } = usePageMeta(doc ?? NO_DOC)
+  // "Page style" in the page menu (ED-F10) opens the panel under the ⋯ button
+  const [styleOpen, setStyleOpen] = useState(false)
+  useEffect(() => {
+    const open = () => setStyleOpen(true)
+    window.addEventListener('webnota:page-style', open)
+    return () => window.removeEventListener('webnota:page-style', open)
+  }, [])
+  const readOnly = useStore(schemaStore).readOnly || !!page?.locked || inTrash
 
   if (!page) {
     return (
@@ -109,10 +125,31 @@ export function PageView({
             label={page.favorite ? t('page.favoriteRemove') : t('page.favoriteAdd')}
             onClick={() => toggleFavorite(page.id)}
           />
-          <IconButton icon={MoreHorizontal} label={t('common.more')} onClick={(e) => setMenuAnchor(e.currentTarget)} />
+          <IconButton
+            icon={MoreHorizontal}
+            label={t('common.more')}
+            onClick={(e) => {
+              setMoreButton(e.currentTarget)
+              setMenuAnchor(e.currentTarget)
+            }}
+          />
         </div>
       </header>
       {menuAnchor && <PageMenu page={page} anchor={menuAnchor} where="page" onClose={() => setMenuAnchor(null)} />}
+      {styleOpen && doc && (
+        <Suspense fallback={null}>
+          <PageStylePanel doc={doc} anchor={moreButton} readOnly={readOnly} onClose={() => setStyleOpen(false)} />
+        </Suspense>
+      )}
+      {page.locked && !inTrash && (
+        <div className="lock-banner" role="status">
+          <Lock size={14} aria-hidden />
+          <span>{t('page.lockedBanner')}</span>
+          <Button size="sm" onClick={() => updateView(ws(), page.id, { locked: false })}>
+            {t('page.unlock')}
+          </Button>
+        </div>
+      )}
 
       {inTrash && (
         <div className="trash-banner" role="status">
@@ -141,12 +178,25 @@ export function PageView({
         </div>
       )}
       <div className="page-scroll">
+        {doc && cover && (
+          // same box while the cover code loads: no layout shift
+          <Suspense fallback={<div className="page-cover" style={{ background: coverBackground(cover) }} />}>
+            <PageCover key={id} doc={doc} cover={cover} readOnly={readOnly} />
+          </Suspense>
+        )}
         {/* Keyed by page so the whole subtree (editor DOM managed by ProseMirror included) is replaced in one piece. */}
-        <div className="page-body" key={id}>
+        <div
+          className={`page-body${style.fullWidth ? ' is-full' : ''}`}
+          key={id}
+          data-font={style.font}
+          data-size={style.fontSize}
+          data-line={style.lineHeight}
+        >
           <PageHead
             key={page.id}
             page={page}
             inTrash={inTrash}
+            onAddCover={doc && !cover ? () => setCover(doc, { type: 'gradient', value: 'g1' }) : undefined}
             onEnter={() => {
               const ed = editorRef.current
               if (!ed) return
@@ -178,7 +228,17 @@ export function PageView({
   )
 }
 
-function PageHead({ page, inTrash, onEnter }: { page: ViewMeta; inTrash: boolean; onEnter: () => void }) {
+function PageHead({
+  page,
+  inTrash,
+  onEnter,
+  onAddCover,
+}: {
+  page: ViewMeta
+  inTrash: boolean
+  onEnter: () => void
+  onAddCover?: () => void
+}) {
   const [title, setTitle] = useState(page.title)
   const focused = useRef(false)
   const taRef = useRef<HTMLTextAreaElement>(null)
@@ -221,6 +281,11 @@ function PageHead({ page, inTrash, onEnter }: { page: ViewMeta; inTrash: boolean
             <SmilePlus size={16} /> {t('page.addIcon')}
           </button>
         )
+      )}
+      {!readOnly && onAddCover && (
+        <button type="button" className="add-icon add-cover" onClick={onAddCover}>
+          <ImagePlus size={16} /> {t('cover.add')}
+        </button>
       )}
       <textarea
         ref={taRef}

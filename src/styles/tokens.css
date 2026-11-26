@@ -56,6 +56,13 @@
   --c-pink-bg: #faf1f5;
   --c-red-text: #d44c47;
   --c-red-bg: #fdebec;
+  /* cover gradients (ED-F11), the same in both themes */
+  --cover-g1: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  --cover-g2: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+  --cover-g3: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+  --cover-g4: linear-gradient(120deg, #fbc2eb 0%, #a6c1ee 100%);
+  --cover-g5: linear-gradient(120deg, #434343 0%, #6b7a8f 100%);
+  --cover-g6: linear-gradient(120deg, #ff9a9e 0%, #fecfef 100%);
   /* shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
   --shadow: 0 8px 28px rgba(15, 23, 42, 0.14), 0 1px 3px rgba(15, 23, 42, 0.08);
