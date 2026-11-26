@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M0 기반 정비
-- **진행 상황**: M0 26개 중 11개 완료 (M0-01~11: 린트, tsconfig, 번들 예산, verify, CI, Playwright Test, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트)
+- **진행 상황**: M0 26개 중 12개 완료 (M0-01~12: 린트, tsconfig, 번들 예산, verify, CI, Playwright Test, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M0-12 `useLayout()` (phone/tablet/desktop + isTouch) — 지금 곳곳의 `useMedia('(max-width: 767px)')`를 대체하고 spec/12 §3 기준으로 태블릿 분기 정리
+- **다음 할 일**: M0-13 ErrorBoundary (화면 단위: 사이드바·본문·에디터 따로, 에디터가 죽어도 사이드바는 살아 있게) + 전역 오류 토스트 (`window.onerror`/`unhandledrejection` → `toast(..., { tone: 'error' })`), spec/01 §7
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -26,6 +26,7 @@
 - i18n: 문자열은 `t('key')`, 키는 `core/i18n/ko.ts`에 먼저 추가 후 `en.ts`. 사전은 부팅 시 `initI18n()`이 현재 언어 것만 로드하므로 **모듈 최상위에서 `t()` 호출 금지** (지연 청크 안은 괜찮음, 예: editor/blocks.ts). e2e는 `locale: 'ko-KR'` 고정, 영어는 `desktop.i18n.spec.ts`.
 - ui (M0-11): `@/ui` index에서 import. 오버레이는 레이어 스택(`ui/overlay/stack.ts`)에 등록되고, 시트·대화상자는 history 항목을 씀 → **오버레이를 닫은 직후 `history.back()`/`location.hash`를 직접 건드리지 말고 router의 `navigate`/`goBack`을 쓸 것** (정리 대기). `confirm()`/`alert()` 금지 → `confirmDialog()`/`toast()`. 아이콘 버튼은 `IconButton`(label 필수).
 - 번들: 초기 112.8KB / 125KB (M0-11에서 오버레이 기반 +3KB). 남은 여유 12KB — 새 기능은 지연 로드 필수.
+- 레이아웃 분기는 `useLayout()`(`@/platform/layout`)만 사용. 태블릿은 아직 데스크탑 셸 (드로어는 M1-12).
 - `core/schema`, `core/persistence`는 아직 없음. IndexedDB는 `core/docs/registry.ts`가 y-indexeddb를 직접 씀 → M0-15/M0-18에서 분리.
 
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
@@ -49,3 +50,4 @@
 | 2026-11-26 | M0-09: tokens.css(spec/12 전체) + CSS 13개 파일 분리, 색 토큰화, 스타일 가드 테스트 | 262d388 |
 | 2026-11-26 | M0-10: i18n (t/tParts, ko/en 사전 지연 로드, 언어 감지·설정, 문자열 165개 이전, 가드 테스트) | b1f2a1e |
 | 2026-11-26 | M0-11: 오버레이 스택(뒤로 가기·Esc·포커스 트랩), Popover/Sheet/Dialog/confirm/toast/툴팁, Menu 확장, 기본 컨트롤, 마크업 교체 | f94a195, 252555f |
+| 2026-11-26 | M0-12: useLayout (phone/tablet/desktop + isTouch), useMedia 대체 | e1b0aef |
