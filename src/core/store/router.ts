@@ -1,4 +1,5 @@
 import { historyBusy, whenHistoryIdle } from '@/platform/history'
+import { currentWorkspaceId, listSlots, switchSlot } from '../docs/slots'
 import { createStore } from './createStore'
 import { shallowEqual } from './equality'
 import { useStore } from './useStore'
@@ -11,9 +12,21 @@ export type Route =
   | { name: 'trash' }
   | { name: 'settings' }
 
+/**
+ * Routes (spec/03, M1-17): a view is `#/w/<workspace>/v/<viewId>`. The workspace part is
+ * this device's slot id: a link from another device carries an unknown id and simply
+ * opens the view in the current workspace; a known other workspace is switched to
+ * (reload). PoC links `#/page/<id>` still work and are rewritten.
+ */
 function parse(hash: string): Route {
   const parts = hash.replace(/^#\/?/, '').split('/')
   switch (parts[0]) {
+    case 'w': {
+      const [, ws, kind, id] = parts
+      if (kind !== 'v' || !id) return { name: 'home' }
+      if (ws && ws !== currentWorkspaceId() && listSlots().some((s) => s.id === ws)) switchSlot(ws, true)
+      return { name: 'page', id: decodeURIComponent(id) }
+    }
     case 'page':
       return parts[1] ? { name: 'page', id: decodeURIComponent(parts[1]) } : { name: 'home' }
     case 'search':
@@ -28,10 +41,17 @@ function parse(hash: string): Route {
 
 export function href(route: Route): string {
   return route.name === 'page'
-    ? `#/page/${encodeURIComponent(route.id)}`
+    ? `#/w/${currentWorkspaceId()}/v/${encodeURIComponent(route.id)}`
     : route.name === 'home'
       ? '#/'
       : `#/${route.name}`
+}
+
+/** Rewrites legacy / foreign-workspace page URLs to the canonical form, in place. */
+function canonicalize(route: Route) {
+  if (route.name !== 'page') return
+  const canonical = href(route)
+  if (location.hash !== canonical) history.replaceState(history.state, '', canonical)
 }
 
 /**
@@ -77,8 +97,10 @@ export function goBack() {
 }
 
 const routeStore = createStore<Route>(parse(location.hash))
+canonicalize(routeStore.get())
 window.addEventListener('hashchange', () => {
   const next = parse(location.hash)
+  canonicalize(next)
   routeStore.set((prev) => (shallowEqual(prev, next) ? prev : next))
 })
 

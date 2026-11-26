@@ -21,8 +21,9 @@ test('workspaces: create, switch (separate data), remove from the device (WS-01,
   await switcher.click()
   await page.getByRole('menuitemcheckbox', { name: /이 기기 워크스페이스/ }).click()
   await expect(page.locator('.sidebar .tree-title', { hasText: 'Only in first' })).toHaveCount(1)
+  await expect(page.locator('.page-title')).toHaveValue('Only in first') // reopened the last page
 
-  await page.goto('/#/settings')
+  await page.locator('.sidebar').getByRole('link', { name: '설정' }).click()
   const row = page.locator('.ws-list li', { hasText: 'Second WS' })
   await row.getByRole('button', { name: '이 기기에서 제거' }).click()
   await page.getByRole('alertdialog').getByRole('button', { name: '이 기기에서 제거' }).click()

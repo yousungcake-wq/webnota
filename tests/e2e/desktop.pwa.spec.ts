@@ -30,7 +30,7 @@ test.describe('PWA (MB-42, MB-44)', () => {
     await openApp(page)
     const before = await page.locator('.tree-title').count()
     await page.goto('/?action=new-page')
-    await page.waitForURL(/#\/page\//)
+    await page.waitForURL(/#\/w\/[^/]+\/v\//)
     await expect(page.locator('.page-title')).toHaveValue('')
     await expect(page.locator('.tree-title')).toHaveCount(before + 1)
     expect(new URL(page.url()).search).toBe('')

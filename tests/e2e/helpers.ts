@@ -8,7 +8,7 @@ export async function openApp(page: Page) {
 
 /** After creating a page, wait until the UI shows the new (empty-titled) page — avoids typing into the old one. */
 export async function waitForNewPage(page: Page) {
-  await page.waitForURL(/#\/page\//)
+  await page.waitForURL(/#\/w\/[^/]+\/v\//)
   await page.waitForFunction(() => (document.querySelector('.page-title') as HTMLTextAreaElement | null)?.value === '')
 }
 

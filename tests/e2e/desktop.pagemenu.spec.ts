@@ -40,7 +40,7 @@ test.describe('rename and page menu (WS-03)', () => {
     await more()
     await page.getByRole('menuitem', { name: '링크 복사' }).click()
     await expect(page.getByText('링크를 복사했습니다')).toBeVisible()
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/#\/page\/[\w-]+$/)
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/#\/w\/[\w-]+\/v\/[\w-]+$/)
 
     await more()
     await page.getByRole('menuitem', { name: '잠그기' }).click()

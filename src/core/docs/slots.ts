@@ -87,11 +87,16 @@ export function updateSlot(id: string, patch: Partial<Pick<Slot, 'name' | 'icon'
   save({ ...s, list: s.list.map((x) => (x.id === id ? { ...x, ...patch } : x)) })
 }
 
-/** Makes `id` current and reloads, which unloads every open doc (WS-01). */
-export function switchSlot(id: string) {
+/**
+ * Makes `id` current and reloads, which unloads every open doc (WS-01). The app opens at
+ * home unless `keepUrl` (a link that names this workspace, #/w/<id>/…).
+ */
+export function switchSlot(id: string, keepUrl = false) {
   const s = load()
   if (!s.list.some((x) => x.id === id) || s.current === id) return
   save({ ...s, current: id })
+  // The current URL may name the old workspace (#/w/<old>/…), which would switch back.
+  if (!keepUrl) history.replaceState(null, '', location.pathname + location.search)
   location.reload()
 }
 

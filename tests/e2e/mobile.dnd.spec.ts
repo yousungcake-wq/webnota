@@ -7,7 +7,7 @@ test('phone: long-press drag reorders pages on the home tree', async ({ page, co
   await page.getByRole('button', { name: '뒤로' }).click()
   for (const t of ['Xray', 'Yank']) {
     await page.locator('.fab').tap()
-    await page.waitForURL(/#\/page\//)
+    await page.waitForURL(/#\/w\/[^/]+\/v\//)
     await page.fill('.page-title', t)
     await page.getByRole('button', { name: '뒤로' }).click()
   }
