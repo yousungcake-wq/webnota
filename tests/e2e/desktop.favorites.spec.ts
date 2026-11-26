@@ -17,10 +17,19 @@ test('favorites keep their order and can be reordered by drag (WS-04)', async ({
   const from = (await page.locator('.sidebar .fav-list .list-item', { hasText: 'Zulu' }).boundingBox())!
   const to = (await page.locator('.sidebar .fav-list .list-item', { hasText: 'Xray' }).boundingBox())!
   await page.mouse.move(from.x + 40, from.y + from.height / 2)
-  await page.waitForTimeout(200) // hovering preloads the drag module
+  // hovering preloads the drag module; under load it can take a while, and a drag that
+  // ends before the module arrives is dropped (by design), so wait for the chunk
+  await expect
+    .poll(() =>
+      page.evaluate(() => performance.getEntriesByType('resource').some((e) => /\/drag-[\w-]+\.js$/.test(e.name))),
+    )
+    .toBe(true)
+  await page.waitForTimeout(100)
   await page.mouse.down()
   await page.mouse.move(from.x + 40, from.y + from.height / 2 - 10, { steps: 3 })
+  await expect(page.locator('.tree-ghost')).toHaveCount(1) // the drag has started
   await page.mouse.move(to.x + 40, to.y + 4, { steps: 8 })
+  await expect(page.locator('.tree-drop-line')).toBeVisible()
   await page.mouse.up()
   await expect(favs).toHaveText(['Zulu', 'Xray', 'Yank'])
   await page.reload()

@@ -19,6 +19,7 @@ const BUDGETS = {
   // lowlight core, when a doc has code (+ ≤5KB per grammar); loads after the editor
   highlight: { kb: 15, entry: 'src/features/editor/code/highlighter.ts', after: 'editor' },
   migrations: { kb: 8, entry: 'src/core/schema/migrations/index.ts' }, // only when data needs migrating
+  markdown: { kb: 15, entry: 'src/features/editor/paste/markdown.ts', after: 'editor' }, // marked, on Markdown paste
   // Add as features land: database: { kb: 120, entry: 'src/features/database/index.ts' }, …
 }
 

@@ -11,6 +11,7 @@ import { SubPageWithView } from './SubPageBlock'
 import { OutlineWithView } from './OutlineBlock'
 import { BlockFlash } from './blockFlash'
 import { BlockSelection } from './blockSelection'
+import { PasteRules } from './pasteRules'
 import { t } from '@/core/i18n'
 
 declare module '@tiptap/core' {
@@ -106,6 +107,7 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
     SlashCommand,
     MentionSuggest,
     BlockFlash,
+    PasteRules,
     EmojiSuggest,
     BlockMove,
     BlockSelection, // priority 50: menus (slash, mentions) handle Esc / arrows first
