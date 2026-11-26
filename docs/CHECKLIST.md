@@ -23,7 +23,7 @@
 - [x] M0-08 `useY` 셀렉터 훅 + `createStore` 유틸, 기존 `usePages` 대체 — 083bdf8
 - [x] M0-09 `styles/tokens.css` + 기능별 CSS 분리, 하드코딩 색 제거 — 262d388
 - [x] M0-10 i18n: `t()` + `ko.ts`/`en.ts` 사전, 기존 문자열 이전, 언어 감지 — b1f2a1e
-- [~] M0-11 `ui/` 기본 컴포넌트: Button, IconButton, Menu(확장), Popover, Sheet, Dialog/Confirm, Toast(실행 취소), Tooltip, Input, Switch, Segmented, Skeleton, EmptyState, OverlayHost
+- [x] M0-11 `ui/` 기본 컴포넌트: Button, IconButton, Menu(확장), Popover, Sheet, Dialog/Confirm, Toast(실행 취소), Tooltip, Input, Switch, Segmented, Skeleton, EmptyState, OverlayHost — f94a195, 252555f (TextArea/Select/Checkbox/Spinner는 필요할 때)
 - [ ] M0-12 `useLayout()` (phone/tablet/desktop + isTouch)
 - [ ] M0-13 ErrorBoundary (화면 단위), 전역 오류 토스트
 - [ ] M0-14 기능 플래그 `core/flags.ts` + 설정 → 고급 (ST-12)
