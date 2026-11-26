@@ -4,10 +4,10 @@
 
 ## 현재 위치
 
-- **마일스톤**: M0 기반 정비
-- **진행 상황**: M0 26개 중 25개 완료 (M0-01~24, 26: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2, IndexedDB 이름 공간, 문서 LRU, 모르는 노드 보존, 동기화 스케줄, ETag, 탭 리더, 동기화 로그, PWA 아이콘)
+- **마일스톤**: M0 기반 정비 — **구현 완료, 사용자 실기기 확인 대기** (docs/QA.md "M0")
+- **진행 상황**: M0 26개 모두 완료 (M0-01~26: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2, IndexedDB 이름 공간, 문서 LRU, 모르는 노드 보존, 동기화 스케줄, ETag, 탭 리더, 동기화 로그, PWA 아이콘, 회귀 e2e·성능 기준선)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M0-25 PoC 회귀 e2e·성능 기준선(`docs/perf-history.md`) → 마일스톤 마무리 (M1 체크리스트 펼치기, QA.md, 사용자 실기기 확인 요청).
+- **다음 할 일**: 사용자 실기기 QA 결과 반영 → M1-01 뷰 모델 API (`docs/CHECKLIST.md` M1, 머리말의 M0 이월 사항 먼저 읽기).
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -29,7 +29,8 @@
 - CSS 리팩터링 시 회귀 확인: 스크래치 스크립트로 `vite preview` 화면 19장을 찍어 바이트 비교했음 (데스크탑·Pixel 7·iPhone 14·iPad, 라이트·다크). 필요하면 `tests/perf`나 e2e 스크린샷 테스트로 정식화 검토.
 - i18n: 문자열은 `t('key')`, 키는 `core/i18n/ko.ts`에 먼저 추가 후 `en.ts`. 사전은 부팅 시 `initI18n()`이 현재 언어 것만 로드하므로 **모듈 최상위에서 `t()` 호출 금지** (지연 청크 안은 괜찮음, 예: editor/blocks.ts). e2e는 `locale: 'ko-KR'` 고정, 영어는 `desktop.i18n.spec.ts`.
 - ui (M0-11): `@/ui` index에서 import. 오버레이는 레이어 스택(`ui/overlay/stack.ts`)에 등록되고, 시트·대화상자는 history 항목을 씀 → **오버레이를 닫은 직후 `history.back()`/`location.hash`를 직접 건드리지 말고 router의 `navigate`/`goBack`을 쓸 것** (정리 대기). `confirm()`/`alert()` 금지 → `confirmDialog()`/`toast()`. 아이콘 버튼은 `IconButton`(label 필수).
-- 번들: 초기 118.0KB / 125KB (M0-15 게이트 +1KB, M0-16 fractional-indexing·마이그레이션 v2 +2.8KB). 남은 여유 7KB — 새 기능은 지연 로드 필수. 더 줄여야 하면 마이그레이션 `up`을 지연 로드하는 방안(게이트의 버전 판단은 동기 유지).
+- 성능 기준선 (M0-25): `npm run build && npm run perf` → `docs/perf-history.md`에 마일스톤마다 기록. 20% 이상 나빠지면 마일스톤 완료 불가.
+- 번들: 초기 120.6KB / 125KB (M0 완료). 남은 여유 4.4KB — 새 기능은 지연 로드 필수. 더 줄여야 하면 마이그레이션 `up`을 지연 로드하는 방안(게이트의 버전 판단은 동기 유지).
 - 레이아웃 분기는 `useLayout()`(`@/platform/layout`)만 사용. 태블릿은 아직 데스크탑 셸 (드로어는 M1-12).
 - 오류 처리: 새 화면/지연 로드 영역은 `ErrorBoundary`로 감싸고 key로 리셋. QA 플래그 `webnota:debug` (docs/QA.md).
 - 미완성 기능은 `core/flags.ts`의 `FLAGS`에 `kind: 'feature'`로 추가하고 `useFlag`/`isEnabled`로 가림. 완성 시 플래그 제거.
@@ -72,3 +73,4 @@
 | 2026-11-26 | M0-23: 탭 간 리더 선출(Web Locks) + BroadcastChannel 문서 업데이트 중계, 더티·계정·상태 공유 | bceedce |
 | 2026-11-26 | M0-24: 동기화 로그(최근 50건, 반복 접기, 탭 공유) + 설정 화면 표시 | fc9254b |
 | 2026-11-26 | M0-26: PWA PNG 아이콘(생성 스크립트) + manifest 바로가기(새 페이지·검색) | 85511df |
+| 2026-11-26 | M0-25: PoC 회귀 e2e 5개 + 성능 기준선(tests/perf, perf-history). M0 마무리: M1 체크리스트 보강, QA.md M0 실기기 항목 | 6695af5 |

@@ -43,18 +43,19 @@
 - [x] M0-24 동기화 로그 + 설정 화면 표시 (SY-02d, ST-04) — fc9254b
 
 ### 마무리
-- [ ] M0-25 PoC 기능 회귀 e2e 전부 통과, 성능 기준선 측정 → `docs/perf-history.md`
+- [x] M0-25 PoC 기능 회귀 e2e 전부 통과, 성능 기준선 측정 → `docs/perf-history.md` — 6695af5
 - [x] M0-26 PWA 아이콘 PNG(192/512/maskable/apple 180), manifest shortcuts (MB-42, MB-44) — 85511df
 
 ---
 
 ## M1 워크스페이스와 탐색
-- [ ] M1-01 뷰 모델 API (`core/model/views.ts`): create/update/move/trash/restore/delete/duplicate + 테스트
+> M0에서 넘어온 사항: 모델은 이미 v2(`views`/`spaces`/`users`)이고 `core/model/pages.ts`가 UI용 `PageMeta`로 감쌈 (스페이스 부모는 `parentId: null`로 숨김). 현재 사용자는 `local` (DECISIONS 015). 페이지 전환 187ms로 목표(150ms) 초과 (perf-history). 초기 번들 여유 4.4KB — M1 기능은 지연 로드 기본.
+- [ ] M1-01 뷰 모델 API (`core/model/views.ts`): `pages.ts`를 views/spaces 모델로 정리(스페이스 부모 노출, IconValue 전체), create/update/move/trash/restore/delete/duplicate + 테스트. 기존 `PageMeta` 사용처 이전
 - [ ] M1-02 사이드바 재작성: 가상 스크롤 트리 + 셀렉터 구독 (WS-03)
 - [ ] M1-03 트리 DnD (dnd-kit, 마우스·터치·키보드, 위/아래/안으로) (WS-03)
 - [ ] M1-04 인라인 이름 바꾸기, F2, 더보기 메뉴 전체 항목 (WS-03)
 - [ ] M1-05 스페이스: 생성/수정/삭제/전환/정렬 (WS-02)
-- [ ] M1-06 즐겨찾기 사용자별 + 정렬 (WS-04)
+- [ ] M1-06 즐겨찾기 정렬(FracKey DnD) + 로그인 사용자 추적: 연결 시 `users.local` 상태를 로그인 사용자로 합치기 (WS-04, spec/02 §8, DECISIONS 015)
 - [ ] M1-07 최근 항목 (WS-05)
 - [ ] M1-08 휴지통 완성: 모두 복원/비우기, 삭제된 페이지 배너 (WS-06)
 - [ ] M1-09 검색 워커 (MiniSearch, 한글 bigram, 증분 인덱스, IndexedDB 저장) (WS-07)
@@ -63,10 +64,12 @@
 - [ ] M1-12 사이드바 폭 조절·접기·호버 펼치기, 태블릿 드로어 (WS-10)
 - [ ] M1-13 이동 대화상자 (WS-12)
 - [ ] M1-14 EmojiPicker(전체, 검색, 최근) + IconPicker (ED-F12)
-- [ ] M1-15 다중 워크스페이스: 목록·추가·전환·공유받은 저장소 열기 (WS-01, SY-05, ST-02)
+- [ ] M1-15 다중 워크스페이스: 목록·추가·전환·공유받은 저장소 열기 (WS-01, SY-05, ST-01, ST-02). 슬롯(`core/docs/slots.ts`) 확장, 더티 표시·동기화 상태·동기화 로그 키를 워크스페이스별로 분리, 전환 시 문서 전부 언로드
 - [ ] M1-16 폰 홈 개편: 워크스페이스 전환, 스페이스 탭, 최근 항목 (MB-02)
 - [ ] M1-17 라우팅 v2 (`#/w/:ws/v/:id`) + 구 경로 리디렉션
 - [ ] M1-18 전역 단축키 (WS-14)
+- [ ] M1-20 새 뷰 만들기 메뉴: 문서 (Grid/Board/Calendar는 M4~5에서 활성화), 폰 FAB (WS-11)
+- [ ] M1-21 페이지 전환 150ms 이내 (에디터 재생성 비용 분석·개선), `npm run perf` 기록
 - [ ] M1-19 e2e + 실기기 QA
 
 ## M2 에디터 완성 (텍스트) — 시작 시 세부화
