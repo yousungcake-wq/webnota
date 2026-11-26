@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M0 기반 정비
-- **진행 상황**: M0 26개 중 22개 완료 (M0-01~22: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2, IndexedDB 이름 공간, 문서 LRU, 모르는 노드 보존, 동기화 스케줄, ETag)
+- **진행 상황**: M0 26개 중 23개 완료 (M0-01~23: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2, IndexedDB 이름 공간, 문서 LRU, 모르는 노드 보존, 동기화 스케줄, ETag, 탭 리더)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M0-23 탭 간 리더 선출 (SY-02e, `navigator.locks` 또는 BroadcastChannel).
+- **다음 할 일**: M0-24 동기화 로그 + 설정 화면 표시 (SY-02d, ST-04). 로그는 리더 탭에서 기록되므로 다른 탭 표시는 storage/중계로 공유할 것.
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -23,6 +23,7 @@
 - 문서 수명 (M0-19): `openDoc`으로 연 문서는 LRU로 언로드될 수 있음 (최대 30개, 최근 10초 사용분은 보호). **비동기 작업 동안 문서를 붙잡고 있어야 하면 `retainDoc(name)`을 호출하고 끝나면 release** (PageView·동기화·복제가 그렇게 함). 언로드된 문서 객체에 쓰면 IndexedDB에 저장되지 않음.
 - 에디터 (M0-20): `editorExtensions(doc, { onInvalidContent })` — Collaboration의 `ySyncOptions.onInvalidContent`를 **절대 빼지 말 것** (빼면 y-tiptap이 모르는 노드를 Y에서 삭제). 모르는 내용이 있으면 그 페이지만 읽기 전용 + 안내.
 - 동기화 스케줄 (M0-21): 동기화는 `core/sync/controller.ts`의 `scheduler`를 통해서만 시작 (`syncNow()`=수동 요청). 타이밍 규칙은 `core/sync/schedule.ts` (순수, 테스트 있음).
+- 탭 (M0-23): 동기화는 리더 탭만 (`electLeader`). 다른 탭에서 동기화를 시작하려면 `requestSync`/`syncNow` 사용 (직접 `scheduler.request` 금지). 문서 업데이트는 `tabs` 중계로 실시간 공유되며, 받은 업데이트 origin은 `TAB_ORIGIN`.
 - 상태 구독: Yjs는 `useY(doc, 고정 셀렉터, 비교 함수)`, 그 외는 `createStore` + `useStore`. 새 리스너 Set을 직접 만들지 말 것.
 - 스타일: 색은 `styles/tokens.css`에만 (테스트 강제). 기능 CSS는 그 기능 컴포넌트에서 import. 간격·반경 px는 아직 토큰으로 바꾸지 않음 (화면을 고칠 때 점진적으로).
 - CSS 리팩터링 시 회귀 확인: 스크래치 스크립트로 `vite preview` 화면 19장을 찍어 바이트 비교했음 (데스크탑·Pixel 7·iPhone 14·iPad, 라이트·다크). 필요하면 `tests/perf`나 e2e 스크린샷 테스트로 정식화 검토.
@@ -68,3 +69,4 @@
 | 2026-11-26 | M0-20: 모르는 노드·마크 보존(onInvalidContent) + 페이지 읽기 전용 안내, QA 플래그 seed-unknown | e666598 |
 | 2026-11-26 | M0-21: 동기화 스케줄러(60초 최대 대기, 지수 백오프, rate-limit 대기, 401 재시도 안 함) | 7229244 |
 | 2026-11-26 | M0-22: ETag 조건부 GET (304 캐시 응답, blob·tree 제외) | a21cb35 |
+| 2026-11-26 | M0-23: 탭 간 리더 선출(Web Locks) + BroadcastChannel 문서 업데이트 중계, 더티·계정·상태 공유 | bceedce |
