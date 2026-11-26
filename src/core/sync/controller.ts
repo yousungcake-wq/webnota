@@ -3,7 +3,7 @@ import { t } from '../i18n'
 import { getToken, setToken } from '../auth/auth'
 import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc, pageDocName, retainDoc, tabs } from '../docs/registry'
 import { currentWorkspaceId } from '../docs/slots'
-import { listViews } from '../model/views'
+import { adoptFavorites, listViews, setCurrentUser } from '../model/views'
 import { createStore } from '../store/createStore'
 import { isReadOnly } from '../schema/gate'
 import { ConflictRetryError, syncOnce, type LocalStore, type SyncState } from './engine'
@@ -77,6 +77,37 @@ function localStore(a: Account, releases: (() => void)[]): LocalStore {
   }
 }
 
+const LOGIN_KEY = 'webnota:login'
+
+/**
+ * Per-user state (favorites) is keyed by the GitHub login once it is known (spec/02 §8).
+ * The last login is remembered so disconnecting does not hide the user's favorites.
+ * Favorites made before connecting (under `local`) are merged in once per login.
+ */
+async function applyLogin(login: string) {
+  setCurrentUser(login)
+  try {
+    localStorage.setItem(LOGIN_KEY, login)
+    const adopted = `webnota:adopted:${login}`
+    if (isReadOnly() || localStorage.getItem(adopted)) return
+    adoptFavorites(await openDoc('workspace'), 'local')
+    localStorage.setItem(adopted, '1')
+  } catch {
+    /* storage unavailable: retried next boot */
+  }
+}
+
+/** Boot: apply the connected (or last) login before the UI reads per-user state. */
+export async function initUser() {
+  let login = syncStore.get().account?.login ?? null
+  try {
+    login ??= localStorage.getItem(LOGIN_KEY)
+  } catch {
+    /* no storage */
+  }
+  if (login) await applyLogin(login)
+}
+
 /** Validates a token, creates the private data repo if needed, and stores the account. */
 export async function connect(token: string, repoName = DEFAULT_REPO): Promise<Account> {
   const gh = new GitHubClient(token)
@@ -116,6 +147,7 @@ export async function connect(token: string, repoName = DEFAULT_REPO): Promise<A
   setToken(token)
   localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account))
   set({ account, status: 'idle', error: null })
+  await applyLogin(account.login)
   // Everything that exists locally must be uploaded at least once.
   await markAllDirtyForFirstSync()
   requestSync('manual')

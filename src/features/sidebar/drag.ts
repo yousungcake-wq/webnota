@@ -131,3 +131,64 @@ export function startDrag(ctx: DragContext) {
   if (ctx.touch) window.addEventListener('touchmove', onTouchMove, { passive: false })
   place(ctx.x, ctx.y)
 }
+
+/** Reorder within a flat list (favorites): drop line between items, `onDrop(id, index)`. */
+export function startListDrag(ctx: {
+  list: HTMLElement
+  id: string
+  x: number
+  y: number
+  touch: boolean
+  onDrop: (id: string, index: number) => void
+}) {
+  const items = () => [...ctx.list.querySelectorAll<HTMLElement>('[data-id]')]
+  const source = items().find((el) => el.dataset.id === ctx.id)
+  const ghost = document.createElement('div')
+  ghost.className = 'tree-ghost'
+  ghost.textContent = source?.textContent ?? ''
+  const line = document.createElement('div')
+  line.className = 'tree-drop-line'
+  document.body.append(ghost, line)
+  source?.classList.add('is-dragging')
+  document.body.classList.add('is-tree-dragging')
+  let index = -1
+  const place = (x: number, y: number) => {
+    ghost.style.transform = `translate(${x + 12}px, ${y + 8}px)`
+    const others = items().filter((el) => el !== source)
+    index = others.findIndex((el) => {
+      const r = el.getBoundingClientRect()
+      return y < r.top + r.height / 2
+    })
+    if (index < 0) index = others.length
+    const ref = others[index] ?? others.at(-1)
+    if (!ref) return
+    const r = ref.getBoundingClientRect()
+    line.style.display = 'block'
+    line.style.top = `${index < others.length ? r.top : r.bottom}px`
+    line.style.left = `${r.left + 8}px`
+    line.style.width = `${r.width - 16}px`
+  }
+  const onMove = (e: PointerEvent) => place(e.clientX, e.clientY)
+  const onTouchMove = (e: TouchEvent) => e.preventDefault()
+  const finish = (commit: boolean) => {
+    window.removeEventListener('pointermove', onMove)
+    window.removeEventListener('pointerup', onUp)
+    window.removeEventListener('pointercancel', onCancel)
+    window.removeEventListener('touchmove', onTouchMove)
+    ghost.remove()
+    line.remove()
+    source?.classList.remove('is-dragging')
+    document.body.classList.remove('is-tree-dragging')
+    const swallow = (e: MouseEvent) => e.preventDefault()
+    window.addEventListener('click', swallow, { capture: true, once: true })
+    setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 100)
+    if (commit && index >= 0) ctx.onDrop(ctx.id, index)
+  }
+  const onUp = () => finish(true)
+  const onCancel = () => finish(false)
+  window.addEventListener('pointermove', onMove)
+  window.addEventListener('pointerup', onUp)
+  window.addEventListener('pointercancel', onCancel)
+  if (ctx.touch) window.addEventListener('touchmove', onTouchMove, { passive: false })
+  place(ctx.x, ctx.y)
+}

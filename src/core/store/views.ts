@@ -1,6 +1,14 @@
 import { useMemo } from 'react'
 import { ws } from '../docs/workspace'
-import { isAlive, listSpaces, listViews, rootSpaceId, visibleSpaces, type ViewMeta } from '../model/views'
+import {
+  isAlive,
+  listFavoriteIds,
+  listSpaces,
+  listViews,
+  rootSpaceId,
+  visibleSpaces,
+  type ViewMeta,
+} from '../model/views'
 import { spacePrefStore } from './prefs'
 import { useStore } from './useStore'
 import { shallowEqual, shallowItemsEqual } from './equality'
@@ -34,6 +42,11 @@ export function useCurrentSpace(): string {
   const spaces = useSpaces()
   const root = useY(ws(), rootSpaceId)
   return pref && visibleSpaces(spaces).some((s) => s.id === pref) ? pref : root
+}
+
+/** The current user's favorites, in their order (alive or not). */
+export function useFavoriteIds(): string[] {
+  return useY(ws(), listFavoriteIds, shallowItemsEqual)
 }
 
 /** All spaces, sorted. */

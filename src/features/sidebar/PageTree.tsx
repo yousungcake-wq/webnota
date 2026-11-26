@@ -1,16 +1,16 @@
 import { ChevronRight, MoreHorizontal, Plus } from 'lucide-react'
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
-import { beginDrag, keyboardMove } from './dragStart'
-import { useViews } from '@/core/store/views'
+import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { beginDrag, beginListDrag, keyboardMove } from './dragStart'
+import { useAliveViews, useFavoriteIds, useViews } from '@/core/store/views'
 import { flattenTree } from './flatten'
 import { useWindow } from './useWindow'
 import { type ViewMeta } from '@/core/model/views'
 import { displayTitle } from '@/features/page'
 import { toggleExpanded, useExpanded } from '@/core/store/prefs'
 import { href } from '@/core/store/router'
-import { addPage, PageMenu, renameStore, renameView, ViewIcon } from '@/features/page'
+import { addPage, PageMenu, pathOf, renameStore, renameView, ViewIcon } from '@/features/page'
 import { ws } from '@/core/docs/workspace'
-import { updateView } from '@/core/model/views'
+import { moveFavorite, updateView } from '@/core/model/views'
 import { useStore } from '@/core/store/useStore'
 import { useLayout } from '@/platform/layout'
 import './tree.css'
@@ -164,7 +164,7 @@ export function PageTree({ spaceId, currentId }: { spaceId: string; currentId?: 
 
 export function PageListItem({ page, subtitle }: { page: ViewMeta; subtitle?: string }) {
   return (
-    <a className="list-item" href={href({ name: 'page', id: page.id })}>
+    <a className="list-item" href={href({ name: 'page', id: page.id })} data-id={page.id} draggable={false}>
       <span className="tree-icon">
         <ViewIcon icon={page.icon} size={18} />
       </span>
@@ -173,5 +173,52 @@ export function PageListItem({ page, subtitle }: { page: ViewMeta; subtitle?: st
         {subtitle && <span className="list-sub">{subtitle}</span>}
       </span>
     </a>
+  )
+}
+
+/** Favorites in the user's order, reorderable by drag (WS-04). */
+export function FavoritesList({
+  withPath = false,
+  empty,
+  header,
+}: {
+  withPath?: boolean
+  empty?: ReactNode
+  /** Shown above the list when there are favorites (sidebar section). */
+  header?: ReactNode
+}) {
+  const { alive, byId } = useAliveViews()
+  const ids = useFavoriteIds()
+  const aliveIds = useMemo(() => new Set(alive.map((v) => v.id)), [alive])
+  const favs = ids.filter((id) => aliveIds.has(id)).map((id) => byId.get(id)!)
+  const listRef = useRef<HTMLDivElement>(null)
+  if (!favs.length) return <>{empty}</>
+  const list = (
+    <div
+      ref={listRef}
+      className="fav-list"
+      onPointerDown={(e) =>
+        beginListDrag(e, listRef.current, (id, index) =>
+          moveFavorite(
+            ws(),
+            id,
+            favs.map((f) => f.id),
+            index,
+          ),
+        )
+      }
+    >
+      {favs.map((p) => (
+        <PageListItem key={p.id} page={p} subtitle={withPath ? pathOf(p, byId) || undefined : undefined} />
+      ))}
+    </div>
+  )
+  return header ? (
+    <section className="section">
+      {header}
+      {list}
+    </section>
+  ) : (
+    list
   )
 }

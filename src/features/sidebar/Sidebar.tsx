@@ -1,12 +1,10 @@
 import { PanelLeftClose, Plus, Search, Settings, Star, Trash2 } from 'lucide-react'
-import { useMemo } from 'react'
-import { isAlive } from '@/core/model/views'
-import { useCurrentSpace, useViews } from '@/core/store/views'
+import { useCurrentSpace } from '@/core/store/views'
 import { href, type Route } from '@/core/store/router'
 import { addPage } from '@/features/page'
 import { SpaceSwitcher } from '@/features/spaces'
 import { SyncBadge } from '@/features/sync'
-import { PageListItem, PageTree } from './PageTree'
+import { FavoritesList, PageTree } from './PageTree'
 import './sidebar.css'
 import { t } from '@/core/i18n'
 import { IconButton } from '@/ui'
@@ -14,13 +12,8 @@ import { debugCrash } from '@/platform/debug'
 
 export function Sidebar({ route, onClose }: { route: Route; onClose: () => void }) {
   debugCrash('sidebar')
-  const pages = useViews()
   const spaceId = useCurrentSpace()
   const currentId = route.name === 'page' ? route.id : undefined
-  const favorites = useMemo(() => {
-    const byId = new Map(pages.map((p) => [p.id, p]))
-    return pages.filter((p) => p.favorite && isAlive(byId, p.id))
-  }, [pages])
 
   return (
     <aside className="sidebar" aria-label={t('sidebar.label')}>
@@ -42,20 +35,15 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
       </nav>
 
       <div className="sidebar-scroll">
-        {favorites.length > 0 && (
-          <section className="section">
+        <FavoritesList
+          header={
             <div className="section-head">
               <span>
                 <Star size={12} /> {t('common.favorites')}
               </span>
             </div>
-            <div className="fav-list">
-              {favorites.map((p) => (
-                <PageListItem key={p.id} page={p} />
-              ))}
-            </div>
-          </section>
-        )}
+          }
+        />
         <section className="section">
           <div className="section-head">
             <SpaceSwitcher />

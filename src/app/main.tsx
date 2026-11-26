@@ -10,7 +10,7 @@ import { initSchema, isReadOnly } from '@/core/schema'
 import { debugFlag } from '@/platform/debug'
 import { applyTheme } from '@/core/store/prefs'
 import { navigate } from '@/core/store/router'
-import { connect, startAutoSync } from '@/core/sync/controller'
+import { connect, initUser, startAutoSync } from '@/core/sync/controller'
 import { loadSeed, preloadEditor } from '@/features/editor'
 import { addPage } from '@/features/page'
 import { configureUi, ErrorBoundary, OverlayHost, toast } from '@/ui'
@@ -44,6 +44,7 @@ async function boot() {
   })
   installGlobalErrorToasts()
 
+  await initUser()
   const welcome = isReadOnly() ? null : seedIfEmpty()
   if (debugFlag('seed-unknown') && !isReadOnly()) await (await import('./qa/seedUnknown')).seedUnknown(wsDoc) // QA: ED-B23
   if (debugFlag('seed-many') && !isReadOnly()) (await import('./qa/seedMany')).seedMany(wsDoc) // QA: virtual tree

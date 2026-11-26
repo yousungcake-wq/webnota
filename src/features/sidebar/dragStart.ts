@@ -15,19 +15,12 @@ const LONG_PRESS = 400
 
 export const preloadDrag = () => import('./drag')
 
-export function beginDrag(
-  e: ReactPointerEvent<HTMLElement>,
-  list: HTMLElement | null,
-  spaceId: string,
-  rows: () => TreeRow[],
-  views: () => ViewMeta[],
-) {
-  if (!list || (e.pointerType === 'mouse' && e.button !== 0)) return
-  const target = e.target as HTMLElement
-  if (target.closest('button, input, .tree-actions')) return
-  const id = target.closest<HTMLElement>('[data-id]')?.dataset.id
-  if (!id) return
-  void preloadDrag()
+/**
+ * Turns a press into a drag: mouse after moving 5px, touch after a 400ms long press
+ * without moving (a moving finger is scrolling). Calls `start` with the pointer position.
+ */
+export function onPress(e: ReactPointerEvent<HTMLElement>, start: (x: number, y: number, touch: boolean) => void) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return false
   const touch = e.pointerType !== 'mouse'
   const x0 = e.clientX
   const y0 = e.clientY
@@ -38,25 +31,60 @@ export function beginDrag(
     window.removeEventListener('pointerup', cleanup)
     window.removeEventListener('pointercancel', cleanup)
   }
-  const start = (x: number, y: number) => {
+  const go = (x: number, y: number) => {
     cleanup()
-    void preloadDrag().then((m) => m.startDrag({ list, id, rows, views, spaceId, x, y, touch }))
+    start(x, y, touch)
   }
   const onMove = (ev: PointerEvent) => {
     const d = Math.hypot(ev.clientX - x0, ev.clientY - y0)
     if (touch) {
-      if (d > TOUCH_SLOP) cleanup() // the finger is scrolling, not dragging
-    } else if (d > MOUSE_SLOP) start(ev.clientX, ev.clientY)
+      if (d > TOUCH_SLOP) cleanup()
+    } else if (d > MOUSE_SLOP) go(ev.clientX, ev.clientY)
   }
   window.addEventListener('pointermove', onMove)
   window.addEventListener('pointerup', cleanup)
   window.addEventListener('pointercancel', cleanup)
-  if (touch) {
+  if (touch)
     timer = setTimeout(() => {
       navigator.vibrate?.(10)
-      start(x0, y0)
+      go(x0, y0)
     }, LONG_PRESS)
-  }
+  return true
+}
+
+const pressedId = (e: ReactPointerEvent<HTMLElement>) => {
+  const target = e.target as HTMLElement
+  if (target.closest('button, input, .tree-actions')) return null
+  return target.closest<HTMLElement>('[data-id]')?.dataset.id ?? null
+}
+
+export function beginDrag(
+  e: ReactPointerEvent<HTMLElement>,
+  list: HTMLElement | null,
+  spaceId: string,
+  rows: () => TreeRow[],
+  views: () => ViewMeta[],
+) {
+  const id = pressedId(e)
+  if (!list || !id) return
+  if (
+    onPress(
+      e,
+      (x, y, touch) => void preloadDrag().then((m) => m.startDrag({ list, id, rows, views, spaceId, x, y, touch })),
+    )
+  )
+    void preloadDrag()
+}
+
+/** Reorder drag for a flat list of `[data-id]` items (favorites). */
+export function beginListDrag(
+  e: ReactPointerEvent<HTMLElement>,
+  list: HTMLElement | null,
+  onDrop: (id: string, index: number) => void,
+) {
+  const id = pressedId(e)
+  if (!list || !id) return
+  onPress(e, (x, y, touch) => void preloadDrag().then((m) => m.startListDrag({ list, id, x, y, touch, onDrop })))
 }
 
 /** Keyboard moves on a focused row (WS-03): Alt+Shift+↑/↓ reorder, →/← indent/outdent. */
