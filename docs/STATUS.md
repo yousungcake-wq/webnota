@@ -4,7 +4,7 @@
 
 ## 현재 위치
 
-- **마일스톤**: M0 기반 정비 — **구현 완료, 사용자 실기기 확인 대기** (docs/QA.md "M0")
+- **마일스톤**: M1 워크스페이스와 탐색 (M0 완료, 실기기 확인은 사용자 선택)
 - **진행 상황**: M0 26개 모두 완료 (M0-01~26: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2, IndexedDB 이름 공간, 문서 LRU, 모르는 노드 보존, 동기화 스케줄, ETag, 탭 리더, 동기화 로그, PWA 아이콘, 회귀 e2e·성능 기준선)
 - **진행 중 항목**: (없음)
 - **다음 할 일**: 사용자 실기기 QA 결과 반영 → M1-01 뷰 모델 API (`docs/CHECKLIST.md` M1, 머리말의 M0 이월 사항 먼저 읽기).
@@ -36,7 +36,7 @@
 - 미완성 기능은 `core/flags.ts`의 `FLAGS`에 `kind: 'feature'`로 추가하고 `useFlag`/`isEnabled`로 가림. 완성 시 플래그 제거.
 - IndexedDB (M0-18): DB 이름은 `idbName(docName)` = `wn:<wsId>:<docName>` (`core/docs/slots.ts`, wsId는 기기 로컬, DECISIONS 016). 옛 `webnota:*` DB는 부팅 시 `core/docs/legacy.ts`가 한 번 이전 (marker `webnota:idb-ns`). 더티 표시(`webnota:dirty`)·동기화 상태 키는 아직 워크스페이스별이 아님 → SY-05(M1). `core/persistence` 폴더는 만들지 않았음 (registry가 y-indexeddb 직접 사용, 필요해지면 분리).
 - 스키마 (M0-15, spec/02 §6 구현 규칙): `SCHEMA_VERSION`은 `core/schema/version.ts`. 새 마이그레이션은 `core/schema/migrations/NNN-name.ts` + 테스트, `MIGRATIONS`에 등록하고 `SCHEMA_VERSION`을 올림. 마이그레이션은 `core/model`을 쓰지 말고 raw Y 코드로, 결정적·멱등(고정 ID). 부팅 순서: `initWorkspace` → `initSchema` → `seedIfEmpty`(읽기 전용이면 생략). 모델 변경 함수에는 `assertWritable()`를 넣음 (`core/model/guard.ts`).
-- 데이터 모델 v2 (M0-16): workspace는 `views`/`spaces`/`users`. UI용 `PageMeta`(`core/model/pages.ts`)는 그대로지만 `order`는 FracKey 문자열, 스페이스가 부모면 `parentId: null`, `icon`은 이모지 값. 현재 사용자는 `getCurrentUser()`=`local` (DECISIONS 015). v1 `pages`는 **동결 사본으로 남아 있음 — 지우지 말 것** (구버전 앱이 원격 파일을 지움). 영구 삭제 시 `pages` 항목도 함께 지움.
+- 데이터 모델 v2 (M0-16, M1-01): workspace는 `views`/`spaces`/`users`. 모델은 `core/model/views.ts`(`ViewMeta`: `parentId`는 부모 뷰 또는 null, `spaceId`는 조상으로 계산, `icon`은 IconValue — 표시는 `features/page`의 `ViewIcon`). 스페이스 API(create/update/move/delete), 즐겨찾기 순서(`listFavoriteIds`/`moveFavorite`), `adoptFavorites`. React는 `core/store/views.ts`의 `useViews`/`useAliveViews`/`useSpaces`. 현재 사용자는 `getCurrentUser()`=`local` (DECISIONS 015). v1 `pages`는 **동결 사본으로 남아 있음 — 지우지 말 것** (구버전 앱이 원격 파일을 지움). 영구 삭제 시 `pages` 항목도 함께 지움.
 - 동기화 경로 v2 (M0-17): `doc/<id>` ↔ `data/docs/<id>.yjs`, DB 경로 매핑도 있음(엔진은 아직 DB 파일을 지우지 않음). 구 `data/pages/` 파일은 첫 동기화에서 이동·삭제 — 구버전 앱은 이후 본문을 못 받음 (사용자 결정).
 
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.

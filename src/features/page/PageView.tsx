@@ -4,9 +4,10 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type * as Y from 'yjs'
 import { openDoc, pageDocName, retainDoc } from '@/core/docs/registry'
 import { ws } from '@/core/docs/workspace'
-import { ancestorsOf, updatePage, type PageMeta } from '@/core/model/pages'
+import { ancestorsOf, updateView, type ViewMeta } from '@/core/model/views'
 import { displayTitle } from './titles'
-import { usePages } from '@/core/store/pages'
+import { emoji, ViewIcon } from './ViewIcon'
+import { useViews } from '@/core/store/views'
 import { schemaStore } from '@/core/schema'
 import { useStore } from '@/core/store/useStore'
 import { goBack, href } from '@/core/store/router'
@@ -34,7 +35,7 @@ export function PageView({
   sidebarOpen?: boolean
   onToggleSidebar?: () => void
 }) {
-  const pages = usePages()
+  const pages = useViews()
   const page = pages.find((p) => p.id === id)
   const phone = useLayout().layout === 'phone'
   const [loaded, setLoaded] = useState<{ id: string; doc: Y.Doc } | null>(null)
@@ -82,14 +83,22 @@ export function PageView({
             crumbs.map((c) => (
               <span key={c.id} className="crumb">
                 <a href={href({ name: 'page', id: c.id })}>
-                  {c.icon && <span>{c.icon}</span>}
+                  {c.icon && (
+                    <span>
+                      <ViewIcon icon={c.icon} />
+                    </span>
+                  )}
                   {displayTitle(c.title)}
                 </a>
                 <span className="crumb-sep">/</span>
               </span>
             ))}
           <span className="crumb is-current">
-            {page.icon && <span>{page.icon}</span>}
+            {page.icon && (
+              <span>
+                <ViewIcon icon={page.icon} />
+              </span>
+            )}
             {displayTitle(page.title)}
           </span>
         </nav>
@@ -140,7 +149,7 @@ export function PageView({
   )
 }
 
-function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
+function PageHead({ page, onEnter }: { page: ViewMeta; onEnter: () => void }) {
   const [title, setTitle] = useState(page.title)
   const focused = useRef(false)
   const taRef = useRef<HTMLTextAreaElement>(null)
@@ -170,7 +179,7 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
           disabled={readOnly}
           onClick={(e) => setPicker(e.currentTarget)}
         >
-          {page.icon}
+          <ViewIcon icon={page.icon} size={48} />
         </button>
       ) : (
         !readOnly && (
@@ -194,7 +203,7 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
         onChange={(e) => {
           const v = e.target.value.replace(/\n/g, '')
           setTitle(v)
-          updatePage(ws(), page.id, { title: v })
+          updateView(ws(), page.id, { title: v })
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
@@ -212,7 +221,7 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
                 type="button"
                 className="emoji-btn"
                 onClick={() => {
-                  updatePage(ws(), page.id, { icon: em })
+                  updateView(ws(), page.id, { icon: emoji(em) })
                   setPicker(null)
                 }}
               >
@@ -225,7 +234,7 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
               variant="ghost"
               full
               onClick={() => {
-                updatePage(ws(), page.id, { icon: '' })
+                updateView(ws(), page.id, { icon: null })
                 setPicker(null)
               }}
             >

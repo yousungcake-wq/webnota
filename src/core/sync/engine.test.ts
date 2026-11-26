@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import * as Y from 'yjs'
-import { createPage, deletePagePermanently, listPages, updatePage } from '../model/pages'
+import { createView, deleteViewPermanently, listViews, updateView } from '../model/views'
 import { gitBlobSha } from './encoding'
 import { docForPath, pathForDoc, syncOnce, type GitApi, type LocalStore, type SyncState } from './engine'
 
@@ -124,7 +124,7 @@ describe('sync engine', () => {
     const remote = new FakeRemote()
     const a = new Device()
     const b = new Device()
-    const id = createPage(a.ws, { title: '회의록' })
+    const id = createView(a.ws, { title: '회의록' })
     a.type(id, 0, '안녕하세요')
 
     const r1 = await syncOnce(remote, a)
@@ -135,7 +135,7 @@ describe('sync engine', () => {
     const r2 = await syncOnce(remote, b)
     expect(r2.pulled).toBe(2)
     expect(r2.pushed).toBe(0)
-    expect(listPages(b.ws).map((p) => p.title)).toEqual(['회의록'])
+    expect(listViews(b.ws).map((p) => p.title)).toEqual(['회의록'])
     expect(b.text(id)).toBe('안녕하세요')
     expect(b.dirty).toEqual({}) // remote updates must not mark docs dirty
   })
@@ -143,7 +143,7 @@ describe('sync engine', () => {
   it('does a single cheap request when nothing changed', async () => {
     const remote = new FakeRemote()
     const a = new Device()
-    createPage(a.ws, { title: 'x' })
+    createView(a.ws, { title: 'x' })
     await syncOnce(remote, a)
     remote.requests = 0
     await syncOnce(remote, a)
@@ -154,17 +154,17 @@ describe('sync engine', () => {
     const remote = new FakeRemote()
     const a = new Device()
     const b = new Device()
-    const id = createPage(a.ws, { title: '공유 문서' })
+    const id = createView(a.ws, { title: '공유 문서' })
     a.type(id, 0, 'base')
     await syncOnce(remote, a)
     await syncOnce(remote, b)
 
     // both edit offline
     a.type(id, 0, 'A-')
-    updatePage(a.ws, id, { title: '제목 A' })
+    updateView(a.ws, id, { title: '제목 A' })
     b.type(id, 4, '-B')
-    updatePage(b.ws, id, { favorite: true })
-    const idB = createPage(b.ws, { title: 'B의 새 페이지' })
+    updateView(b.ws, id, { favorite: true })
+    const idB = createView(b.ws, { title: 'B의 새 페이지' })
 
     await syncOnce(remote, a)
     await syncOnce(remote, b) // B pulls A's changes, merges, pushes
@@ -172,10 +172,10 @@ describe('sync engine', () => {
 
     for (const d of [a, b]) {
       expect(d.text(id)).toBe('A-base-B')
-      const p = listPages(d.ws).find((x) => x.id === id)!
+      const p = listViews(d.ws).find((x) => x.id === id)!
       expect(p.title).toBe('제목 A')
       expect(p.favorite).toBe(true)
-      expect(listPages(d.ws).some((x) => x.id === idB)).toBe(true)
+      expect(listViews(d.ws).some((x) => x.id === idB)).toBe(true)
     }
   })
 
@@ -183,7 +183,7 @@ describe('sync engine', () => {
     const remote = new FakeRemote()
     const a = new Device()
     const b = new Device()
-    const id = createPage(a.ws, { title: 'race' })
+    const id = createView(a.ws, { title: 'race' })
     await syncOnce(remote, a)
     await syncOnce(remote, b)
 
@@ -204,7 +204,7 @@ describe('sync engine', () => {
   it('keeps edits made while a sync is in flight dirty', async () => {
     const remote = new FakeRemote()
     const a = new Device()
-    const id = createPage(a.ws, { title: 't' })
+    const id = createView(a.ws, { title: 't' })
     remote.beforeUpdateHead = async () => {
       a.type(id, 0, 'typed during sync')
     }
@@ -221,14 +221,14 @@ describe('sync engine', () => {
     const remote = new FakeRemote()
     const a = new Device()
     const b = new Device()
-    const parent = createPage(a.ws, { title: 'parent' })
-    const child = createPage(a.ws, { title: 'child', parentId: parent })
+    const parent = createView(a.ws, { title: 'parent' })
+    const child = createView(a.ws, { title: 'child', parentId: parent })
     a.type(parent, 0, 'p')
     a.type(child, 0, 'x')
     await syncOnce(remote, a)
     await syncOnce(remote, b)
 
-    deletePagePermanently(a.ws, parent)
+    deleteViewPermanently(a.ws, parent)
     const r = await syncOnce(remote, a)
     expect(r.deleted).toBe(2)
     expect(remote.files()).toEqual(['data/workspace.yjs'])
@@ -237,17 +237,17 @@ describe('sync engine', () => {
     b.type(child, 0, 'late edit')
     await syncOnce(remote, b)
     expect(remote.files()).toEqual(['data/workspace.yjs'])
-    expect(listPages(b.ws)).toEqual([])
+    expect(listViews(b.ws)).toEqual([])
   })
   it('pulls but does not push while canPush() is false (schema read-only gate)', async () => {
     const remote = new FakeRemote()
     const a = new Device()
     const b = new Device()
-    createPage(a.ws, { title: 'from a' })
+    createView(a.ws, { title: 'from a' })
     await syncOnce(remote, a)
     const headBefore = remote.head
 
-    createPage(b.ws, { title: 'local on b' })
+    createView(b.ws, { title: 'local on b' })
     const r = await syncOnce(remote, b, { canPush: () => false })
     expect(r.pulled).toBe(1)
     expect(r.pushed).toBe(0)
@@ -257,7 +257,7 @@ describe('sync engine', () => {
     // the gate is checked after the pull, so a newer version pulled in that round blocks the push
     let pulledYet = false
     const c = new Device()
-    createPage(c.ws, { title: 'local on c' })
+    createView(c.ws, { title: 'local on c' })
     c.ws.on('update', (_u: Uint8Array, origin: unknown) => {
       if (origin === 'webnota-remote') pulledYet = true
     })
@@ -276,7 +276,7 @@ describe('sync engine', () => {
     it('moves legacy data/pages files to data/docs in one commit, keeping the content', async () => {
       const remote = new FakeRemote()
       const a = new Device()
-      const id = createPage(a.ws, { title: 'p' })
+      const id = createView(a.ws, { title: 'p' })
       await remote.seed({ [`data/pages/${id}.yjs`]: v1Content('옛 본문') })
       const commitsBefore = remote.commits.size
 
@@ -296,7 +296,7 @@ describe('sync engine', () => {
     it('merges a legacy file with an existing new-path file of the same doc', async () => {
       const remote = new FakeRemote()
       const a = new Device()
-      const id = createPage(a.ws, { title: 'p' })
+      const id = createView(a.ws, { title: 'p' })
       a.type(id, 0, 'new ')
       await syncOnce(remote, a)
       await remote.seed({ [`data/pages/${id}.yjs`]: v1Content('old') }) // a stale v1 device pushed late
@@ -314,7 +314,7 @@ describe('sync engine', () => {
     it('deletes legacy files of pages that no longer exist instead of moving them', async () => {
       const remote = new FakeRemote()
       const a = new Device()
-      createPage(a.ws, { title: 'p' })
+      createView(a.ws, { title: 'p' })
       await remote.seed({ 'data/pages/gone.yjs': v1Content('x') })
       await syncOnce(remote, a)
       expect(remote.files().filter((f) => f.includes('gone'))).toEqual([])
@@ -324,7 +324,7 @@ describe('sync engine', () => {
     it('moves legacy files even when nothing is dirty and the head did not change', async () => {
       const remote = new FakeRemote()
       const a = new Device()
-      const id = createPage(a.ws, { title: 'p' })
+      const id = createView(a.ws, { title: 'p' })
       await syncOnce(remote, a)
       await remote.seed({ [`data/pages/${id}.yjs`]: v1Content('late v1') })
       await syncOnce(remote, a, { canPush: () => false }) // pulled (head + blob recorded), not moved
@@ -337,7 +337,7 @@ describe('sync engine', () => {
     it('leaves legacy files alone while read-only', async () => {
       const remote = new FakeRemote()
       const a = new Device()
-      const id = createPage(a.ws, { title: 'p' })
+      const id = createView(a.ws, { title: 'p' })
       await remote.seed({ [`data/pages/${id}.yjs`]: v1Content('x') })
       await syncOnce(remote, a, { canPush: () => false })
       expect(remote.files()).toEqual([`data/pages/${id}.yjs`])

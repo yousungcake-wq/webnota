@@ -1,6 +1,6 @@
 import { t } from '../i18n'
 import type * as Y from 'yjs'
-import { createPage, viewsOf } from '../model/pages'
+import { createView, viewsOf } from '../model/views'
 import { openDoc, WORKSPACE } from './registry'
 
 let wsDoc: Y.Doc | null = null
@@ -23,5 +23,5 @@ export function seedIfEmpty(): string | null {
   if (viewsOf(doc).size > 0) return null
   if (localStorage.getItem('webnota:seeded')) return null
   localStorage.setItem('webnota:seeded', '1')
-  return createPage(doc, { title: t('page.welcomeTitle'), icon: '👋' })
+  return createView(doc, { title: t('page.welcomeTitle'), icon: { type: 'emoji', value: '👋' } })
 }

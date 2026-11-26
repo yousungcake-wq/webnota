@@ -1,5 +1,5 @@
 import { t } from '@/core/i18n'
-import { ReadOnlyError } from '@/core/model/pages'
+import { ReadOnlyError } from '@/core/model/views'
 import { toast } from '@/ui'
 
 /** Benign browser noise that should never reach the user. */

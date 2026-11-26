@@ -1,11 +1,11 @@
 import { pathOf } from '@/features/page'
-import { useAlivePages } from '@/core/store/pages'
+import { useAliveViews } from '@/core/store/views'
 import { PageListItem } from '@/features/sidebar'
 import { ViewHeader } from '@/ui'
 import { t } from '@/core/i18n'
 
 export function FavoritesView() {
-  const { alive, byId } = useAlivePages()
+  const { alive, byId } = useAliveViews()
   const favs = alive.filter((p) => p.favorite)
   return (
     <div className="view">

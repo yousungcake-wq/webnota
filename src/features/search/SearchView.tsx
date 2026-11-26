@@ -1,14 +1,14 @@
 import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { displayTitle, pathOf } from '@/features/page'
-import { useAlivePages } from '@/core/store/pages'
+import { useAliveViews } from '@/core/store/views'
 import { PageListItem } from '@/features/sidebar'
 import { ViewHeader } from '@/ui'
 import './search.css'
 import { t } from '@/core/i18n'
 
 export function SearchView({ autoFocus = true }: { autoFocus?: boolean }) {
-  const { alive, byId } = useAlivePages()
+  const { alive, byId } = useAliveViews()
   const [q, setQ] = useState('')
   const results = useMemo(() => {
     const s = q.trim().toLowerCase()

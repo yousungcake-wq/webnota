@@ -2,3 +2,4 @@ export { addPage, deleteForever, duplicatePage, moveToTrash, restore, toggleFavo
 export { PageMenu } from './PageMenu'
 export { PageView } from './PageView'
 export { displayTitle, pathOf } from './titles'
+export { emoji, ViewIcon } from './ViewIcon'

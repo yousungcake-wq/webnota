@@ -1,18 +1,18 @@
-import { ChevronRight, FileText, MoreHorizontal, Plus } from 'lucide-react'
+import { ChevronRight, MoreHorizontal, Plus } from 'lucide-react'
 import { memo, useMemo, useState } from 'react'
-import { type PageMeta } from '@/core/model/pages'
+import { type ViewMeta } from '@/core/model/views'
 import { displayTitle } from '@/features/page'
 import { toggleExpanded, useExpanded } from '@/core/store/prefs'
 import { href } from '@/core/store/router'
-import { addPage, PageMenu } from '@/features/page'
+import { addPage, PageMenu, ViewIcon } from '@/features/page'
 import './tree.css'
 import { t } from '@/core/i18n'
 import { IconButton } from '@/ui'
 
-export function usePageIndex(pages: PageMeta[]) {
+export function usePageIndex(pages: ViewMeta[]) {
   return useMemo(() => {
     const byId = new Map(pages.map((p) => [p.id, p]))
-    const children = new Map<string | null, PageMeta[]>()
+    const children = new Map<string | null, ViewMeta[]>()
     for (const p of pages) {
       if (p.deletedAt) continue
       const key = p.parentId && byId.has(p.parentId) ? p.parentId : null
@@ -32,7 +32,7 @@ const Row = memo(function Row({
   currentId,
   expanded,
 }: {
-  page: PageMeta
+  page: ViewMeta
   depth: number
   index: Index
   currentId?: string
@@ -54,7 +54,9 @@ const Row = memo(function Row({
           {kids.length ? <ChevronRight size={16} /> : <span className="tree-dot" />}
         </button>
         <a className="tree-link" href={href({ name: 'page', id: page.id })}>
-          <span className="tree-icon">{page.icon || <FileText size={16} />}</span>
+          <span className="tree-icon">
+            <ViewIcon icon={page.icon} />
+          </span>
           <span className="tree-title">{displayTitle(page.title)}</span>
         </a>
         <div className="tree-actions">
@@ -81,7 +83,7 @@ const Row = memo(function Row({
   )
 })
 
-export function PageTree({ pages, currentId }: { pages: PageMeta[]; currentId?: string }) {
+export function PageTree({ pages, currentId }: { pages: ViewMeta[]; currentId?: string }) {
   const index = usePageIndex(pages)
   const expanded = useExpanded()
   const roots = index.children.get(null) ?? []
@@ -97,10 +99,12 @@ export function PageTree({ pages, currentId }: { pages: PageMeta[]; currentId?: 
   )
 }
 
-export function PageListItem({ page, subtitle }: { page: PageMeta; subtitle?: string }) {
+export function PageListItem({ page, subtitle }: { page: ViewMeta; subtitle?: string }) {
   return (
     <a className="list-item" href={href({ name: 'page', id: page.id })}>
-      <span className="tree-icon">{page.icon || <FileText size={18} />}</span>
+      <span className="tree-icon">
+        <ViewIcon icon={page.icon} size={18} />
+      </span>
       <span className="list-text">
         <span className="list-title">{displayTitle(page.title)}</span>
         {subtitle && <span className="list-sub">{subtitle}</span>}

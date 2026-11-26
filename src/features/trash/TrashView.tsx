@@ -1,12 +1,12 @@
 import { RotateCcw, Trash2 } from 'lucide-react'
 import { displayTitle } from '@/features/page'
-import { usePages } from '@/core/store/pages'
-import { deleteForever, restore } from '@/features/page'
+import { useViews } from '@/core/store/views'
+import { deleteForever, restore, ViewIcon } from '@/features/page'
 import { confirmDialog, IconButton, ViewHeader } from '@/ui'
 import { t, getLang } from '@/core/i18n'
 
 export function TrashView() {
-  const pages = usePages()
+  const pages = useViews()
   const trashed = pages.filter((p) => p.deletedAt).sort((a, b) => (b.deletedAt ?? 0) - (a.deletedAt ?? 0))
   return (
     <div className="view">
@@ -14,7 +14,9 @@ export function TrashView() {
       <div className="list">
         {trashed.map((p) => (
           <div key={p.id} className="list-item static">
-            <span className="tree-icon">{p.icon || '📄'}</span>
+            <span className="tree-icon">
+              <ViewIcon icon={p.icon} />
+            </span>
             <span className="list-text">
               <span className="list-title">{displayTitle(p.title)}</span>
               <span className="list-sub">

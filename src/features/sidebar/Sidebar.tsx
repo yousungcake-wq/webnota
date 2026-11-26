@@ -1,7 +1,7 @@
 import { PanelLeftClose, Plus, Search, Settings, Star, Trash2 } from 'lucide-react'
 import { useMemo } from 'react'
-import { isAlive } from '@/core/model/pages'
-import { usePages } from '@/core/store/pages'
+import { isAlive } from '@/core/model/views'
+import { useViews } from '@/core/store/views'
 import { href, type Route } from '@/core/store/router'
 import { addPage } from '@/features/page'
 import { SyncBadge } from '@/features/sync'
@@ -13,7 +13,7 @@ import { debugCrash } from '@/platform/debug'
 
 export function Sidebar({ route, onClose }: { route: Route; onClose: () => void }) {
   debugCrash('sidebar')
-  const pages = usePages()
+  const pages = useViews()
   const currentId = route.name === 'page' ? route.id : undefined
   const favorites = useMemo(() => {
     const byId = new Map(pages.map((p) => [p.id, p]))

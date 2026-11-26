@@ -1,6 +1,6 @@
 import { Home, Search, Settings, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { usePages } from '@/core/store/pages'
+import { useViews } from '@/core/store/views'
 import { href, navigate, useRoute, type Route } from '@/core/store/router'
 import { FavoritesView } from '@/features/favorites'
 import { HomeView } from '@/features/home'
@@ -20,7 +20,7 @@ export function App() {
   const route = useRoute()
   const phone = useLayout().layout === 'phone'
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const pages = usePages()
+  const pages = useViews()
 
   // Remember the last opened page so desktop opens straight into it.
   useEffect(() => {

@@ -1,6 +1,6 @@
 import * as Y from 'yjs'
 import { openDoc, pageDocName } from '@/core/docs/registry'
-import { createPage } from '@/core/model/pages'
+import { createView } from '@/core/model/views'
 
 /**
  * QA (`webnota:debug=seed-unknown`): once, adds a page whose body holds a block type and
@@ -10,7 +10,7 @@ const DONE = 'webnota:qa-seed-unknown'
 
 export async function seedUnknown(ws: Y.Doc): Promise<void> {
   if (localStorage.getItem(DONE)) return
-  const id = createPage(ws, { title: 'Unknown content test' })
+  const id = createView(ws, { title: 'Unknown content test' })
   const doc = await openDoc(pageDocName(id))
   const para = (text: string, attrs?: Record<string, unknown>) => {
     const p = new Y.XmlElement('paragraph')

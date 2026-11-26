@@ -3,7 +3,7 @@ import { t } from '../i18n'
 import { getToken, setToken } from '../auth/auth'
 import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc, pageDocName, retainDoc, tabs } from '../docs/registry'
 import { currentWorkspaceId } from '../docs/slots'
-import { listPages } from '../model/pages'
+import { listViews } from '../model/views'
 import { createStore } from '../store/createStore'
 import { isReadOnly } from '../schema/gate'
 import { ConflictRetryError, syncOnce, type LocalStore, type SyncState } from './engine'
@@ -125,7 +125,7 @@ export async function connect(token: string, repoName = DEFAULT_REPO): Promise<A
 async function markAllDirtyForFirstSync() {
   const ws = await openDoc('workspace')
   markDirty('workspace')
-  for (const p of listPages(ws)) markDirty(pageDocName(p.id))
+  for (const p of listViews(ws)) markDirty(pageDocName(p.id))
 }
 
 export function disconnect() {

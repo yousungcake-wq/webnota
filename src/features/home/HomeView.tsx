@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react'
-import { usePages } from '@/core/store/pages'
+import { useViews } from '@/core/store/views'
 import { addPage } from '@/features/page'
 import { PageTree } from '@/features/sidebar'
 import { SyncBadge } from '@/features/sync'
@@ -8,7 +8,7 @@ import { t } from '@/core/i18n'
 
 /** Mobile home screen: the page tree, full width. */
 export function HomeView() {
-  const pages = usePages()
+  const pages = useViews()
   return (
     <div className="view">
       <ViewHeader title="WebNota" right={<SyncBadge />} />

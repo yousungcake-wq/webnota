@@ -1,5 +1,5 @@
 import { Copy, Plus, Star, StarOff, Trash2 } from 'lucide-react'
-import { type PageMeta } from '@/core/model/pages'
+import { type ViewMeta } from '@/core/model/views'
 import { displayTitle } from './titles'
 import { Menu } from '@/ui'
 import { addPage, duplicatePage, moveToTrash, toggleFavorite } from './actions'
@@ -11,7 +11,7 @@ export function PageMenu({
   currentId,
   onClose,
 }: {
-  page: PageMeta
+  page: ViewMeta
   anchor: HTMLElement | null
   currentId?: string
   onClose: () => void
