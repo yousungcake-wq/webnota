@@ -25,7 +25,9 @@ import {
   duplicateBlock,
   ensureBlockId,
   mergeLastColumn,
+  duplicateRange,
   setBlockAttr,
+  setRangeAttr,
   supportsAttr,
 } from './blockOps'
 import { BLOCKS } from './blocks'
@@ -45,15 +47,20 @@ export function BlockMenu({
   pageId,
   anchor,
   onClose,
+  selection,
 }: {
   editor: TEditor
   pos: number
   pageId?: string
   anchor: HTMLElement | null
   onClose: () => void
+  /** Several selected blocks (ED-F04): start positions, and the [from, to) range they cover. */
+  selection?: { positions: number[]; from: number; to: number }
 }) {
   const node = editor.state.doc.nodeAt(pos)
   if (!node) return null
+  if (selection && selection.positions.length > 1)
+    return <MultiBlockMenu editor={editor} selection={selection} anchor={anchor} onClose={onClose} />
   const apply = (tr: Transaction | null) => {
     if (tr) editor.view.dispatch(tr.scrollIntoView())
     editor.commands.focus()
@@ -171,4 +178,60 @@ export function BlockMenu({
     onSelect: () => apply(deleteBlock(editor.state, pos)),
   })
   return <Menu anchor={anchor} title={t('blockMenu.title')} items={items} onClose={onClose} />
+}
+
+/** Block menu for several selected blocks: turn into, colors, duplicate, delete. */
+function MultiBlockMenu({
+  editor,
+  selection,
+  anchor,
+  onClose,
+}: {
+  editor: TEditor
+  selection: { positions: number[]; from: number; to: number }
+  anchor: HTMLElement | null
+  onClose: () => void
+}) {
+  const { positions, from, to } = selection
+  const apply = (tr: Transaction | null) => {
+    if (tr) editor.view.dispatch(tr.scrollIntoView())
+    editor.commands.focus()
+  }
+  const colorItems = (attr: 'textColor' | 'bgColor'): MenuEntry[] =>
+    [null, ...PALETTE].map((c) => ({
+      label: c ? t(`color.${c}` as MessageKey) : t('emoji.defaultColor'),
+      onSelect: () => apply(setRangeAttr(editor.state, positions, attr, c)),
+    }))
+  const items: MenuEntry[] = [
+    {
+      label: t('blockMenu.turnInto'),
+      icon: Repeat,
+      children: BLOCKS.filter((b) => b.turnInto && !b.id.startsWith('toggle') && b.id !== 'callout').map((b) => ({
+        label: b.title,
+        icon: b.icon,
+        onSelect: () => {
+          recordBlockUse(b.id)
+          b.run(
+            editor
+              .chain()
+              .focus()
+              .setTextSelection({ from: from + 1, to: to - 1 }),
+          ).run()
+        },
+      })),
+    },
+    { label: t('blockMenu.color'), icon: Baseline, children: colorItems('textColor') },
+    { label: t('blockMenu.background'), icon: PaintBucket, children: colorItems('bgColor') },
+    'separator',
+    { label: t('blockMenu.duplicate'), icon: Copy, onSelect: () => apply(duplicateRange(editor.state, from, to)) },
+    {
+      label: t('blockMenu.delete'),
+      icon: Trash2,
+      danger: true,
+      onSelect: () => apply(editor.state.tr.delete(from, to)),
+    },
+  ]
+  return (
+    <Menu anchor={anchor} title={t('blockMenu.titleMany', { n: positions.length })} items={items} onClose={onClose} />
+  )
 }

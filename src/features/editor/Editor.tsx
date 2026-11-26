@@ -30,6 +30,7 @@ import { LinkBubble, LinkSheet, promptLink } from './LinkBubble'
 import { openHref } from './link'
 import { BlockMenu } from './BlockMenu'
 import { findBlock } from './blockOps'
+import { blockRangeOf, blockRangePositions, selectedBlockPositions } from './blockSelection'
 import { KeyboardToolbar } from './KeyboardToolbar'
 import { hasTable, isCellSelection, loadTableKit, TableMenu } from './TableMenu'
 import './editor.css'
@@ -133,7 +134,59 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
   }, [editor, focusBlock])
 
   // Block menu (ED-F03): the drag handle's grip opens it for the hovered block.
-  const [blockMenu, setBlockMenu] = useState<{ pos: number; anchor: HTMLElement } | null>(null)
+  const [blockMenu, setBlockMenu] = useState<{
+    pos: number
+    anchor: HTMLElement
+    selection?: { positions: number[]; from: number; to: number }
+  } | null>(null)
+  const openBlockMenu = (pos: number, anchor: HTMLElement) => {
+    if (!editor) return
+    // a click on one of several selected blocks acts on all of them (ED-F04)
+    const positions = selectedBlockPositions(editor.state)
+    const range = blockRangeOf(editor.state)
+    const selection =
+      range && positions.length > 1 && positions.includes(pos)
+        ? { positions, ...blockRangePositions(editor.state.doc, range) }
+        : undefined
+    setBlockMenu({ pos, anchor, selection })
+  }
+
+  // Dragging in the page margin (outside the text) selects whole blocks (ED-F04).
+  useEffect(() => {
+    const body = wrapRef.current?.closest<HTMLElement>('.page-body')
+    if (!body || !editor || coarse) return
+    const indexAtY = (y: number) => {
+      const rect = editor.view.dom.getBoundingClientRect()
+      const top = Math.min(Math.max(y, rect.top + 1), rect.bottom - 1)
+      const hit = editor.view.posAtCoords({ left: rect.left + rect.width / 2, top })
+      return hit ? editor.state.doc.resolve(hit.pos).index(0) : null
+    }
+    const onDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (e.button !== 0 || !editor.isEditable) return
+      if (target.closest('.wn-editor, .page-head, button, input, a, .block-actions, [role="dialog"]')) return
+      const rect = editor.view.dom.getBoundingClientRect()
+      if (e.clientY < rect.top) return
+      const anchor = indexAtY(e.clientY)
+      if (anchor === null) return
+      e.preventDefault()
+      editor.view.focus()
+      editor.commands.selectBlocks(anchor, anchor)
+      const onMove = (ev: MouseEvent) => {
+        const head = indexAtY(ev.clientY)
+        const r = blockRangeOf(editor.state)
+        if (head !== null && r && head !== r.head) editor.commands.selectBlocks(anchor, head)
+      }
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove)
+        window.removeEventListener('mouseup', onUp)
+      }
+      window.addEventListener('mousemove', onMove)
+      window.addEventListener('mouseup', onUp)
+    }
+    body.addEventListener('mousedown', onDown)
+    return () => body.removeEventListener('mousedown', onDown)
+  }, [editor, coarse])
 
   // Table editing (ED-B16) loads with the first table on the page, then stays registered.
   useEffect(() => {
@@ -220,7 +273,7 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
               aria-label={t('blockMenu.title')}
               onClick={(e) => {
                 const { pos } = hovered.current
-                if (pos >= 0) setBlockMenu({ pos, anchor: e.currentTarget })
+                if (pos >= 0) openBlockMenu(pos, e.currentTarget)
               }}
             >
               <GripVertical size={16} />
@@ -237,6 +290,7 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
           pos={blockMenu.pos}
           pageId={pageId}
           anchor={blockMenu.anchor}
+          selection={blockMenu.selection}
           onClose={() => setBlockMenu(null)}
         />
       )}

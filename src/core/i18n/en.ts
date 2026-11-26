@@ -139,6 +139,7 @@ export const en: Record<MessageKey, string> = {
   'table.deleteColumn': 'Delete column',
   'table.delete': 'Delete table',
   'blockMenu.title': 'Block menu',
+  'blockMenu.titleMany': '{n} blocks',
   'blockMenu.turnInto': 'Turn into',
   'blockMenu.color': 'Text color',
   'blockMenu.background': 'Background',

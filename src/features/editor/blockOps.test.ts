@@ -4,10 +4,12 @@ import {
   addColumn,
   deleteBlock,
   duplicateBlock,
+  duplicateRange,
   ensureBlockId,
   findBlock,
   mergeLastColumn,
   setBlockAttr,
+  setRangeAttr,
   supportsAttr,
 } from './blockOps'
 import { docSchema } from './schema'
@@ -71,5 +73,17 @@ describe('block ops', () => {
     expect(merged.child(1).textContent).toBe('c1c2')
     const two = state([cols(2)])
     expect(mergeLastColumn(two, 0)).toBeNull()
+  })
+})
+
+describe('range ops', () => {
+  it('duplicates several blocks after the range and colors them all', () => {
+    const s = state([p('a'), p('b'), p('c')])
+    const a = 0
+    const b = s.doc.child(0).nodeSize
+    const end = b + s.doc.child(1).nodeSize
+    expect(texts(s.apply(duplicateRange(s, a, end)))).toEqual(['a', 'b', 'a', 'b', 'c'])
+    const colored = s.apply(setRangeAttr(s, [a, b], 'bgColor', 'red')!)
+    expect([0, 1, 2].map((i) => colored.doc.child(i).attrs.bgColor)).toEqual(['red', 'red', null])
   })
 })

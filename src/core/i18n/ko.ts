@@ -143,6 +143,7 @@ export const ko = {
   'table.deleteColumn': '열 삭제',
   'table.delete': '표 삭제',
   'blockMenu.title': '블록 메뉴',
+  'blockMenu.titleMany': '블록 {n}개',
   'blockMenu.turnInto': '블록 바꾸기',
   'blockMenu.color': '글자 색',
   'blockMenu.background': '배경색',
