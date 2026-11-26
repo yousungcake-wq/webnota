@@ -14,6 +14,7 @@ const BUDGETS = {
   editor: { kb: 210, entry: 'src/features/editor/Editor.tsx' },
   i18n: { kb: 8, entry: 'src/core/i18n/ko.ts' }, // one language's dictionary, loaded at boot
   sync: { kb: 12, entry: 'src/core/sync/remote.ts' }, // GitHub client + engine, only once connected
+  migrations: { kb: 8, entry: 'src/core/schema/migrations/index.ts' }, // only when data needs migrating
   // Add as features land: database: { kb: 120, entry: 'src/features/database/index.ts' }, …
 }
 

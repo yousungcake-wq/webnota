@@ -31,7 +31,7 @@ async function boot() {
   const [wsDoc] = await Promise.all([initWorkspace(), initI18n()])
   // Migrate or gate before anything reads or writes the workspace (spec/02 §6).
   // QA: `webnota:debug=schema-newer` pretends the data is newer than this build.
-  initSchema(wsDoc, {
+  await initSchema(wsDoc, {
     ctx: { defaultSpaceName: t('space.default') },
     ...(debugFlag('schema-newer') ? { appVersion: 0 } : {}),
   })

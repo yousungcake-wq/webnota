@@ -2,7 +2,7 @@ import type * as Y from 'yjs'
 import { setWriteGuard } from '../model/guard'
 import { createStore } from '../store/createStore'
 import { MIGRATION_ORIGIN, migrateDoc, type MigrateOptions, type SchemaStatus } from './migrate'
-import { MIGRATIONS } from './migrations'
+import { LEFTOVERS } from './migrations/leftovers'
 import { getSchemaVersion, SCHEMA_VERSION } from './version'
 
 export interface SchemaState {
@@ -42,34 +42,39 @@ function publish(status: SchemaStatus, docVersion: number, appVersion: number) {
  * re-runs the idempotent migrations.
  * While read-only, `core/model` mutations throw `ReadOnlyError`.
  */
-export function initSchema(doc: Y.Doc, opts: MigrateOptions = {}): SchemaState {
+export async function initSchema(doc: Y.Doc, opts: MigrateOptions = {}): Promise<SchemaState> {
   detach?.()
   const appVersion = opts.appVersion ?? SCHEMA_VERSION
   setWriteGuard(() => !isReadOnly())
+  const leftovers = opts.migrations ?? LEFTOVERS
+  const needsMigration = (v: number) => v < appVersion || leftovers.some((m) => m.version <= v && m.leftover?.(doc))
 
-  const run = () => {
-    const r = migrateDoc(doc, { ...opts, appVersion })
+  const run = async () => {
+    const v = getSchemaVersion(doc)
+    if (Number.isNaN(v) || v > appVersion) return publish('newer', v, appVersion)
+    if (!needsMigration(v)) return publish('current', v, appVersion)
+    // The migrations themselves load only when there is something to migrate.
+    const migrations = opts.migrations ?? (await import('./migrations')).MIGRATIONS
+    const r = migrateDoc(doc, { ...opts, migrations, appVersion })
     publish(r.status, Number.isNaN(r.docVersion) ? r.docVersion : getSchemaVersion(doc), appVersion)
-
     if (r.status === 'failed') console.error('[webnota:schema] migration failed', r.error)
   }
-  run()
+  await run()
 
   // After every change (remote merges included): a newer version locks writes at once,
   // before the sync engine can push; an older version or old-shape leftovers re-run the
   // idempotent migrations (deferred: no writes inside an update handler).
-  const migrations = opts.migrations ?? MIGRATIONS
   let scheduled = false
   const onUpdate = (_u: Uint8Array, origin: unknown) => {
     if (origin === MIGRATION_ORIGIN) return
     const v = getSchemaVersion(doc)
     if (Number.isNaN(v) || v > appVersion) return publish('newer', v, appVersion)
-    if (v < appVersion || migrations.some((m) => m.version <= v && m.leftover?.(doc))) {
+    if (needsMigration(v)) {
       if (!scheduled) {
         scheduled = true
         queueMicrotask(() => {
           scheduled = false
-          run()
+          void run()
         })
       }
     } else if (schemaStore.get().status === 'newer') publish('current', v, appVersion)

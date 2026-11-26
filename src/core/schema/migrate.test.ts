@@ -156,3 +156,12 @@ describe('migrateDoc', () => {
     expect(Y.encodeStateAsUpdate(doc)).toEqual(before)
   })
 })
+
+describe('LEFTOVERS', () => {
+  it('mirrors the leftover checks of the registry (they load separately)', async () => {
+    const { LEFTOVERS } = await import('./migrations/leftovers')
+    const withLeftover = MIGRATIONS.filter((m) => m.leftover)
+    expect(LEFTOVERS.map((l) => l.version)).toEqual(withLeftover.map((m) => m.version))
+    LEFTOVERS.forEach((l, i) => expect(l.leftover).toBe(withLeftover[i]!.leftover))
+  })
+})

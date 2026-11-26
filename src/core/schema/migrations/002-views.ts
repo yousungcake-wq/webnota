@@ -1,6 +1,7 @@
 import { generateKeyBetween, generateNKeysBetween } from 'fractional-indexing'
 import * as Y from 'yjs'
 import type { Migration } from '../migrate'
+import { v2Leftover } from './002-views.leftover'
 
 /**
  * v1 → v2 (spec/02 §7):
@@ -74,12 +75,7 @@ function ensureMap(parent: Y.Map<unknown>, key: string): YMap {
 export const v2Views: Migration = {
   version: 2,
   name: 'views',
-  leftover(doc) {
-    if (!doc.share.has('pages')) return false
-    const views = doc.getMap('views')
-    for (const id of doc.getMap('pages').keys()) if (!views.has(id)) return true
-    return false
-  },
+  leftover: v2Leftover,
   up(doc, ctx) {
     const pagesMap = doc.getMap<YMap>('pages')
     const views = doc.getMap<YMap>('views')

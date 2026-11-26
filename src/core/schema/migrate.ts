@@ -1,5 +1,4 @@
 import * as Y from 'yjs'
-import { MIGRATIONS } from './migrations'
 import { getSchemaVersion, metaOf, SCHEMA_VERSION } from './version'
 
 export interface Migration {
@@ -39,6 +38,7 @@ export interface SchemaCheck {
 }
 
 export interface MigrateOptions {
+  /** Defaults to the app registry, loaded lazily by the gate (migrations/index.ts). */
   migrations?: Migration[]
   appVersion?: number
   ctx?: Partial<MigrationContext>
@@ -66,8 +66,8 @@ export function checkRegistry(migrations: Migration[], appVersion: number) {
  *   (merged in from a device that had not upgraded yet), the same atomic way.
  * - newer or unreadable: writes nothing; the caller opens the app read-only.
  */
-export function migrateDoc(doc: Y.Doc, opts: MigrateOptions = {}): SchemaCheck {
-  const migrations = opts.migrations ?? MIGRATIONS
+export function migrateDoc(doc: Y.Doc, opts: MigrateOptions & { migrations: Migration[] }): SchemaCheck {
+  const migrations = opts.migrations
   const appVersion = opts.appVersion ?? SCHEMA_VERSION
   const docVersion = getSchemaVersion(doc)
   const base = { docVersion, appVersion }
