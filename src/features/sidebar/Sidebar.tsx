@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { PanelLeftClose, Plus, Search, Settings, Star, Trash2 } from 'lucide-react'
 import { useCurrentSpace } from '@/core/store/views'
 import { href, type Route } from '@/core/store/router'
@@ -6,6 +7,7 @@ import { openPalette } from '@/features/search'
 import { SpaceSwitcher } from '@/features/spaces'
 import { SyncBadge } from '@/features/sync'
 import { WorkspaceSwitcher } from '@/features/workspaces'
+import { preloadDrag } from './dragStart'
 import { FavoritesList, PageTree } from './PageTree'
 import './sidebar.css'
 import { t } from '@/core/i18n'
@@ -14,6 +16,11 @@ import { debugCrash } from '@/platform/debug'
 
 export function Sidebar({ route, onClose }: { route: Route; onClose: () => void }) {
   debugCrash('sidebar')
+  // Drag & drop starts synchronously only once its module is loaded: warm it when idle.
+  useEffect(() => {
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1000))
+    idle(() => void preloadDrag())
+  }, [])
   const spaceId = useCurrentSpace()
   const currentId = route.name === 'page' ? route.id : undefined
 
