@@ -37,7 +37,15 @@ export function App() {
   )
 }
 
-function MainContent({ route, sidebarOpen, onToggleSidebar }: { route: Route; sidebarOpen: boolean; onToggleSidebar: () => void }) {
+function MainContent({
+  route,
+  sidebarOpen,
+  onToggleSidebar,
+}: {
+  route: Route
+  sidebarOpen: boolean
+  onToggleSidebar: () => void
+}) {
   switch (route.name) {
     case 'page':
       return <PageView id={route.id} sidebarOpen={sidebarOpen} onToggleSidebar={onToggleSidebar} />
@@ -93,7 +101,12 @@ function PhoneShell({ route }: { route: Route }) {
           const Icon = t.icon
           const active = t.route.name === route.name || (t.route.name === 'settings' && route.name === 'trash')
           return (
-            <a key={t.label} href={href(t.route)} className={`tab${active ? ' is-active' : ''}`} aria-current={active ? 'page' : undefined}>
+            <a
+              key={t.label}
+              href={href(t.route)}
+              className={`tab${active ? ' is-active' : ''}`}
+              aria-current={active ? 'page' : undefined}
+            >
               <Icon size={22} />
               <span>{t.label}</span>
             </a>

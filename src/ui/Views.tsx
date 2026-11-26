@@ -140,7 +140,8 @@ export function TrashView() {
               aria-label="영구 삭제"
               title="영구 삭제"
               onClick={() => {
-                if (confirm(`"${displayTitle(p.title)}"과(와) 하위 페이지를 영구 삭제할까요? 되돌릴 수 없습니다.`)) void deleteForever(p.id)
+                if (confirm(`"${displayTitle(p.title)}"과(와) 하위 페이지를 영구 삭제할까요? 되돌릴 수 없습니다.`))
+                  void deleteForever(p.id)
               }}
             >
               <Trash2 size={18} />
@@ -195,7 +196,9 @@ export function SettingsView() {
             </div>
             <div className="row-gap">
               <SyncBadge />
-              {sync.lastSyncedAt && <span className="muted small">마지막 동기화 {new Date(sync.lastSyncedAt).toLocaleTimeString()}</span>}
+              {sync.lastSyncedAt && (
+                <span className="muted small">마지막 동기화 {new Date(sync.lastSyncedAt).toLocaleTimeString()}</span>
+              )}
             </div>
             {sync.error && <p className="error">{sync.error}</p>}
             <div className="row-gap">
@@ -216,7 +219,8 @@ export function SettingsView() {
         ) : (
           <>
             <p className="muted">
-              GitHub에 로그인하면 내 계정의 비공개 저장소에 노트가 저장되고, 다른 기기와 자동으로 동기화됩니다. 서버에는 아무것도 저장되지 않습니다.
+              GitHub에 로그인하면 내 계정의 비공개 저장소에 노트가 저장되고, 다른 기기와 자동으로 동기화됩니다. 서버에는
+              아무것도 저장되지 않습니다.
             </p>
             {sync.error && <p className="error">{sync.error}</p>}
             {oauthAvailable && (
@@ -231,13 +235,19 @@ export function SettingsView() {
                   GitHub에서 비공개 저장소 <code>{repo || 'webnota-data'}</code>를 만듭니다. README 포함을 권장합니다.
                 </li>
                 <li>
-                  Settings → Developer settings → Fine-grained tokens에서 이 저장소만 선택하고, <b>Contents: Read and write</b> 권한으로 토큰을 만듭니다.
+                  Settings → Developer settings → Fine-grained tokens에서 이 저장소만 선택하고,{' '}
+                  <b>Contents: Read and write</b> 권한으로 토큰을 만듭니다.
                 </li>
                 <li>아래에 붙여넣고 연결합니다. 토큰은 이 기기에만 저장됩니다.</li>
               </ol>
               <label className="field">
                 <span>저장소 이름</span>
-                <input value={repo} onChange={(e) => setRepo(e.target.value)} autoCapitalize="none" spellCheck={false} />
+                <input
+                  value={repo}
+                  onChange={(e) => setRepo(e.target.value)}
+                  autoCapitalize="none"
+                  spellCheck={false}
+                />
               </label>
               <label className="field">
                 <span>토큰</span>
@@ -270,7 +280,14 @@ export function SettingsView() {
               ['dark', '다크', Moon],
             ] as const
           ).map(([v, label, Icon]) => (
-            <button key={v} type="button" role="radio" aria-checked={theme === v} className={theme === v ? 'is-on' : ''} onClick={() => setTheme(v)}>
+            <button
+              key={v}
+              type="button"
+              role="radio"
+              aria-checked={theme === v}
+              className={theme === v ? 'is-on' : ''}
+              onClick={() => setTheme(v)}
+            >
               <Icon size={16} /> {label}
             </button>
           ))}
@@ -280,8 +297,8 @@ export function SettingsView() {
       <section className="card">
         <h2>정보</h2>
         <p className="muted small">
-          WebNota {__APP_VERSION__}. 노트는 이 기기(IndexedDB)에 먼저 저장되고, GitHub를 연결하면 자동으로 동기화됩니다. 홈 화면에 추가하면 오프라인에서도 앱처럼 쓸 수
-          있습니다.
+          WebNota {__APP_VERSION__}. 노트는 이 기기(IndexedDB)에 먼저 저장되고, GitHub를 연결하면 자동으로 동기화됩니다.
+          홈 화면에 추가하면 오프라인에서도 앱처럼 쓸 수 있습니다.
         </p>
         <a className="btn ghost" href="#/trash">
           <Trash2 size={16} /> 휴지통

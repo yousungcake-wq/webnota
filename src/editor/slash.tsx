@@ -35,7 +35,8 @@ export const SlashList = forwardRef<SlashListHandle, SlashListProps>(function Sl
         return true
       }
       if (e.key === 'Enter' || e.key === 'Tab') {
-        command(items[selected])
+        const item = items[selected]
+        if (item) command(item)
         return true
       }
       return false

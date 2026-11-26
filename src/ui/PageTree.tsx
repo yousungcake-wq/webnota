@@ -84,7 +84,12 @@ const Row = memo(function Row({
           <span className="tree-title">{displayTitle(page.title)}</span>
         </a>
         <div className="tree-actions">
-          <button type="button" className="icon-btn sm" aria-label="더보기" onClick={(e) => setMenuAnchor(e.currentTarget)}>
+          <button
+            type="button"
+            className="icon-btn sm"
+            aria-label="더보기"
+            onClick={(e) => setMenuAnchor(e.currentTarget)}
+          >
             <MoreHorizontal size={16} />
           </button>
           <button type="button" className="icon-btn sm" aria-label="하위 페이지 추가" onClick={() => addPage(page.id)}>
@@ -92,7 +97,9 @@ const Row = memo(function Row({
           </button>
         </div>
       </div>
-      {menuAnchor && <PageMenu page={page} anchor={menuAnchor} currentId={currentId} onClose={() => setMenuAnchor(null)} />}
+      {menuAnchor && (
+        <PageMenu page={page} anchor={menuAnchor} currentId={currentId} onClose={() => setMenuAnchor(null)} />
+      )}
       {open && kids.length > 0 && (
         <ul role="group">
           {kids.map((k) => (

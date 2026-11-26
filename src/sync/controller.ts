@@ -91,6 +91,7 @@ export async function connect(token: string, repoName = DEFAULT_REPO): Promise<A
       if (e instanceof GitHubError && (e.status === 403 || e.status === 404)) {
         throw new Error(
           `저장소 "${repoName}"를 만들 권한이 없습니다. GitHub에서 비공개 저장소 "${repoName}"를 직접 만들고, 토큰에 해당 저장소의 Contents 읽기/쓰기 권한을 주세요.`,
+          { cause: e },
         )
       }
       throw e

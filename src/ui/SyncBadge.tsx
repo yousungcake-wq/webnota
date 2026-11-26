@@ -6,7 +6,11 @@ export function SyncBadge({ compact }: { compact?: boolean }) {
   const s = useSync()
   if (s.status === 'disconnected') {
     return (
-      <a className="sync-badge is-off" href={href({ name: 'settings' })} title="GitHub를 연결하면 기기 간 동기화가 됩니다">
+      <a
+        className="sync-badge is-off"
+        href={href({ name: 'settings' })}
+        title="GitHub를 연결하면 기기 간 동기화가 됩니다"
+      >
         <CloudOff size={14} />
         {!compact && <span>이 기기에만 저장됨</span>}
       </a>

@@ -24,7 +24,9 @@ export const pagesOf = (doc: Y.Doc) => doc.getMap<MetaMap>('pages')
 
 export function newId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(9))
-  return Array.from(bytes, (b) => b.toString(36).padStart(2, '0')).join('').slice(0, 14)
+  return Array.from(bytes, (b) => b.toString(36).padStart(2, '0'))
+    .join('')
+    .slice(0, 14)
 }
 
 function toMeta(id: string, m: MetaMap): PageMeta {
@@ -98,6 +100,20 @@ export function descendantsOf(pages: PageMeta[], id: string): string[] {
     }
   }
   walk(id)
+  return out
+}
+
+/** Ancestors of a page from the root down, starting at `parentId` (cycle-safe). */
+export function ancestorsOf(pages: PageMeta[], parentId: string | null): PageMeta[] {
+  const byId = new Map(pages.map((p) => [p.id, p]))
+  const out: PageMeta[] = []
+  const seen = new Set<string>()
+  let cur = parentId ? byId.get(parentId) : undefined
+  while (cur && !seen.has(cur.id)) {
+    seen.add(cur.id)
+    out.unshift(cur)
+    cur = cur.parentId ? byId.get(cur.parentId) : undefined
+  }
   return out
 }
 

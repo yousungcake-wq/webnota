@@ -13,7 +13,9 @@ const task = (text: string, checked = false) => ({
 const WELCOME = {
   type: 'doc',
   content: [
-    p('WebNota는 브라우저에서 바로 쓰는 노트 앱입니다. 모든 내용은 이 기기에 즉시 저장되고, GitHub를 연결하면 내 비공개 저장소에 자동으로 동기화됩니다.'),
+    p(
+      'WebNota는 브라우저에서 바로 쓰는 노트 앱입니다. 모든 내용은 이 기기에 즉시 저장되고, GitHub를 연결하면 내 비공개 저장소에 자동으로 동기화됩니다.',
+    ),
     h(2, '기본 사용법'),
     {
       type: 'taskList',

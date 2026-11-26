@@ -100,7 +100,9 @@ export async function syncOnce(
       }
     }
     // Workspace first so we know which pages exist before touching page files.
-    const remotePaths = [...remote.keys()].sort((a, b) => Number(b.endsWith('workspace.yjs')) - Number(a.endsWith('workspace.yjs')))
+    const remotePaths = [...remote.keys()].sort(
+      (a, b) => Number(b.endsWith('workspace.yjs')) - Number(a.endsWith('workspace.yjs')),
+    )
     for (const path of remotePaths) {
       const sha = remote.get(path)!
       if (state.blobs[path] === sha) continue
@@ -122,21 +124,22 @@ export async function syncOnce(
 
     for (const name of dirtyNames) {
       const path = pathForDoc(name)!
+      const gen = dirty[name] ?? 0
       if (name.startsWith('page/') && !livePages.has(name.slice(5))) {
-        pushedGens.push([name, dirty[name]])
+        pushedGens.push([name, gen])
         continue // deleted page: handled below
       }
       const doc = await store.getDoc(name)
       const bytes = Y.encodeStateAsUpdate(doc)
       const sha = await gitBlobSha(bytes)
       if (remote.get(path) === sha) {
-        pushedGens.push([name, dirty[name]])
+        pushedGens.push([name, gen])
         continue
       }
       const uploaded = await api.createBlob(bytes)
       entries.push({ path, sha: uploaded })
       newBlobs[path] = uploaded
-      pushedGens.push([name, dirty[name]])
+      pushedGens.push([name, gen])
     }
 
     for (const path of remote.keys()) {

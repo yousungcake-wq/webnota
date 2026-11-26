@@ -36,14 +36,8 @@ export default defineConfig({
   ],
   build: {
     target: 'es2022',
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules/@tiptap') || id.includes('prosemirror')) return 'editor'
-          if (id.includes('node_modules/yjs') || id.includes('node_modules/y-') || id.includes('node_modules/lib0')) return 'yjs'
-        },
-      },
-    },
+    // The manifest lets scripts/check-size.mjs measure real eager/lazy chunk graphs.
+    manifest: true,
   },
   test: {
     environment: 'node',

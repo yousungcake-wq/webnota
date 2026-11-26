@@ -34,7 +34,8 @@ npm run dev                # 개발 서버 http://localhost:5173
 npm test                   # 단위 테스트 (Vitest)
 npm run typecheck
 npm run build              # 프로덕션 빌드 (dist/)
-npm run verify             # 커밋 전 필수 (M0-04에서 추가 예정; 그전에는 typecheck + test + build)
+npm run verify             # 커밋 전 필수: lint + typecheck + test + build + 번들 예산
+npm run lint:fix           # eslint --fix + prettier --write
 npx vite preview --port 4173 &
 NODE_PATH=$(npm root -g) node tests/e2e.mjs http://localhost:4173/ test-results   # e2e (M0-06에서 Playwright Test로 이전 예정)
 ```

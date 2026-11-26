@@ -1,16 +1,20 @@
 import type { Editor as TEditor } from '@tiptap/react'
 import { ChevronLeft, MoreHorizontal, PanelLeft, SmilePlus, Star } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type * as Y from 'yjs'
-import { Editor } from '../editor/Editor'
 import { openDoc, pageDocName } from '../store/docs'
-import { updatePage, type PageMeta } from '../store/pages'
+import { ancestorsOf, updatePage, type PageMeta } from '../store/pages'
 import { usePages, ws } from '../store/workspace'
 import { displayTitle, toggleFavorite } from './actions'
 import { goBack, href, useMedia } from './hooks'
 import { Overlay } from './Menu'
 import { PageMenu } from './PageTree'
 import { SyncBadge } from './SyncBadge'
+
+// The editor (Tiptap + ProseMirror) is the biggest chunk; load it only when a page opens.
+const Editor = lazy(() => import('../editor/Editor').then((m) => ({ default: m.Editor })))
+/** Warm the editor chunk during idle time so opening a page feels instant. */
+export const preloadEditor = () => void import('../editor/Editor')
 
 const EMOJIS = '📄📝📌📎📚📖🗂️📁🗓️✅☑️💡🔥⭐️🎯🚀🧠💼🏠🛒✈️🍳🎵🎮📷🎨🧪💻🔧📊📈💰❤️🌱☕️🐶😀👋🙌🎉'
 const emojiList = Array.from(new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(EMOJIS), (s) => s.segment)
@@ -27,7 +31,8 @@ export function PageView({
   const pages = usePages()
   const page = pages.find((p) => p.id === id)
   const phone = useMedia('(max-width: 767px)')
-  const [doc, setDoc] = useState<Y.Doc | null>(null)
+  const [loaded, setLoaded] = useState<{ id: string; doc: Y.Doc } | null>(null)
+  const doc = loaded?.id === id ? loaded.doc : null
   const editorRef = useRef<TEditor | null>(null)
   const onReady = useCallback((e: TEditor) => {
     editorRef.current = e
@@ -35,23 +40,14 @@ export function PageView({
 
   useEffect(() => {
     let alive = true
-    setDoc(null)
-    openDoc(pageDocName(id)).then((d) => alive && setDoc(d))
+    void openDoc(pageDocName(id)).then((d) => alive && setLoaded({ id, doc: d }))
     return () => {
       alive = false
     }
   }, [id])
 
-  const crumbs = useMemo(() => {
-    const byId = new Map(pages.map((p) => [p.id, p]))
-    const out: PageMeta[] = []
-    let cur = page?.parentId ? byId.get(page.parentId) : undefined
-    while (cur && out.length < 20) {
-      out.unshift(cur)
-      cur = cur.parentId ? byId.get(cur.parentId) : undefined
-    }
-    return out
-  }, [pages, page?.parentId])
+  const parentId = page?.parentId ?? null
+  const crumbs = ancestorsOf(pages, parentId) // O(n), cheap; recomputed per render
 
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
 
@@ -71,12 +67,7 @@ export function PageView({
     <div className="page">
       <header className="topbar">
         {phone ? (
-          <button
-            type="button"
-            className="icon-btn"
-            aria-label="뒤로"
-            onClick={goBack}
-          >
+          <button type="button" className="icon-btn" aria-label="뒤로" onClick={goBack}>
             <ChevronLeft size={22} />
           </button>
         ) : (
@@ -113,12 +104,19 @@ export function PageView({
           >
             <Star size={18} fill={page.favorite ? 'currentColor' : 'none'} />
           </button>
-          <button type="button" className="icon-btn" aria-label="더보기" onClick={(e) => setMenuAnchor(e.currentTarget)}>
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label="더보기"
+            onClick={(e) => setMenuAnchor(e.currentTarget)}
+          >
             <MoreHorizontal size={18} />
           </button>
         </div>
       </header>
-      {menuAnchor && <PageMenu page={page} anchor={menuAnchor} currentId={page.id} onClose={() => setMenuAnchor(null)} />}
+      {menuAnchor && (
+        <PageMenu page={page} anchor={menuAnchor} currentId={page.id} onClose={() => setMenuAnchor(null)} />
+      )}
 
       <div className="page-scroll">
         {/* Keyed by page so the whole subtree (editor DOM managed by ProseMirror included) is replaced in one piece. */}
@@ -135,7 +133,13 @@ export function PageView({
               ed.commands.focus('start')
             }}
           />
-          {doc ? <Editor key={id} doc={doc} onReady={onReady} /> : <div className="editor-loading" />}
+          {doc ? (
+            <Suspense fallback={<div className="editor-loading" />}>
+              <Editor key={id} doc={doc} onReady={onReady} />
+            </Suspense>
+          ) : (
+            <div className="editor-loading" />
+          )}
         </div>
       </div>
     </div>
@@ -164,7 +168,12 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
   return (
     <div className="page-head">
       {page.icon ? (
-        <button type="button" className="page-icon" aria-label="아이콘 변경" onClick={(e) => setPicker(e.currentTarget)}>
+        <button
+          type="button"
+          className="page-icon"
+          aria-label="아이콘 변경"
+          onClick={(e) => setPicker(e.currentTarget)}
+        >
           {page.icon}
         </button>
       ) : (

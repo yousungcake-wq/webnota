@@ -11,10 +11,10 @@
 ## M0 기반 정비
 
 ### 도구와 품질 게이트
-- [ ] M0-01 ESLint(flat config, typescript-eslint, react-hooks, import 경계 규칙) + Prettier + `npm run lint`
-- [ ] M0-02 `tsconfig` 강화 (`noUncheckedIndexedAccess`), 위반 수정
-- [ ] M0-03 `scripts/check-size.mjs` 번들 예산 검사 (spec/10 §1.1)
-- [ ] M0-04 `npm run verify` (lint + typecheck + test + build + size)
+- [x] M0-01 ESLint(flat config, typescript-eslint, react-hooks, import 경계 규칙) + Prettier + `npm run lint`
+- [x] M0-02 `tsconfig` 강화 (`noUncheckedIndexedAccess`), 위반 수정
+- [x] M0-03 `scripts/check-size.mjs` 번들 예산 검사 (spec/10 §1.1)
+- [x] M0-04 `npm run verify` (lint + typecheck + test + build + size)
 - [ ] M0-05 CI: PR/main에서 verify + e2e (Playwright), main은 배포. 배포 워크플로 액션 버전 갱신 (Node 20 경고)
 - [ ] M0-06 e2e를 `tests/e2e/*.spec.ts`(Playwright Test)로 이전, 기능별 파일 분리
 

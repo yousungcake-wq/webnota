@@ -121,7 +121,11 @@ export function KeyboardToolbar({ editor }: { editor: Editor }) {
         </div>
       )}
       <div className="kb-row">
-        <Btn label={panel === 'blocks' ? '닫기' : '블록 바꾸기'} active={panel === 'blocks'} onPress={() => setPanel(panel === 'blocks' ? 'none' : 'blocks')}>
+        <Btn
+          label={panel === 'blocks' ? '닫기' : '블록 바꾸기'}
+          active={panel === 'blocks'}
+          onPress={() => setPanel(panel === 'blocks' ? 'none' : 'blocks')}
+        >
           {panel === 'blocks' ? <X size={20} /> : <Plus size={20} />}
         </Btn>
         <span className="kb-sep" />

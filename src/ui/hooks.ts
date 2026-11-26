@@ -35,7 +35,11 @@ function parse(hash: string): Route {
 }
 
 export function href(route: Route): string {
-  return route.name === 'page' ? `#/page/${encodeURIComponent(route.id)}` : route.name === 'home' ? '#/' : `#/${route.name}`
+  return route.name === 'page'
+    ? `#/page/${encodeURIComponent(route.id)}`
+    : route.name === 'home'
+      ? '#/'
+      : `#/${route.name}`
 }
 
 /**
@@ -111,13 +115,10 @@ export function setTheme(t: Theme) {
 }
 
 export function useTheme(): Theme {
-  return useSyncExternalStore(
-    (cb) => {
-      themeListeners.add(cb)
-      return () => themeListeners.delete(cb)
-    },
-    getTheme,
-  )
+  return useSyncExternalStore((cb) => {
+    themeListeners.add(cb)
+    return () => themeListeners.delete(cb)
+  }, getTheme)
 }
 
 /** Per-device set of expanded tree nodes. */

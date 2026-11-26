@@ -31,7 +31,8 @@ export const BLOCKS: BlockItem[] = [
     keywords: ['text', 'paragraph', '텍스트', '본문', '문단'],
     icon: Type,
     run: (c) => c.setParagraph(),
-    isActive: (e) => e.isActive('paragraph') && !e.isActive('bulletList') && !e.isActive('orderedList') && !e.isActive('taskList'),
+    isActive: (e) =>
+      e.isActive('paragraph') && !e.isActive('bulletList') && !e.isActive('orderedList') && !e.isActive('taskList'),
   },
   {
     id: 'h1',

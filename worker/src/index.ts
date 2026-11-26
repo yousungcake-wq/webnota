@@ -37,7 +37,9 @@ export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url)
     const origin = req.headers.get('Origin') ?? ''
-    const allowed = env.ALLOWED_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean)
+    const allowed = env.ALLOWED_ORIGINS.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
     const originOk = allowed.includes(origin)
     const cors = originOk ? corsHeaders(origin) : {}
 

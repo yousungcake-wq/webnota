@@ -36,7 +36,10 @@ await run('desktop', { viewport: { width: 1280, height: 800 }, deviceScaleFactor
   await page.waitForSelector('.wn-editor')
   ok('desktop: welcome page opens with editor', true, `${Date.now() - t0}ms to editor`)
   ok('desktop: welcome content seeded', (await page.textContent('.wn-editor')).includes('WebNota'))
-  ok('desktop: sidebar shows welcome page', (await page.locator('.tree-title').first().textContent()).includes('시작하기'))
+  ok(
+    'desktop: sidebar shows welcome page',
+    (await page.locator('.tree-title').first().textContent()).includes('시작하기'),
+  )
   await page.screenshot({ path: `${SHOTS}/desktop-welcome.png` })
 
   // new page via sidebar
@@ -57,7 +60,10 @@ await run('desktop', { viewport: { width: 1280, height: 800 }, deviceScaleFactor
   await page.keyboard.press('Enter')
   await page.keyboard.type('# 큰 제목')
   ok('desktop: markdown shortcut "# " makes heading', (await page.locator('.wn-editor h1').count()) === 1)
-  ok('desktop: sidebar title updated live', (await page.locator('.tree-title', { hasText: '회의록 2026' }).count()) === 1)
+  ok(
+    'desktop: sidebar title updated live',
+    (await page.locator('.tree-title', { hasText: '회의록 2026' }).count()) === 1,
+  )
 
   // block move (Alt+Shift+Up)
   await page.keyboard.press('Alt+Shift+ArrowUp')
@@ -69,7 +75,10 @@ await run('desktop', { viewport: { width: 1280, height: 800 }, deviceScaleFactor
   await page.reload()
   await page.waitForSelector('.wn-editor')
   const text = await page.textContent('.wn-editor')
-  ok('desktop: content persists after reload (IndexedDB)', text.includes('첫 번째 줄입니다') && text.includes('우유 사기'))
+  ok(
+    'desktop: content persists after reload (IndexedDB)',
+    text.includes('첫 번째 줄입니다') && text.includes('우유 사기'),
+  )
   ok('desktop: reopens last page', (await page.inputValue('.page-title')) === '회의록 2026')
 
   // subpage + trash + restore
@@ -79,7 +88,10 @@ await run('desktop', { viewport: { width: 1280, height: 800 }, deviceScaleFactor
   await page.waitForURL((u) => u.toString() !== parentUrl)
   await page.waitForFunction(() => document.querySelector('.page-title')?.value === '')
   await page.fill('.page-title', '하위 페이지')
-  ok('desktop: subpage nested in tree', (await page.locator('.tree [role=group] .tree-title', { hasText: '하위 페이지' }).count()) === 1)
+  ok(
+    'desktop: subpage nested in tree',
+    (await page.locator('.tree [role=group] .tree-title', { hasText: '하위 페이지' }).count()) === 1,
+  )
   ok('desktop: breadcrumbs show parent', (await page.locator('.crumbs').textContent()).includes('회의록 2026'))
   await page.screenshot({ path: `${SHOTS}/desktop-subpage.png` })
   await page.getByLabel('더보기').last().click()
@@ -132,9 +144,21 @@ for (const [label, device] of [
 
     // Simulate Korean IME composition (CDP) — Chromium only, used for both phone profiles
     const cdp = await page.context().newCDPSession(page)
-    for (const [comp, commit] of [['ㅎ', null], ['하', null], ['한', null], ['한ㄱ', null], ['한그', null], ['한글', '한글']]) {
+    for (const [comp, commit] of [
+      ['ㅎ', null],
+      ['하', null],
+      ['한', null],
+      ['한ㄱ', null],
+      ['한그', null],
+      ['한글', '한글'],
+    ]) {
       if (commit) await cdp.send('Input.insertText', { text: commit })
-      else await cdp.send('Input.imeSetComposition', { text: comp, selectionStart: comp.length, selectionEnd: comp.length })
+      else
+        await cdp.send('Input.imeSetComposition', {
+          text: comp,
+          selectionStart: comp.length,
+          selectionEnd: comp.length,
+        })
     }
     await page.keyboard.type(' 입력')
     const para = await page.locator('.wn-editor p').first().textContent()
@@ -145,8 +169,14 @@ for (const [label, device] of [
     await page.waitForSelector('.kb-panel')
     await page.screenshot({ path: `${SHOTS}/${label}-block-panel.png` })
     await page.locator('.kb-block', { hasText: '할 일 목록' }).tap()
-    ok(`${label}: toolbar converts block to todo`, (await page.locator('.wn-editor ul[data-type="taskList"]').count()) === 1)
-    ok(`${label}: editor keeps focus after toolbar tap`, await page.evaluate(() => document.activeElement?.classList.contains('wn-editor')))
+    ok(
+      `${label}: toolbar converts block to todo`,
+      (await page.locator('.wn-editor ul[data-type="taskList"]').count()) === 1,
+    )
+    ok(
+      `${label}: editor keeps focus after toolbar tap`,
+      await page.evaluate(() => document.activeElement?.classList.contains('wn-editor')),
+    )
 
     await page.keyboard.press('Enter')
     await page.keyboard.type('두 번째')
@@ -169,7 +199,11 @@ for (const [label, device] of [
     await page.getByLabel('뒤로').tap()
     await page.locator('.tab', { hasText: '즐겨찾기' }).tap()
     await page.waitForSelector('.list-title, .muted.pad')
-    ok(`${label}: favorites tab lists page`, (await page.locator('.list-title', { hasText: '모바일 메모' }).count()) === 1, (await page.$$eval('.list-title', (e) => e.map((x) => x.textContent))).join(','))
+    ok(
+      `${label}: favorites tab lists page`,
+      (await page.locator('.list-title', { hasText: '모바일 메모' }).count()) === 1,
+      (await page.$$eval('.list-title', (e) => e.map((x) => x.textContent))).join(','),
+    )
     await page.locator('.tab', { hasText: '검색' }).tap()
     await page.fill('.search-box input', '모바일')
     ok(`${label}: search finds page`, (await page.locator('.list-title', { hasText: '모바일 메모' }).count()) === 1)

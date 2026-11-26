@@ -89,7 +89,10 @@ export function Overlay({
   }, [onClose])
 
   return createPortal(
-    <div className={sheet ? 'sheet-backdrop' : 'popover-backdrop'} onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div
+      className={sheet ? 'sheet-backdrop' : 'popover-backdrop'}
+      onPointerDown={(e) => e.target === e.currentTarget && onClose()}
+    >
       <div
         ref={ref}
         className={sheet ? 'sheet' : 'popover'}
