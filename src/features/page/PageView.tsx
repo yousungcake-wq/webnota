@@ -157,7 +157,7 @@ export function PageView({
           {doc ? (
             <Suspense fallback={<Skeleton className="editor-loading" />}>
               <ErrorBoundary key={id} title={t('error.editor')}>
-                <Editor key={id} doc={doc} onReady={onReady} locked={page.locked || inTrash} />
+                <Editor key={id} doc={doc} pageId={id} onReady={onReady} locked={page.locked || inTrash} />
               </ErrorBoundary>
             </Suspense>
           ) : (

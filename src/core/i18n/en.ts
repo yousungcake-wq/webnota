@@ -122,6 +122,7 @@ export const en: Record<MessageKey, string> = {
   'mention.menu': 'Mention',
   'mention.pages': 'Pages',
   'mention.dates': 'Dates',
+  'subPage.restore': 'Restore from trash',
   'emoji.kind': 'Icon type',
   'emoji.tab.emoji': 'Emoji',
   'emoji.tab.icon': 'Icons',
@@ -241,6 +242,9 @@ export const en: Record<MessageKey, string> = {
   'block.divider': 'Divider',
   'block.divider.hint': 'Line between blocks',
   'block.divider.kw': 'rule',
+  'block.page': 'Page',
+  'block.page.hint': 'Create a sub-page inside this page',
+  'block.page.kw': 'document',
 
   'home.title': 'WebNota',
   'favorites.empty': 'Tap ☆ on a page to add it to favorites.',

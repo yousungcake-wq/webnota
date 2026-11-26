@@ -126,6 +126,7 @@ export const ko = {
   'mention.menu': '멘션',
   'mention.pages': '페이지',
   'mention.dates': '날짜',
+  'subPage.restore': '휴지통에서 복원',
   'emoji.kind': '아이콘 종류',
   'emoji.tab.emoji': '이모지',
   'emoji.tab.icon': '아이콘',
@@ -247,6 +248,9 @@ export const ko = {
   'block.divider': '구분선',
   'block.divider.hint': '블록을 나누는 선',
   'block.divider.kw': '구분선 선',
+  'block.page': '페이지',
+  'block.page.hint': '이 페이지 안에 하위 페이지 만들기',
+  'block.page.kw': '페이지 하위 문서',
 
   // views
   'home.title': 'WebNota',

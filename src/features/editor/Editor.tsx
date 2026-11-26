@@ -33,12 +33,14 @@ import { t } from '@/core/i18n'
 
 interface Props {
   doc: Y.Doc
+  /** The page's view id (parent of sub-page blocks). */
+  pageId?: string
   /** Locked page (WS-13): read-only until unlocked. */
   locked?: boolean
   onReady?: (editor: TEditor) => void
 }
 
-export function Editor({ doc, onReady, locked = false }: Props) {
+export function Editor({ doc, pageId, onReady, locked = false }: Props) {
   debugCrash('editor')
   const coarse = useLayout().isTouch
   const schemaReadOnly = useStore(schemaStore, selectReadOnly)
@@ -48,6 +50,7 @@ export function Editor({ doc, onReady, locked = false }: Props) {
   const editor = useEditor(
     {
       extensions: editorExtensions(doc, {
+        pageId,
         onInvalidContent: () => {
           const found = findUnknownContent(doc.getXmlFragment('default'), docSchema())
           setUnknown([...found.nodes, ...found.marks])
@@ -63,7 +66,7 @@ export function Editor({ doc, onReady, locked = false }: Props) {
         },
       },
     },
-    [doc],
+    [doc, pageId],
   )
 
   useEffect(() => {

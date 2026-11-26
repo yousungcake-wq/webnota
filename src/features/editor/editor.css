@@ -813,3 +813,68 @@
   font-size: 20px;
   line-height: 1;
 }
+
+/* ED-B19 sub-page block */
+.wn-editor .sub-page {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 2px 0;
+  border-radius: var(--r-sm);
+}
+.wn-editor .sub-page.is-selected {
+  background: var(--accent-soft);
+}
+.wn-editor .sub-page-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.wn-editor .sub-page-link:hover {
+  background: var(--bg-hover);
+}
+.wn-editor .sub-page-icon {
+  display: inline-flex;
+  font-size: 18px;
+  line-height: 1;
+}
+.wn-editor .sub-page-title {
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+.wn-editor .sub-page.is-deleted .sub-page-link {
+  color: var(--text-3);
+  cursor: default;
+}
+.wn-editor .sub-page.is-deleted .sub-page-title {
+  text-decoration: line-through;
+}
+.wn-editor .sub-page-restore {
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  padding: 4px 8px;
+  min-height: 32px;
+  cursor: pointer;
+}
+@media (pointer: coarse) {
+  .wn-editor .sub-page-link {
+    min-height: 44px;
+  }
+  .wn-editor .sub-page-restore {
+    min-height: 44px;
+  }
+}

@@ -5,6 +5,7 @@ import { v4Callout } from './004-callout'
 import { v5TextColor } from './005-text-color'
 import { v6Mention } from './006-mention'
 import { v7Scripts } from './007-scripts'
+import { v8SubPage } from './008-sub-page'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -27,4 +28,5 @@ export const MIGRATIONS: Migration[] = [
   v5TextColor, // M2-07: textStyle mark + highlight color (version stamp only)
   v6Mention, // M2-08: mention node type (version stamp only)
   v7Scripts, // M2-09: superscript / subscript marks (version stamp only)
+  v8SubPage, // M2-10: subPage block node type (version stamp only)
 ]

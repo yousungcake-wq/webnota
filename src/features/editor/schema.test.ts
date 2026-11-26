@@ -40,6 +40,9 @@ MARKS_AT_VERSION[6] = MARKS_AT_VERSION[5]
 // v7 (M2-09): superscript / subscript marks.
 NODES_AT_VERSION[7] = NODES_AT_VERSION[6]
 MARKS_AT_VERSION[7] = [...MARKS_AT_VERSION[6]!, 'subscript', 'superscript'].sort()
+// v8 (M2-10): subPage block node.
+NODES_AT_VERSION[8] = [...NODES_AT_VERSION[7]!, 'subPage'].sort()
+MARKS_AT_VERSION[8] = MARKS_AT_VERSION[7]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

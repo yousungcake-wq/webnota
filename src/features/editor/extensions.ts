@@ -7,6 +7,7 @@ import { SlashCommand } from './slash'
 import { schemaExtensions } from './schema'
 import { MentionSuggest, MentionWithView } from './mentionSuggest'
 import { EmojiSuggest } from './emojiSuggest'
+import { SubPageWithView } from './SubPageBlock'
 import { t } from '@/core/i18n'
 
 declare module '@tiptap/core' {
@@ -71,12 +72,20 @@ export interface EditorOptions {
    * binding stops writing to the doc (the page becomes read-only).
    */
   onInvalidContent?: (error: Error) => void
+  /** The page being edited: parent of sub-pages created from the editor (ED-B19). */
+  pageId?: string
 }
 
 export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensions {
   return [
     // the mention node gets its React chip here; schemaExtensions() stays React-free
-    ...schemaExtensions().map((e) => (e.name === 'mention' ? MentionWithView : e)),
+    ...schemaExtensions().map((e) =>
+      e.name === 'mention'
+        ? MentionWithView
+        : e.name === 'subPage'
+          ? SubPageWithView.configure({ pageId: opts.pageId ?? null })
+          : e,
+    ),
     Placeholder.configure({
       placeholder: ({ node }) => {
         if (node.type.name === 'heading') return t('editor.headingPlaceholder', { level: node.attrs.level as number })

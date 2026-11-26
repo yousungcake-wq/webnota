@@ -9,6 +9,7 @@ import { CodeBlockPlus } from './code/codeBlock'
 import { Callout } from './nodes/callout'
 import { HighlightColor, TextColor } from './marks/textColor'
 import { Mention } from './mention/mention'
+import { SubPage } from './nodes/subPage'
 import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
 
 // The document schema without React (unit tests, seeding). UI-only extensions live in extensions.ts.
@@ -42,6 +43,7 @@ export function schemaExtensions(): Extensions {
     Mention,
     Superscript,
     Subscript,
+    SubPage,
   ]
 }
 
