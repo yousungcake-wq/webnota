@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import * as Y from 'yjs'
 import { createPage, deletePagePermanently, listPages, updatePage } from '../model/pages'
 import { gitBlobSha } from './encoding'
-import { syncOnce, type GitApi, type LocalStore, type SyncState } from './engine'
+import { docForPath, pathForDoc, syncOnce, type GitApi, type LocalStore, type SyncState } from './engine'
 
 /** In-memory imitation of GitHub's Git Data API (fast-forward-only ref updates). */
 class FakeRemote implements GitApi {
@@ -63,6 +63,14 @@ class FakeRemote implements GitApi {
     this.head = commit
     return true
   }
+  /** Commits files directly, the way another (possibly older) app version would have. */
+  async seed(files: Record<string, Uint8Array>) {
+    const head = await this.getHead()
+    const entries = []
+    for (const [path, bytes] of Object.entries(files)) entries.push({ path, sha: await this.createBlob(bytes) })
+    const tree = await this.createTree(head?.treeSha ?? null, entries)
+    this.head = await this.createCommit('seed', tree, head ? [head.commitSha] : [])
+  }
   files() {
     return this.head ? [...this.trees.get(this.commits.get(this.head)!.tree)!.keys()].sort() : []
   }
@@ -121,7 +129,7 @@ describe('sync engine', () => {
 
     const r1 = await syncOnce(remote, a)
     expect(r1.pushed).toBe(2)
-    expect(remote.files()).toEqual(['data/pages/' + id + '.yjs', 'data/workspace.yjs'])
+    expect(remote.files()).toEqual(['data/docs/' + id + '.yjs', 'data/workspace.yjs'])
     expect(a.dirty).toEqual({})
 
     const r2 = await syncOnce(remote, b)
@@ -255,5 +263,102 @@ describe('sync engine', () => {
     })
     await syncOnce(remote, c, { canPush: () => !pulledYet })
     expect(remote.head).toBe(headBefore)
+  })
+
+  describe('path scheme v2 (SY-02a)', () => {
+    /** What a PoC (v1) device pushed: workspace + data/pages/<id>.yjs */
+    function v1Content(text: string) {
+      const d = new Y.Doc()
+      d.getText('t').insert(0, text)
+      return Y.encodeStateAsUpdate(d)
+    }
+
+    it('moves legacy data/pages files to data/docs in one commit, keeping the content', async () => {
+      const remote = new FakeRemote()
+      const a = new Device()
+      const id = createPage(a.ws, { title: 'p' })
+      await remote.seed({ [`data/pages/${id}.yjs`]: v1Content('옛 본문') })
+      const commitsBefore = remote.commits.size
+
+      const r = await syncOnce(remote, a)
+      expect(a.text(id)).toBe('옛 본문')
+      expect(remote.files()).toEqual([`data/docs/${id}.yjs`, 'data/workspace.yjs'])
+      expect(remote.commits.size).toBe(commitsBefore + 1)
+      expect(r.deleted).toBe(1)
+      expect(Object.keys(a.state.blobs).sort()).toEqual([`data/docs/${id}.yjs`, 'data/workspace.yjs'])
+
+      const b = new Device()
+      await syncOnce(remote, b)
+      expect(b.text(id)).toBe('옛 본문')
+      expect(b.dirty).toEqual({})
+    })
+
+    it('merges a legacy file with an existing new-path file of the same doc', async () => {
+      const remote = new FakeRemote()
+      const a = new Device()
+      const id = createPage(a.ws, { title: 'p' })
+      a.type(id, 0, 'new ')
+      await syncOnce(remote, a)
+      await remote.seed({ [`data/pages/${id}.yjs`]: v1Content('old') }) // a stale v1 device pushed late
+
+      const b = new Device()
+      await syncOnce(remote, b)
+      expect(b.text(id)).toContain('new')
+      expect(b.text(id)).toContain('old')
+      expect(remote.files()).toEqual([`data/docs/${id}.yjs`, 'data/workspace.yjs'])
+      const c = new Device()
+      await syncOnce(remote, c)
+      expect(c.text(id)).toBe(b.text(id))
+    })
+
+    it('deletes legacy files of pages that no longer exist instead of moving them', async () => {
+      const remote = new FakeRemote()
+      const a = new Device()
+      createPage(a.ws, { title: 'p' })
+      await remote.seed({ 'data/pages/gone.yjs': v1Content('x') })
+      await syncOnce(remote, a)
+      expect(remote.files().filter((f) => f.includes('gone'))).toEqual([])
+      expect(a.docs.has('doc/gone')).toBe(false)
+    })
+
+    it('moves legacy files even when nothing is dirty and the head did not change', async () => {
+      const remote = new FakeRemote()
+      const a = new Device()
+      const id = createPage(a.ws, { title: 'p' })
+      await syncOnce(remote, a)
+      await remote.seed({ [`data/pages/${id}.yjs`]: v1Content('late v1') })
+      await syncOnce(remote, a, { canPush: () => false }) // pulled (head + blob recorded), not moved
+      expect(a.dirty).toEqual({})
+      await syncOnce(remote, a)
+      expect(remote.files()).toEqual([`data/docs/${id}.yjs`, 'data/workspace.yjs'])
+      expect(a.text(id)).toBe('late v1')
+    })
+
+    it('leaves legacy files alone while read-only', async () => {
+      const remote = new FakeRemote()
+      const a = new Device()
+      const id = createPage(a.ws, { title: 'p' })
+      await remote.seed({ [`data/pages/${id}.yjs`]: v1Content('x') })
+      await syncOnce(remote, a, { canPush: () => false })
+      expect(remote.files()).toEqual([`data/pages/${id}.yjs`])
+    })
+
+    it('maps doc names to repository paths (spec/02 §1)', () => {
+      const cases: [string, string][] = [
+        ['workspace', 'data/workspace.yjs'],
+        ['doc/abc', 'data/docs/abc.yjs'],
+        ['db/d1', 'data/dbs/d1/schema.yjs'],
+        ['dbr/d1/3', 'data/dbs/d1/rows-3.yjs'],
+        ['row/d1/r9', 'data/dbs/d1/rows/r9.yjs'],
+      ]
+      for (const [name, path] of cases) {
+        expect(pathForDoc(name)).toBe(path)
+        expect(docForPath(path)).toBe(name)
+      }
+      expect(docForPath('data/pages/abc.yjs')).toBe('doc/abc') // legacy, read only
+      expect(pathForDoc('page/abc')).toBeNull()
+      expect(docForPath('files/abc.png')).toBeNull()
+      expect(docForPath('data/docs/../x.yjs')).toBeNull()
+    })
   })
 })

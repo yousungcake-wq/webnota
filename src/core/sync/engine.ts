@@ -11,7 +11,9 @@ import { gitBlobSha } from './encoding'
  *     never conflicts).
  *  3. Encode every dirty doc; skip files whose content is byte-identical to
  *     the remote blob; upload the rest as blobs.
- *  4. Delete files of pages that no longer exist in the workspace.
+ *  4. Delete files of pages that no longer exist in the workspace. Legacy PoC files
+ *     (`data/pages/<id>.yjs`) are merged in step 2, re-written at `data/docs/<id>.yjs`
+ *     and deleted in the same commit (SY-02a).
  *  5. Create one tree + one commit and fast-forward the branch. If another
  *     device pushed in between, the ref update is rejected and we go back to
  *     step 1 — the next round merges their changes first.
@@ -59,21 +61,41 @@ export interface SyncResult {
 export const REMOTE_ORIGIN = 'webnota-remote'
 const DATA_DIR = 'data/'
 
-/**
- * Doc name ↔ repository path. `doc/<id>` still lives at the PoC path `data/pages/<id>.yjs`
- * until M0-17 moves it to `data/docs/` (spec/02 §1, SY-02a).
- */
+const ID = '[A-Za-z0-9_-]+'
+const PATHS: [RegExp, (m: string[]) => string][] = [
+  [new RegExp(`^data/docs/(${ID})\\.yjs$`), (m) => `doc/${m[1]}`],
+  [new RegExp(`^data/dbs/(${ID})/schema\\.yjs$`), (m) => `db/${m[1]}`],
+  [new RegExp(`^data/dbs/(${ID})/rows-(\\d+)\\.yjs$`), (m) => `dbr/${m[1]}/${m[2]}`],
+  [new RegExp(`^data/dbs/(${ID})/rows/(${ID})\\.yjs$`), (m) => `row/${m[1]}/${m[2]}`],
+]
+/** PoC (schema v1) location of `doc/<id>`. Read, merged, then moved to data/docs/ (SY-02a). */
+const LEGACY_DOC = new RegExp(`^data/pages/(${ID})\\.yjs$`)
+
+/** Repository path of a doc (spec/02 §1), or null if the doc is not synced. */
 export function pathForDoc(name: string): string | null {
   if (name === 'workspace') return `${DATA_DIR}workspace.yjs`
-  if (name.startsWith('doc/')) return `${DATA_DIR}pages/${name.slice(4)}.yjs`
+  const [kind, a, b] = name.split('/')
+  if (!a || !new RegExp(`^${ID}$`).test(a)) return null
+  if (kind === 'doc' && b === undefined) return `${DATA_DIR}docs/${a}.yjs`
+  if (kind === 'db' && b === undefined) return `${DATA_DIR}dbs/${a}/schema.yjs`
+  if (kind === 'dbr' && b !== undefined && /^\d+$/.test(b)) return `${DATA_DIR}dbs/${a}/rows-${b}.yjs`
+  if (kind === 'row' && b !== undefined && new RegExp(`^${ID}$`).test(b)) return `${DATA_DIR}dbs/${a}/rows/${b}.yjs`
   return null
 }
 
+/** Doc name for a repository path (legacy `data/pages/` included), or null. */
 export function docForPath(path: string): string | null {
   if (path === `${DATA_DIR}workspace.yjs`) return 'workspace'
-  const m = /^data\/pages\/([A-Za-z0-9_-]+)\.yjs$/.exec(path)
-  return m ? `doc/${m[1]}` : null
+  const legacy = LEGACY_DOC.exec(path)
+  if (legacy) return `doc/${legacy[1]}`
+  for (const [re, name] of PATHS) {
+    const m = re.exec(path)
+    if (m) return name(m)
+  }
+  return null
 }
+
+const isLegacyPath = (path: string) => LEGACY_DOC.test(path)
 
 export class ConflictRetryError extends Error {}
 
@@ -97,7 +119,9 @@ export async function syncOnce(
     const dirty = { ...store.getDirty() }
     const dirtyNames = Object.keys(dirty).filter((n) => pathForDoc(n))
 
-    if (head && head.commitSha === state.headSha && dirtyNames.length === 0) {
+    // Known legacy files still to move keep the round going even with nothing dirty.
+    const legacyPending = Object.keys(state.blobs).some(isLegacyPath)
+    if (head && head.commitSha === state.headSha && dirtyNames.length === 0 && !legacyPending) {
       return result
     }
 
@@ -115,6 +139,11 @@ export async function syncOnce(
     for (const path of remotePaths) {
       const sha = remote.get(path)!
       if (state.blobs[path] === sha) continue
+      if (isLegacyPath(path)) {
+        // Workspace is applied first (sort above), so liveness is known here.
+        const ws = await store.getDoc('workspace')
+        if (!ws.getMap('views').has(docForPath(path)!.slice(4))) continue // deleted below, not merged
+      }
       const bytes = await api.getBlob(sha)
       const doc = await store.getDoc(docForPath(path)!)
       Y.applyUpdate(doc, bytes, REMOTE_ORIGIN)
@@ -133,7 +162,18 @@ export async function syncOnce(
     const pushedGens: [string, number][] = []
     const newBlobs: Record<string, string | null> = {}
 
-    for (const name of dirtyNames) {
+    // Legacy data/pages/<id>.yjs files (pulled above): write the doc to its v2 path and
+    // delete the old file in the same commit. Pages that no longer exist just lose the file.
+    const legacy = [...remote.keys()].filter(isLegacyPath)
+    const toPush = new Set(dirtyNames)
+    for (const path of legacy) {
+      const name = docForPath(path)!
+      if (livePages.has(name.slice(4))) toPush.add(name)
+      entries.push({ path, sha: null })
+      newBlobs[path] = null
+    }
+
+    for (const name of toPush) {
       const path = pathForDoc(name)!
       const gen = dirty[name] ?? 0
       if (name.startsWith('doc/') && !livePages.has(name.slice(4))) {
@@ -155,7 +195,7 @@ export async function syncOnce(
 
     for (const path of remote.keys()) {
       const name = docForPath(path)!
-      if (name.startsWith('doc/') && !livePages.has(name.slice(4))) {
+      if (!isLegacyPath(path) && name.startsWith('doc/') && !livePages.has(name.slice(4))) {
         entries.push({ path, sha: null })
         newBlobs[path] = null
       }
