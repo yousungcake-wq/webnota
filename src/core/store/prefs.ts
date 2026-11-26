@@ -74,6 +74,14 @@ export function setCurrentSpace(id: string) {
   spacePrefStore.set(id)
 }
 
+/** Empty trash items older than 30 days on startup (WS-06), per device. Off by default. */
+const TRASH_AUTO_KEY = 'webnota:trash-auto-empty'
+export const trashAutoEmptyStore = createStore<boolean>(read(TRASH_AUTO_KEY) === '1')
+export function setTrashAutoEmpty(on: boolean) {
+  write(TRASH_AUTO_KEY, on ? '1' : '0')
+  trashAutoEmptyStore.set(on)
+}
+
 /** Recently opened views, newest first, per device (WS-05). */
 const RECENT_KEY = 'webnota:recent'
 const RECENT_MAX = 30

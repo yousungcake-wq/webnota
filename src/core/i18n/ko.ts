@@ -171,6 +171,12 @@ export const ko = {
   'trash.confirmDelete': '"{title}"과(와) 하위 페이지를 영구 삭제할까요? 되돌릴 수 없습니다.',
   'trash.empty': '휴지통이 비어 있습니다.',
   'trash.deleteTitle': '영구 삭제',
+  'trash.restoreAll': '모두 복원',
+  'trash.emptyAll': '휴지통 비우기',
+  'trash.emptyAllConfirm': '휴지통의 페이지 {count}개와 하위 페이지를 모두 영구 삭제할까요? 되돌릴 수 없습니다.',
+  'trash.inTrash': '휴지통에 있는 페이지입니다.',
+  'trash.autoEmpty': '30일 지난 항목 자동 비우기',
+  'trash.autoEmpty.desc': '이 기기에서 앱을 열 때 휴지통에 30일 넘게 있던 페이지를 영구 삭제합니다',
 
   // sync
   'sync.localOnly': '이 기기에만 저장됨',

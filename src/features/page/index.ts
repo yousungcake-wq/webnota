@@ -1,4 +1,14 @@
-export { addPage, deleteForever, duplicatePage, moveToTrash, restore, toggleFavorite } from './actions'
+export {
+  addPage,
+  autoEmptyTrash,
+  deleteForever,
+  deleteManyForever,
+  duplicatePage,
+  moveToTrash,
+  restore,
+  restoreAll,
+  toggleFavorite,
+} from './actions'
 export { PageMenu } from './LazyPageMenu'
 export { PageOverlays } from './overlays'
 export { afterMenuClosed, renameStore, renameView } from './rename'

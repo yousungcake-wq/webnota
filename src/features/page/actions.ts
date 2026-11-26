@@ -53,6 +53,27 @@ export async function deleteForever(id: string) {
   await Promise.all(removed.map((pid) => destroyDoc(pageDocName(pid))))
 }
 
+/** Restores every trashed view (WS-06). */
+export function restoreAll() {
+  const doc = ws()
+  doc.transact(() => listViews(doc).forEach((v) => v.deletedAt && restoreView(doc, v.id)))
+}
+
+/** Permanently deletes `ids` (and their subtrees) with their content databases. */
+export async function deleteManyForever(ids: string[]) {
+  const doc = ws()
+  const removed: string[] = []
+  doc.transact(() => ids.forEach((id) => removed.push(...deleteViewPermanently(doc, id))))
+  await Promise.all(removed.map((pid) => destroyDoc(pageDocName(pid))))
+}
+
+/** Startup: empties trash items older than 30 days when the device option is on (WS-06). */
+export async function autoEmptyTrash(now = Date.now()) {
+  const cutoff = now - 30 * 24 * 3600_000
+  const old = listViews(ws()).filter((v) => v.deletedAt && v.deletedAt < cutoff)
+  if (old.length) await deleteManyForever(old.map((v) => v.id))
+}
+
 export async function duplicatePage(id: string) {
   const src = getView(ws(), id)
   if (!src) return

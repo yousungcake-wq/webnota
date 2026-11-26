@@ -163,6 +163,13 @@ export const en: Record<MessageKey, string> = {
   'trash.confirmDelete': 'Permanently delete "{title}" and its subpages? This cannot be undone.',
   'trash.empty': 'Trash is empty.',
   'trash.deleteTitle': 'Delete forever',
+  'trash.restoreAll': 'Restore all',
+  'trash.emptyAll': 'Empty trash',
+  'trash.emptyAllConfirm': 'Permanently delete {count} pages in the trash and their subpages? This cannot be undone.',
+  'trash.inTrash': 'This page is in the trash.',
+  'trash.autoEmpty': 'Empty items older than 30 days',
+  'trash.autoEmpty.desc':
+    'When the app opens on this device, pages in the trash for over 30 days are deleted permanently',
 
   'sync.localOnly': 'Saved on this device only',
   'sync.localOnlyHint': 'Connect GitHub to sync across devices',

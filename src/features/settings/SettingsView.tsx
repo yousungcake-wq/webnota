@@ -4,7 +4,8 @@ import { oauthAvailable, startLogin } from '@/core/auth/auth'
 import { FLAGS, setFlag, type FlagName } from '@/core/flags'
 import { useFlag } from '@/core/store/flags'
 import { getLang, getLangPref, LANG_NAMES, LANGS, setLangPref, t, tParts, type MessageKey } from '@/core/i18n'
-import { setTheme, useTheme } from '@/core/store/prefs'
+import { setTheme, setTrashAutoEmpty, trashAutoEmptyStore, useTheme } from '@/core/store/prefs'
+import { useStore } from '@/core/store/useStore'
 import { useSync } from '@/core/store/sync'
 import { connect, disconnect, syncNow } from '@/core/sync/controller'
 import { SyncBadge } from '@/features/sync'
@@ -29,6 +30,7 @@ export function SettingsView() {
   const langPref = getLangPref()
   const theme = useTheme()
   const sync = useSync()
+  const trashAuto = useStore(trashAutoEmptyStore)
   const [pat, setPat] = useState('')
   const [repo, setRepo] = useState('webnota-data')
   const [busy, setBusy] = useState(false)
@@ -167,6 +169,16 @@ export function SettingsView() {
             { value: 'system', label: t('settings.language.system') },
             ...LANGS.map((l) => ({ value: l, label: LANG_NAMES[l], lang: l })),
           ]}
+        />
+      </section>
+
+      <section className="card">
+        <h2>{t('common.trash')}</h2>
+        <Switch
+          checked={trashAuto}
+          onChange={setTrashAutoEmpty}
+          label={t('trash.autoEmpty')}
+          description={t('trash.autoEmpty.desc')}
         />
       </section>
 

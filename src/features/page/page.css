@@ -175,3 +175,22 @@
 .info-list dd {
   margin: 0;
 }
+
+/* WS-06: viewing a page that is in the trash */
+.trash-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--c-red-bg);
+  color: var(--text);
+  font-size: 14px;
+}
+.trash-banner span {
+  flex: 1;
+  min-width: 10em;
+}
+.phone .trash-banner .btn {
+  min-height: 44px;
+}

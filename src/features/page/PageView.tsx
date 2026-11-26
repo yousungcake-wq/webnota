@@ -12,12 +12,12 @@ import { ViewIcon } from './ViewIcon'
 import { useViews } from '@/core/store/views'
 import { schemaStore } from '@/core/schema'
 import { useStore } from '@/core/store/useStore'
-import { goBack, href } from '@/core/store/router'
+import { goBack, href, navigate } from '@/core/store/router'
 import { loadEditor } from '@/features/editor'
 import { SyncBadge } from '@/features/sync'
 import { useLayout } from '@/platform/layout'
-import { EmptyState, ErrorBoundary, IconButton, LinkButton, Skeleton } from '@/ui'
-import { toggleFavorite } from './actions'
+import { Button, confirmDialog, EmptyState, ErrorBoundary, IconButton, LinkButton, Skeleton } from '@/ui'
+import { deleteForever, restore, toggleFavorite } from './actions'
 import { PageMenu } from './LazyPageMenu'
 import './page.css'
 import { t } from '@/core/i18n'
@@ -54,6 +54,7 @@ export function PageView({
     }
   }, [id])
 
+  const inTrash = page ? trashedSelfOrAncestor(pages, page) : false
   const parentId = page?.parentId ?? null
   const crumbs = ancestorsOf(pages, parentId) // O(n), cheap; recomputed per render
 
@@ -123,12 +124,39 @@ export function PageView({
       </header>
       {menuAnchor && <PageMenu page={page} anchor={menuAnchor} where="page" onClose={() => setMenuAnchor(null)} />}
 
+      {inTrash && (
+        <div className="trash-banner" role="status">
+          <span>{t('trash.inTrash')}</span>
+          <Button size="sm" onClick={() => restoreWithAncestors(pages, page.id)}>
+            {t('trash.restore')}
+          </Button>
+          <Button
+            size="sm"
+            variant="danger"
+            onClick={() =>
+              void confirmDialog({
+                title: t('trash.deleteTitle'),
+                message: t('trash.confirmDelete', { title: displayTitle(page.title) }),
+                confirmLabel: t('trash.deleteForever'),
+                danger: true,
+              }).then((ok) => {
+                if (!ok) return
+                navigate({ name: 'home' }, { replace: true })
+                void deleteForever(page.id)
+              })
+            }
+          >
+            {t('trash.deleteForever')}
+          </Button>
+        </div>
+      )}
       <div className="page-scroll">
         {/* Keyed by page so the whole subtree (editor DOM managed by ProseMirror included) is replaced in one piece. */}
         <div className="page-body" key={id}>
           <PageHead
             key={page.id}
             page={page}
+            inTrash={inTrash}
             onEnter={() => {
               const ed = editorRef.current
               if (!ed) return
@@ -141,7 +169,7 @@ export function PageView({
           {doc ? (
             <Suspense fallback={<Skeleton className="editor-loading" />}>
               <ErrorBoundary key={id} title={t('error.editor')}>
-                <Editor key={id} doc={doc} onReady={onReady} locked={page.locked} />
+                <Editor key={id} doc={doc} onReady={onReady} locked={page.locked || inTrash} />
               </ErrorBoundary>
             </Suspense>
           ) : (
@@ -153,11 +181,11 @@ export function PageView({
   )
 }
 
-function PageHead({ page, onEnter }: { page: ViewMeta; onEnter: () => void }) {
+function PageHead({ page, inTrash, onEnter }: { page: ViewMeta; inTrash: boolean; onEnter: () => void }) {
   const [title, setTitle] = useState(page.title)
   const focused = useRef(false)
   const taRef = useRef<HTMLTextAreaElement>(null)
-  const readOnly = useStore(schemaStore).readOnly || page.locked
+  const readOnly = useStore(schemaStore).readOnly || page.locked || inTrash
   const renaming = useStore(renameStore, (r) => r?.id === page.id && r.where === 'page')
   useEffect(() => {
     if (!renaming) return
@@ -223,4 +251,16 @@ function PageHead({ page, onEnter }: { page: ViewMeta; onEnter: () => void }) {
       />
     </div>
   )
+}
+
+/** The view or one of its ancestors is in the trash (not merely detached from its space). */
+function trashedSelfOrAncestor(views: ViewMeta[], view: ViewMeta) {
+  return [view, ...ancestorsOf(views, view.parentId)].some((v) => v.deletedAt)
+}
+
+/** Restores the view and any trashed ancestor so it becomes visible again. */
+function restoreWithAncestors(views: ViewMeta[], id: string) {
+  const view = views.find((v) => v.id === id)
+  if (!view) return
+  for (const v of [...ancestorsOf(views, view.parentId), view]) if (v.deletedAt) restore(v.id)
 }

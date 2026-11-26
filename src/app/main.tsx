@@ -8,11 +8,11 @@ import { currentWorkspaceId } from '@/core/docs/slots'
 import { initWorkspace, seedIfEmpty } from '@/core/docs/workspace'
 import { initSchema, isReadOnly } from '@/core/schema'
 import { debugFlag } from '@/platform/debug'
-import { applyTheme } from '@/core/store/prefs'
+import { applyTheme, trashAutoEmptyStore } from '@/core/store/prefs'
 import { navigate } from '@/core/store/router'
 import { connect, initUser, startAutoSync } from '@/core/sync/controller'
 import { loadSeed, preloadEditor } from '@/features/editor'
-import { addPage } from '@/features/page'
+import { addPage, autoEmptyTrash } from '@/features/page'
 import { configureUi, ErrorBoundary, OverlayHost, toast } from '@/ui'
 import { App } from './App'
 import { installGlobalErrorToasts } from './errors'
@@ -45,6 +45,7 @@ async function boot() {
   installGlobalErrorToasts()
 
   await initUser()
+  if (trashAutoEmptyStore.get() && !isReadOnly()) void autoEmptyTrash() // WS-06, device option
   const welcome = isReadOnly() ? null : seedIfEmpty()
   if (debugFlag('seed-unknown') && !isReadOnly()) await (await import('./qa/seedUnknown')).seedUnknown(wsDoc) // QA: ED-B23
   if (debugFlag('seed-many') && !isReadOnly()) (await import('./qa/seedMany')).seedMany(wsDoc) // QA: virtual tree
