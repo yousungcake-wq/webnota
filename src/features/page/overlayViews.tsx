@@ -5,8 +5,12 @@ import { getView } from '@/core/model/views'
 import { ws } from '@/core/docs/workspace'
 import { Button, Dialog } from '@/ui'
 import { IconPicker } from './IconPicker'
+import { MoveDialog } from './MoveDialog'
 
-export type Open = { kind: 'icon'; viewId: string; anchor: HTMLElement | null } | { kind: 'info'; viewId: string }
+export type Open =
+  | { kind: 'icon'; viewId: string; anchor: HTMLElement | null }
+  | { kind: 'info'; viewId: string }
+  | { kind: 'move'; viewId: string }
 
 export default function OverlayViews({ open, close }: { open: Open; close: () => void }) {
   const view = getView(ws(), open.viewId)
@@ -16,6 +20,7 @@ export default function OverlayViews({ open, close }: { open: Open; close: () =>
     const anchor = open.anchor?.isConnected ? open.anchor : document.querySelector<HTMLElement>('.page-icon, .add-icon')
     return <IconPicker anchor={anchor} viewId={view.id} current={view.icon} onClose={close} />
   }
+  if (open.kind === 'move') return <MoveDialog view={view} onClose={close} />
   return <InfoDialog viewId={view.id} onClose={close} />
 }
 

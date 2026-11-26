@@ -15,6 +15,7 @@ const store = createStore<OpenOverlay | null>(null)
 export const openIconPicker = (viewId: string, anchor: HTMLElement | null) =>
   void afterMenuClosed().then(() => store.set({ kind: 'icon', viewId, anchor }))
 export const openViewInfo = (viewId: string) => void afterMenuClosed().then(() => store.set({ kind: 'info', viewId }))
+export const openMoveDialog = (viewId: string) => void afterMenuClosed().then(() => store.set({ kind: 'move', viewId }))
 
 export function PageOverlays() {
   const open = useStore(store)

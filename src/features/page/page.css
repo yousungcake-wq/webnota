@@ -208,3 +208,41 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+/* WS-12 move dialog */
+.move-search {
+  margin: 0 0 var(--sp-2);
+}
+.move-list {
+  max-height: 50vh;
+  overflow-y: auto;
+  margin: 0 calc(-1 * var(--sp-2));
+}
+.move-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 34px;
+  padding-right: 8px;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 14px;
+}
+.move-item:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.move-item:disabled {
+  opacity: 0.4;
+}
+.move-item.is-space {
+  font-weight: 600;
+}
+.move-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.phone .move-item {
+  min-height: 44px;
+}

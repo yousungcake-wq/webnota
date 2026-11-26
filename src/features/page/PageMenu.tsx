@@ -20,7 +20,7 @@ import { href } from '@/core/store/router'
 import { useLayout } from '@/platform/layout'
 import { Menu, toast, type MenuEntry } from '@/ui'
 import { addPage, duplicatePage, moveToTrash, toggleFavorite } from './actions'
-import { openIconPicker, openViewInfo } from './overlays'
+import { openIconPicker, openMoveDialog, openViewInfo } from './overlays'
 import { renameView } from './rename'
 import { displayTitle } from './titles'
 
@@ -32,14 +32,11 @@ export function PageMenu({
   anchor,
   where = 'tree',
   onClose,
-  onMove,
 }: {
   page: ViewMeta
   anchor: HTMLElement | null
   where?: 'tree' | 'page'
   onClose: () => void
-  /** Opens the move dialog (WS-12). */
-  onMove?: () => void
 }) {
   const phone = useLayout().layout === 'phone'
   const items: MenuEntry[] = [
@@ -52,7 +49,7 @@ export function PageMenu({
     },
     { label: t('page.addChild'), icon: Plus, onSelect: () => addPage(page.id) },
     { label: t('page.duplicate'), icon: Copy, onSelect: () => void duplicatePage(page.id) },
-    ...(onMove ? [{ label: t('page.move'), icon: FolderInput, onSelect: onMove }] : []),
+    { label: t('page.move'), icon: FolderInput, onSelect: () => openMoveDialog(page.id) },
     'separator',
     {
       label: t('page.copyLink'),
