@@ -1,13 +1,15 @@
 import { debugLog } from '../flags'
 import { t } from '../i18n'
 import { getToken, setToken } from '../auth/auth'
-import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc, pageDocName, retainDoc } from '../docs/registry'
+import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc, pageDocName, retainDoc, tabs } from '../docs/registry'
+import { currentWorkspaceId } from '../docs/slots'
 import { listPages } from '../model/pages'
 import { createStore } from '../store/createStore'
 import { isReadOnly } from '../schema/gate'
 import { ConflictRetryError, syncOnce, type LocalStore, type SyncState } from './engine'
 import { GitHubClient, GitHubError, GitHubGitApi } from './github'
-import { createScheduler, PULL_INTERVAL_MS, type SyncOutcome } from './schedule'
+import { electLeader } from './leader'
+import { createScheduler, PULL_INTERVAL_MS, type SyncOutcome, type SyncReason } from './schedule'
 
 export type SyncStatus = 'disconnected' | 'idle' | 'pending' | 'syncing' | 'offline' | 'error'
 
@@ -115,7 +117,7 @@ export async function connect(token: string, repoName = DEFAULT_REPO): Promise<A
   set({ account, status: 'idle', error: null })
   // Everything that exists locally must be uploaded at least once.
   await markAllDirtyForFirstSync()
-  scheduler.request('manual')
+  requestSync('manual')
   return account
 }
 
@@ -133,9 +135,21 @@ export function disconnect() {
 
 const scheduler = createScheduler({ sync: runSync, hasDirty: () => Object.keys(getDirty()).length > 0 })
 
+/**
+ * Only the leader tab syncs (SY-02e); other tabs forward their requests to it. Edits made
+ * in any tab reach the leader's docs live through the tab relay (core/docs/tabs.ts) and
+ * its dirty set through the `storage` event.
+ */
+let election: { isLeader: () => boolean } | null = null
+
+function requestSync(reason: SyncReason) {
+  if (election?.isLeader() ?? true) scheduler.request(reason)
+  else tabs.post({ type: 'sync-request', reason })
+}
+
 /** Manual sync (button). Respects a rate-limit wait, bypasses a normal backoff (SY-02c). */
 export function syncNow() {
-  scheduler.request('manual')
+  requestSync('manual')
 }
 
 async function runSync(): Promise<SyncOutcome> {
@@ -190,7 +204,7 @@ function deviceLabel() {
 
 let started = false
 
-/** Wires up automatic syncing (SY-02b): pushes after edits, periodic pull, on hide/show and reconnect. */
+/** Wires up automatic syncing (SY-02b,e): pushes after edits, periodic pull, on hide/show and reconnect. */
 export function startAutoSync() {
   if (started) return
   started = true
@@ -199,23 +213,53 @@ export function startAutoSync() {
     if (!syncStore.get().account) return
     if (Object.keys(getDirty()).length === 0) return
     if (syncStore.get().status === 'idle') set({ status: 'pending' })
-    scheduler.edited()
+    if (election?.isLeader()) scheduler.edited()
   })
 
   setInterval(() => {
-    if (syncStore.get().account && document.visibilityState === 'visible') scheduler.request('interval')
+    if (syncStore.get().account && document.visibilityState === 'visible') requestSync('interval')
   }, PULL_INTERVAL_MS)
 
   document.addEventListener('visibilitychange', () => {
     if (!syncStore.get().account) return
     // hidden: flush pending edits before the OS may kill the tab; visible: pull fresh changes
-    scheduler.request(document.visibilityState === 'hidden' ? 'hidden' : 'visible')
+    requestSync(document.visibilityState === 'hidden' ? 'hidden' : 'visible')
   })
-  window.addEventListener('online', () => scheduler.request('online'))
+  window.addEventListener('online', () => requestSync('online'))
   window.addEventListener('offline', () => syncStore.get().account && set({ status: 'offline' }))
 
-  if (syncStore.get().account) {
-    set({ status: 'idle' })
+  // Login/logout in another tab.
+  window.addEventListener('storage', (e) => {
+    if (e.key === ACCOUNT_KEY) set({ account: readAccount() })
+  })
+
+  tabs.on('sync-request', (m) => {
+    if (!election?.isLeader()) return
+    const account = readAccount() // the request may come right after a login in that tab
+    if (account?.repo !== syncStore.get().account?.repo) set({ account })
+    scheduler.request(m.reason as SyncReason)
+  })
+  // Followers mirror the leader's status.
+  tabs.on('status', (m) => {
+    if (election?.isLeader()) return
+    set({
+      status: m.status as SyncStatus,
+      lastSyncedAt: m.lastSyncedAt as number | null,
+      error: m.error as string | null,
+    })
+  })
+  syncStore.subscribe(() => {
+    if (!election?.isLeader()) return
+    const { status, lastSyncedAt, error } = syncStore.get()
+    tabs.post({ type: 'status', status, lastSyncedAt, error })
+  })
+
+  election = electLeader(`webnota:sync-leader:${currentWorkspaceId()}`, () => {
+    debugLog('sync', 'this tab is the sync leader')
+    if (!syncStore.get().account) return
+    set({ status: Object.keys(getDirty()).length ? 'pending' : 'idle' })
     scheduler.request('start')
-  }
+    if (Object.keys(getDirty()).length) scheduler.edited()
+  })
+  if (syncStore.get().account) set({ status: 'idle' })
 }

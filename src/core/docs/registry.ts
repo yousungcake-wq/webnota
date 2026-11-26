@@ -12,7 +12,8 @@ import { IndexeddbPersistence } from 'y-indexeddb'
 /** Origin used when applying updates that came from GitHub, so they don't mark docs dirty. */
 import { REMOTE_ORIGIN } from '../sync/engine'
 import { isReadOnly } from '../schema/gate'
-import { idbName } from './slots'
+import { currentWorkspaceId, idbName } from './slots'
+import { createTabRelay, TAB_ORIGIN } from './tabs'
 export { REMOTE_ORIGIN }
 
 export const WORKSPACE = 'workspace'
@@ -26,6 +27,9 @@ interface Entry {
 }
 
 const registry = new Map<string, Entry>()
+
+/** Live updates and sync messages between tabs of this workspace (SY-02e). */
+export const tabs = createTabRelay(`webnota:${currentWorkspaceId()}`, (name) => registry.get(name)?.doc)
 
 // ---- dirty tracking (docs with local changes not yet pushed) ----
 const DIRTY_KEY = 'webnota:dirty'
@@ -47,6 +51,15 @@ function writeJSON(key: string, value: unknown) {
   } catch {
     /* storage unavailable: dirty set stays in memory */
   }
+}
+
+// Another tab changed the dirty set (its edits, or the leader's sync clearing flags).
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key !== DIRTY_KEY) return
+    dirty = readJSON(DIRTY_KEY, {})
+    dirtyListeners.forEach((l) => l())
+  })
 }
 
 export function markDirty(name: string) {
@@ -162,8 +175,10 @@ export function openDoc(name: string): Promise<Y.Doc> {
   }
   const doc = new Y.Doc({ guid: name, gc: true })
   const persistence = new IndexeddbPersistence(idbName(name), doc)
+  tabs.attach(name, doc, [persistence])
   doc.on('update', (_update: Uint8Array, origin: unknown) => {
-    if (origin === REMOTE_ORIGIN || origin === persistence) return
+    // TAB_ORIGIN: made in another tab, which marked it dirty itself.
+    if (origin === REMOTE_ORIGIN || origin === persistence || origin === TAB_ORIGIN) return
     // Read-only (spec/02 §6): nothing local may be queued for upload. Backstop — the
     // editor and core/model already refuse writes; the sync controller skips pushes.
     if (isReadOnly()) return
