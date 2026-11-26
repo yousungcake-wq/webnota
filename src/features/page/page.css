@@ -162,3 +162,16 @@
 .sheet .emoji-grid {
   max-width: none;
 }
+
+.info-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-2) var(--sp-4);
+  margin: 0;
+}
+.info-list dt {
+  color: var(--text-2);
+}
+.info-list dd {
+  margin: 0;
+}

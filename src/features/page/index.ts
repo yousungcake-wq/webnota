@@ -1,5 +1,7 @@
 export { addPage, deleteForever, duplicatePage, moveToTrash, restore, toggleFavorite } from './actions'
-export { PageMenu } from './PageMenu'
+export { PageMenu } from './LazyPageMenu'
+export { PageOverlays } from './overlays'
+export { renameStore, renameView } from './rename'
 export { PageView } from './PageView'
 export { displayTitle, pathOf } from './titles'
 export { emoji, ViewIcon } from './ViewIcon'

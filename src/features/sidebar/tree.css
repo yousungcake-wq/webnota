@@ -142,3 +142,14 @@ body.is-tree-dragging * {
   -webkit-user-drag: none;
   -webkit-touch-callout: none;
 }
+.tree-rename {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}

@@ -8,7 +8,9 @@ export interface ConfirmRequest {
   confirmLabel?: string
   cancelLabel?: string
   danger?: boolean
-  resolve: (ok: boolean) => void
+  /** Shows a text field; its value is passed to `resolve`. */
+  prompt?: { label: string; value: string }
+  resolve: (ok: boolean, value?: string) => void
 }
 
 export interface ToastItem {
@@ -61,6 +63,38 @@ export function confirmDialog(opts: Omit<ConfirmRequest, 'id' | 'resolve'>): Pro
       ],
     })
   })
+}
+
+/** Asks for a line of text (rename on phones). Resolves null when cancelled. */
+export async function promptDialog(opts: {
+  title: string
+  label: string
+  value: string
+  confirmLabel?: string
+}): Promise<string | null> {
+  let text = opts.value
+  const ok = await new Promise<boolean>((resolve) => {
+    const id = nextId++
+    set({
+      ...state,
+      confirms: [
+        ...state.confirms,
+        {
+          title: opts.title,
+          message: null,
+          confirmLabel: opts.confirmLabel,
+          prompt: { label: opts.label, value: opts.value },
+          id,
+          resolve: (done, value) => {
+            set({ ...state, confirms: state.confirms.filter((c) => c.id !== id) })
+            if (value !== undefined) text = value
+            resolve(done)
+          },
+        },
+      ],
+    })
+  })
+  return ok ? text : null
 }
 
 /** Shows a toast; returns a function that dismisses it early. Max 3 visible. */

@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import { Button, IconButton } from '../Button'
+import { Input } from '../controls'
 import { uiStrings } from '../strings'
 import { Dialog } from './Dialog'
 import { dismissToast, hostStore, type ConfirmRequest, type ToastItem } from './host'
@@ -29,9 +30,11 @@ export function OverlayHost() {
 }
 
 function Confirm({ req }: { req: ConfirmRequest }) {
+  const [value, setValue] = useState(req.prompt?.value ?? '')
+  const ok = () => req.resolve(true, req.prompt ? value : undefined)
   return (
     <Dialog
-      role="alertdialog"
+      role={req.prompt ? 'dialog' : 'alertdialog'}
       title={req.title}
       onClose={() => req.resolve(false)}
       actions={
@@ -39,13 +42,33 @@ function Confirm({ req }: { req: ConfirmRequest }) {
           <Button variant="ghost" onClick={() => req.resolve(false)}>
             {req.cancelLabel ?? uiStrings.cancel}
           </Button>
-          <Button variant={req.danger ? 'danger' : 'primary'} data-autofocus onClick={() => req.resolve(true)}>
+          <Button
+            variant={req.danger ? 'danger' : 'primary'}
+            {...(req.prompt ? {} : { 'data-autofocus': true })}
+            onClick={ok}
+          >
             {req.confirmLabel ?? uiStrings.ok}
           </Button>
         </>
       }
     >
       {req.message}
+      {req.prompt && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            ok()
+          }}
+        >
+          <Input
+            label={req.prompt.label}
+            value={value}
+            data-autofocus
+            onFocus={(e) => e.currentTarget.select()}
+            onChange={(e) => setValue(e.target.value)}
+          />
+        </form>
+      )}
     </Dialog>
   )
 }

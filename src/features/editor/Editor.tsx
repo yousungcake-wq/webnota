@@ -17,16 +17,18 @@ import { t } from '@/core/i18n'
 
 interface Props {
   doc: Y.Doc
+  /** Locked page (WS-13): read-only until unlocked. */
+  locked?: boolean
   onReady?: (editor: TEditor) => void
 }
 
-export function Editor({ doc, onReady }: Props) {
+export function Editor({ doc, onReady, locked = false }: Props) {
   debugCrash('editor')
   const coarse = useLayout().isTouch
   const schemaReadOnly = useStore(schemaStore, selectReadOnly)
   // Content from a newer app version (ED-B23): kept as is, page opens read-only.
   const [unknown, setUnknown] = useState<string[] | null>(null)
-  const readOnly = schemaReadOnly || unknown !== null
+  const readOnly = schemaReadOnly || unknown !== null || locked
   const editor = useEditor(
     {
       extensions: editorExtensions(doc, {

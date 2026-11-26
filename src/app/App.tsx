@@ -4,7 +4,7 @@ import { useViews } from '@/core/store/views'
 import { href, navigate, useRoute, type Route } from '@/core/store/router'
 import { FavoritesView } from '@/features/favorites'
 import { HomeView } from '@/features/home'
-import { PageView } from '@/features/page'
+import { PageOverlays, PageView } from '@/features/page'
 import { SearchView } from '@/features/search'
 import { SettingsView } from '@/features/settings'
 import { Sidebar } from '@/features/sidebar'
@@ -33,7 +33,13 @@ export function App() {
     if (target) navigate({ name: 'page', id: target.id }, { replace: true })
   }, [route.name, phone, pages])
 
-  if (phone) return <PhoneShell route={route} />
+  if (phone)
+    return (
+      <>
+        <PhoneShell route={route} />
+        <PageOverlays />
+      </>
+    )
 
   return (
     <div className={`desktop${sidebarOpen ? '' : ' sidebar-collapsed'}`}>
@@ -48,6 +54,7 @@ export function App() {
           <MainContent route={route} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(true)} />
         </ErrorBoundary>
       </main>
+      <PageOverlays />
     </div>
   )
 }

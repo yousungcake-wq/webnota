@@ -2,7 +2,7 @@
 export { Button, IconButton, type ButtonProps, type IconButtonProps } from './Button'
 export { Menu, type MenuEntry, type MenuItem } from './Menu'
 export { Dialog } from './overlay/Dialog'
-export { confirmDialog, toast } from './overlay/host'
+export { confirmDialog, promptDialog, toast } from './overlay/host'
 export { Overlay } from './overlay/Overlay'
 export { OverlayHost } from './overlay/OverlayHost'
 export { Popover } from './overlay/Popover'

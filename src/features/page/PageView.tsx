@@ -1,12 +1,14 @@
 import type { Editor as TEditor } from '@tiptap/react'
-import { ChevronLeft, MoreHorizontal, PanelLeft, SmilePlus, Star } from 'lucide-react'
+import { ChevronLeft, Lock, MoreHorizontal, PanelLeft, SmilePlus, Star } from 'lucide-react'
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type * as Y from 'yjs'
 import { openDoc, pageDocName, retainDoc } from '@/core/docs/registry'
 import { ws } from '@/core/docs/workspace'
 import { ancestorsOf, updateView, type ViewMeta } from '@/core/model/views'
 import { displayTitle } from './titles'
-import { emoji, ViewIcon } from './ViewIcon'
+import { openIconPicker } from './overlays'
+import { renameStore } from './rename'
+import { ViewIcon } from './ViewIcon'
 import { useViews } from '@/core/store/views'
 import { schemaStore } from '@/core/schema'
 import { useStore } from '@/core/store/useStore'
@@ -14,17 +16,14 @@ import { goBack, href } from '@/core/store/router'
 import { loadEditor } from '@/features/editor'
 import { SyncBadge } from '@/features/sync'
 import { useLayout } from '@/platform/layout'
-import { Button, EmptyState, ErrorBoundary, IconButton, LinkButton, Overlay, Skeleton } from '@/ui'
+import { EmptyState, ErrorBoundary, IconButton, LinkButton, Skeleton } from '@/ui'
 import { toggleFavorite } from './actions'
-import { PageMenu } from './PageMenu'
+import { PageMenu } from './LazyPageMenu'
 import './page.css'
 import { t } from '@/core/i18n'
 
 // The editor (Tiptap + ProseMirror) is the biggest chunk; load it only when a page opens.
 const Editor = lazy(() => loadEditor().then((m) => ({ default: m.Editor })))
-
-const EMOJIS = '📄📝📌📎📚📖🗂️📁🗓️✅☑️💡🔥⭐️🎯🚀🧠💼🏠🛒✈️🍳🎵🎮📷🎨🧪💻🔧📊📈💰❤️🌱☕️🐶😀👋🙌🎉'
-const emojiList = Array.from(new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(EMOJIS), (s) => s.segment)
 
 export function PageView({
   id,
@@ -104,6 +103,13 @@ export function PageView({
         </nav>
         <div className="topbar-actions">
           <SyncBadge compact={phone} />
+          {page.locked && (
+            <IconButton
+              icon={Lock}
+              label={t('page.unlock')}
+              onClick={() => updateView(ws(), page.id, { locked: false })}
+            />
+          )}
           <IconButton
             icon={Star}
             tone="star"
@@ -115,7 +121,7 @@ export function PageView({
           <IconButton icon={MoreHorizontal} label={t('common.more')} onClick={(e) => setMenuAnchor(e.currentTarget)} />
         </div>
       </header>
-      {menuAnchor && <PageMenu page={page} anchor={menuAnchor} onClose={() => setMenuAnchor(null)} />}
+      {menuAnchor && <PageMenu page={page} anchor={menuAnchor} where="page" onClose={() => setMenuAnchor(null)} />}
 
       <div className="page-scroll">
         {/* Keyed by page so the whole subtree (editor DOM managed by ProseMirror included) is replaced in one piece. */}
@@ -135,7 +141,7 @@ export function PageView({
           {doc ? (
             <Suspense fallback={<Skeleton className="editor-loading" />}>
               <ErrorBoundary key={id} title={t('error.editor')}>
-                <Editor key={id} doc={doc} onReady={onReady} />
+                <Editor key={id} doc={doc} onReady={onReady} locked={page.locked} />
               </ErrorBoundary>
             </Suspense>
           ) : (
@@ -151,9 +157,14 @@ function PageHead({ page, onEnter }: { page: ViewMeta; onEnter: () => void }) {
   const [title, setTitle] = useState(page.title)
   const focused = useRef(false)
   const taRef = useRef<HTMLTextAreaElement>(null)
-  const [picker, setPicker] = useState<HTMLElement | null>(null)
-  const readOnly = useStore(schemaStore).readOnly
-  const phone = useLayout().layout === 'phone'
+  const readOnly = useStore(schemaStore).readOnly || page.locked
+  const renaming = useStore(renameStore, (r) => r?.id === page.id && r.where === 'page')
+  useEffect(() => {
+    if (!renaming) return
+    renameStore.set(null)
+    taRef.current?.focus()
+    taRef.current?.select()
+  }, [renaming])
 
   // Follow remote/other-tab title changes unless the user is typing here.
   useEffect(() => {
@@ -175,13 +186,13 @@ function PageHead({ page, onEnter }: { page: ViewMeta; onEnter: () => void }) {
           className="page-icon"
           aria-label={t('page.changeIcon')}
           disabled={readOnly}
-          onClick={(e) => setPicker(e.currentTarget)}
+          onClick={(e) => openIconPicker(page.id, e.currentTarget)}
         >
           <ViewIcon icon={page.icon} size={48} />
         </button>
       ) : (
         !readOnly && (
-          <button type="button" className="add-icon" onClick={(e) => setPicker(e.currentTarget)}>
+          <button type="button" className="add-icon" onClick={(e) => openIconPicker(page.id, e.currentTarget)}>
             <SmilePlus size={16} /> {t('page.addIcon')}
           </button>
         )
@@ -210,37 +221,6 @@ function PageHead({ page, onEnter }: { page: ViewMeta; onEnter: () => void }) {
           }
         }}
       />
-      {picker && (
-        <Overlay anchor={picker} title={t('common.icon')} sheet={phone} onClose={() => setPicker(null)}>
-          <div className="emoji-grid">
-            {emojiList.map((em) => (
-              <button
-                key={em}
-                type="button"
-                className="emoji-btn"
-                onClick={() => {
-                  updateView(ws(), page.id, { icon: emoji(em) })
-                  setPicker(null)
-                }}
-              >
-                {em}
-              </button>
-            ))}
-          </div>
-          {page.icon && (
-            <Button
-              variant="ghost"
-              full
-              onClick={() => {
-                updateView(ws(), page.id, { icon: null })
-                setPicker(null)
-              }}
-            >
-              {t('page.removeIcon')}
-            </Button>
-          )}
-        </Overlay>
-      )}
     </div>
   )
 }

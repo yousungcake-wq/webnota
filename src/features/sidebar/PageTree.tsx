@@ -8,7 +8,11 @@ import { type ViewMeta } from '@/core/model/views'
 import { displayTitle } from '@/features/page'
 import { toggleExpanded, useExpanded } from '@/core/store/prefs'
 import { href } from '@/core/store/router'
-import { addPage, PageMenu, ViewIcon } from '@/features/page'
+import { addPage, PageMenu, renameStore, renameView, ViewIcon } from '@/features/page'
+import { ws } from '@/core/docs/workspace'
+import { updateView } from '@/core/model/views'
+import { useStore } from '@/core/store/useStore'
+import { useLayout } from '@/platform/layout'
 import './tree.css'
 import { t } from '@/core/i18n'
 import { IconButton } from '@/ui'
@@ -24,6 +28,8 @@ interface RowProps {
 /** One tree row. Memoized: re-renders only when its own view or position changes. */
 const Row = memo(function Row({ view, depth, hasChildren, open, current, index }: RowProps & { index: number }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
+  const editing = useStore(renameStore, (r) => r?.id === view.id && r.where === 'tree')
+  const phone = useLayout().layout === 'phone'
   return (
     <li
       role="treeitem"
@@ -47,12 +53,22 @@ const Row = memo(function Row({ view, depth, hasChildren, open, current, index }
           className="tree-link"
           href={href({ name: 'page', id: view.id })}
           draggable={false}
-          onKeyDown={(e) => keyboardMove(e, view)}
+          onKeyDown={(e) => {
+            if (e.key === 'F2') {
+              e.preventDefault()
+              void renameView(view, 'tree', phone)
+            } else keyboardMove(e, view)
+          }}
+          onDoubleClick={(e) => {
+            if (phone) return
+            e.preventDefault()
+            void renameView(view, 'tree', false)
+          }}
         >
           <span className="tree-icon">
             <ViewIcon icon={view.icon} />
           </span>
-          <span className="tree-title">{displayTitle(view.title)}</span>
+          {editing ? <RenameInput view={view} /> : <span className="tree-title">{displayTitle(view.title)}</span>}
         </a>
         <div className="tree-actions">
           <IconButton
@@ -68,6 +84,37 @@ const Row = memo(function Row({ view, depth, hasChildren, open, current, index }
     </li>
   )
 })
+
+/** Inline title editor in a tree row: Enter/blur saves, Esc cancels. */
+function RenameInput({ view }: { view: ViewMeta }) {
+  const [value, setValue] = useState(view.title)
+  const done = (save: boolean) => {
+    if (renameStore.get()?.id !== view.id) return
+    renameStore.set(null)
+    if (save && value.trim() !== view.title) updateView(ws(), view.id, { title: value.trim() })
+    requestAnimationFrame(() =>
+      document.querySelector<HTMLElement>(`[data-id="${CSS.escape(view.id)}"] .tree-link`)?.focus(),
+    )
+  }
+  return (
+    <input
+      className="tree-rename"
+      autoFocus
+      value={value}
+      aria-label={t('page.titleLabel')}
+      onFocus={(e) => e.currentTarget.select()}
+      onClick={(e) => e.preventDefault()}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={() => done(true)}
+      onKeyDown={(e) => {
+        e.stopPropagation()
+        if (e.nativeEvent.isComposing) return
+        if (e.key === 'Enter') done(true)
+        else if (e.key === 'Escape') done(false)
+      }}
+    />
+  )
+}
 
 /**
  * The view tree of one space (WS-03): flattened, then only the rows on screen are
