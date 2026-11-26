@@ -5,7 +5,7 @@ import { visibleSpaces } from '@/core/model/views'
 import { setCurrentSpace, useRecent } from '@/core/store/prefs'
 import { href } from '@/core/store/router'
 import { useAliveViews, useCurrentSpace, useSpaces } from '@/core/store/views'
-import { addPage, displayTitle, ViewIcon } from '@/features/page'
+import { displayTitle, newView, ViewIcon } from '@/features/page'
 import { PageTree } from '@/features/sidebar'
 import { SpaceBadge, SpaceSwitcher } from '@/features/spaces'
 import { SyncBadge } from '@/features/sync'
@@ -51,11 +51,21 @@ export function HomeView() {
       <section className="section">
         <div className="section-head">
           <SpaceSwitcher />
-          <IconButton size="sm" icon={Plus} label={t('common.newPage')} onClick={() => addPage(null, spaceId)} />
+          <IconButton
+            size="sm"
+            icon={Plus}
+            label={t('common.newPage')}
+            onClick={(e) => newView(e.currentTarget, null, spaceId)}
+          />
         </div>
         <PageTree spaceId={spaceId} />
       </section>
-      <button type="button" className="fab" aria-label={t('common.newPage')} onClick={() => addPage(null, spaceId)}>
+      <button
+        type="button"
+        className="fab"
+        aria-label={t('common.newPage')}
+        onClick={(e) => newView(e.currentTarget, null, spaceId)}
+      >
         <Plus size={26} />
       </button>
     </div>

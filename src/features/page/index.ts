@@ -10,7 +10,7 @@ export {
   toggleFavorite,
 } from './actions'
 export { PageMenu } from './LazyPageMenu'
-export { PageOverlays } from './overlays'
+export { newView, PageOverlays } from './overlays'
 export { afterMenuClosed, renameStore, renameView } from './rename'
 export { PageView } from './PageView'
 export { displayTitle, pathOf } from './titles'

@@ -1,7 +1,7 @@
 import { PanelLeftClose, Plus, Search, Settings, Star, Trash2 } from 'lucide-react'
 import { useCurrentSpace } from '@/core/store/views'
 import { href, type Route } from '@/core/store/router'
-import { addPage } from '@/features/page'
+import { newView } from '@/features/page'
 import { openPalette } from '@/features/search'
 import { SpaceSwitcher } from '@/features/spaces'
 import { SyncBadge } from '@/features/sync'
@@ -47,14 +47,19 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
         <section className="section">
           <div className="section-head">
             <SpaceSwitcher />
-            <IconButton size="sm" icon={Plus} label={t('common.newPage')} onClick={() => addPage(null, spaceId)} />
+            <IconButton
+              size="sm"
+              icon={Plus}
+              label={t('common.newPage')}
+              onClick={(e) => newView(e.currentTarget, null, spaceId)}
+            />
           </div>
           <PageTree spaceId={spaceId} currentId={currentId} />
         </section>
       </div>
 
       <div className="sidebar-bottom">
-        <button type="button" className="side-link" onClick={() => addPage(null, spaceId)}>
+        <button type="button" className="side-link" onClick={(e) => newView(e.currentTarget, null, spaceId)}>
           <Plus size={16} /> {t('common.newPage')}
         </button>
         <a className={`side-link${route.name === 'trash' ? ' is-current' : ''}`} href={href({ name: 'trash' })}>

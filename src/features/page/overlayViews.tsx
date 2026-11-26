@@ -3,7 +3,9 @@ import { openDoc, pageDocName } from '@/core/docs/registry'
 import { getLang, t } from '@/core/i18n'
 import { getView } from '@/core/model/views'
 import { ws } from '@/core/docs/workspace'
-import { Button, Dialog } from '@/ui'
+import { Button, Dialog, Menu } from '@/ui'
+import { addPage } from './actions'
+import { VIEW_LAYOUTS } from './newView'
 import { IconPicker } from './IconPicker'
 import { MoveDialog } from './MoveDialog'
 
@@ -11,8 +13,22 @@ export type Open =
   | { kind: 'icon'; viewId: string; anchor: HTMLElement | null }
   | { kind: 'info'; viewId: string }
   | { kind: 'move'; viewId: string }
+  | { kind: 'newView'; viewId: string; anchor: HTMLElement | null; parentId: string | null; spaceId?: string }
 
 export default function OverlayViews({ open, close }: { open: Open; close: () => void }) {
+  if (open.kind === 'newView')
+    return (
+      <Menu
+        anchor={open.anchor}
+        title={t('common.newPage')}
+        onClose={close}
+        items={VIEW_LAYOUTS.map((l) => ({
+          label: t(l.label),
+          disabled: !l.available,
+          onSelect: () => addPage(open.parentId, open.spaceId, l.layout),
+        }))}
+      />
+    )
   const view = getView(ws(), open.viewId)
   if (!view) return null
   if (open.kind === 'icon') {

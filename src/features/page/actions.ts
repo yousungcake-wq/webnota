@@ -10,6 +10,7 @@ import {
   restoreView,
   trashView,
   updateView,
+  type ViewLayout,
 } from '@/core/model/views'
 import { ws } from '@/core/docs/workspace'
 import { toggleExpanded } from '@/core/store/prefs'
@@ -18,9 +19,17 @@ import { t } from '@/core/i18n'
 import { toast } from '@/ui'
 import { displayTitle } from './titles'
 
-/** New document view under `parentId`, or at the end of `spaceId` (default: the first space). */
-export function addPage(parentId: string | null = null, spaceId?: string) {
-  const id = createView(ws(), { parentId, spaceId })
+/**
+ * New view under `parentId`, or at the end of `spaceId` (default: the first space).
+ * With a single available layout (today: documents, WS-11) this is what every "+" does.
+ */
+export function addPage(parentId: string | null = null, spaceId?: string, layout: ViewLayout = 'document') {
+  const id = createView(ws(), {
+    parentId,
+    spaceId,
+    layout,
+    kind: layout === 'document' ? 'document' : 'database',
+  })
   if (parentId) toggleExpanded(parentId, true)
   navigate({ name: 'page', id })
   return id

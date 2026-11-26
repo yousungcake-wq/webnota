@@ -93,6 +93,7 @@ AppFlowy `command_palette`에 해당합니다.
 
 - 문서 / Grid / Board / Calendar 중 선택합니다. 템플릿(IO-07)도 선택할 수 있습니다.
 - 사이드바 하단 "새 페이지" 버튼, 폰은 FAB입니다.
+- 구현 (M1-20): 레이아웃 목록 `features/page/newView.ts`. 사용할 수 있는 레이아웃이 하나(지금은 문서)면 모든 `+`가 바로 만들고, 둘 이상이면 메뉴를 띄웁니다(DB 레이아웃은 M4~M5에서 `available`을 켬).
 
 ## WS-12 이동 대화상자 (P0, M1)
 

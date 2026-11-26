@@ -8,7 +8,7 @@ import { type ViewMeta } from '@/core/model/views'
 import { displayTitle } from '@/features/page'
 import { toggleExpanded, useExpanded } from '@/core/store/prefs'
 import { href } from '@/core/store/router'
-import { addPage, PageMenu, pathOf, renameStore, renameView, ViewIcon } from '@/features/page'
+import { newView, PageMenu, pathOf, renameStore, renameView, ViewIcon } from '@/features/page'
 import { ws } from '@/core/docs/workspace'
 import { moveFavorite, updateView } from '@/core/model/views'
 import { useStore } from '@/core/store/useStore'
@@ -77,7 +77,12 @@ const Row = memo(function Row({ view, depth, hasChildren, open, current, index }
             label={t('common.more')}
             onClick={(e) => setMenuAnchor(e.currentTarget)}
           />
-          <IconButton size="sm" icon={Plus} label={t('tree.addChild')} onClick={() => addPage(view.id)} />
+          <IconButton
+            size="sm"
+            icon={Plus}
+            label={t('tree.addChild')}
+            onClick={(e) => newView(e.currentTarget, view.id)}
+          />
         </div>
       </div>
       {menuAnchor && <PageMenu page={view} anchor={menuAnchor} onClose={() => setMenuAnchor(null)} />}
