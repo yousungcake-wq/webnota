@@ -44,7 +44,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ID | 기능 | 구현 | 우선 | 마일스톤 |
 |---|---|---|---|---|
 | ED-I01 | 굵게, 기울임, 밑줄, 취소선, 인라인 코드 | StarterKit 마크 | P0 | ✅ |
-| ED-I02 | 링크 (편집 팝오버: 열기, 복사, 수정, 제거) | `link` | P0 | M2 |
+| ED-I02 | 링크 (편집 팝오버: 열기, 복사, 수정, 제거) | `link` | P0 | ✅ M2-06 |
 | ED-I03 | 글자 색 / 배경색 (AppFlowy 팔레트 10색 + 사용자 지정) | `textStyle`+`color`, `highlight` multicolor | P0 | M2 |
 | ED-I04 | 페이지 멘션 `@페이지` / `[[` | `mention` (kind=page, viewId) — 제목 실시간 반영, 삭제된 페이지 표시 | P0 | M2 |
 | ED-I05 | 날짜 멘션 `@오늘`, `@내일`, `@2026-12-01` + 리마인더 | `mention` (kind=date, date, reminder) | P0 | M2 / 리마인더 M10 |

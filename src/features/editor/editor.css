@@ -584,3 +584,31 @@
 .wn-editor .hljs-symbol {
   color: var(--code-type);
 }
+
+/* ED-I02 link bubble */
+.link-bubble {
+  max-width: min(420px, 90vw);
+}
+.link-href {
+  max-width: 220px;
+  padding: 0 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--accent);
+  font-size: 13px;
+}
+.link-edit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.link-edit input {
+  width: 260px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+}

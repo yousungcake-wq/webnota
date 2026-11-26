@@ -2,7 +2,7 @@ import DragHandle from '@tiptap/extension-drag-handle-react'
 import type { Node as PMNode } from '@tiptap/pm/model'
 import { EditorContent, useEditor, useEditorState, type Editor as TEditor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
-import { Bold, Code, GripVertical, Highlighter, Italic, Plus, Strikethrough, Underline } from 'lucide-react'
+import { Bold, Code, GripVertical, Highlighter, Italic, Link, Plus, Strikethrough, Underline } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { schemaStore } from '@/core/schema'
 import { useStore } from '@/core/store/useStore'
@@ -12,6 +12,7 @@ import { useLayout } from '@/platform/layout'
 import { docSchema, editorExtensions } from './extensions'
 import { findUnknownContent } from './unknown'
 import { CalloutPicker } from './CalloutPicker'
+import { LinkBubble, LinkSheet, promptLink } from './LinkBubble'
 import { KeyboardToolbar } from './KeyboardToolbar'
 import './editor.css'
 import { t } from '@/core/i18n'
@@ -57,6 +58,21 @@ export function Editor({ doc, onReady, locked = false }: Props) {
 
   // Callout icon clicks (nodes/callout.ts) open the picker.
   const [calloutPick, setCalloutPick] = useState<{ pos: number; anchor: HTMLElement } | null>(null)
+  // Links: read-only → open on click; phone editing → link sheet (MB-25); desktop uses LinkBubble.
+  const [linkTap, setLinkTap] = useState<{ href: string; anchor: HTMLElement } | null>(null)
+  useEffect(() => {
+    const wrap = wrapRef.current
+    if (!wrap || !editor) return
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('.wn-editor a[href]')
+      if (!a) return
+      e.preventDefault()
+      if (!editor.isEditable || e.metaKey || e.ctrlKey) window.open(a.href, '_blank', 'noopener')
+      else if (coarse) setLinkTap({ href: a.getAttribute('href') ?? '', anchor: a })
+    }
+    wrap.addEventListener('click', onClick)
+    return () => wrap.removeEventListener('click', onClick)
+  }, [editor, coarse])
   const wrapRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const wrap = wrapRef.current
@@ -134,6 +150,10 @@ export function Editor({ doc, onReady, locked = false }: Props) {
         </DragHandle>
       )}
       {!coarse && !readOnly && <FormatBubble editor={editor} />}
+      {!coarse && !readOnly && <LinkBubble editor={editor} />}
+      {linkTap && (
+        <LinkSheet editor={editor} href={linkTap.href} anchor={linkTap.anchor} onClose={() => setLinkTap(null)} />
+      )}
       {unknown && (
         <p className="editor-unknown" role="note">
           {t('editor.unknownContent', { types: unknown.join(', ') || '?' })}
@@ -165,6 +185,7 @@ function FormatBubble({ editor }: { editor: TEditor }) {
       strike: e.isActive('strike'),
       code: e.isActive('code'),
       highlight: e.isActive('highlight'),
+      link: e.isActive('link'),
     }),
   })
   const btn = (active: boolean, label: string, onClick: () => void, icon: React.ReactNode) => (
@@ -200,6 +221,7 @@ function FormatBubble({ editor }: { editor: TEditor }) {
         <Strikethrough size={16} />,
       )}
       {btn(s.code, t('editor.inlineCode'), () => editor.chain().focus().toggleCode().run(), <Code size={16} />)}
+      {btn(s.link, t('link.add'), () => void promptLink(editor), <Link size={16} />)}
       {btn(
         s.highlight,
         t('editor.highlight'),
