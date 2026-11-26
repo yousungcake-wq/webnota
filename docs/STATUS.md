@@ -22,6 +22,7 @@
 - 구조 (M0-07): 다른 최상위 모듈은 `@/` 경로로 import (lint 강제). feature 공개 API는 `index.ts`만. 에디터는 `@/features/editor`의 `loadEditor()`/`loadSeed()`로만 접근 (정적 import 금지 — 초기 번들에 섞임). 라우터는 `core/store/router.ts`, 테마·펼침 상태는 `core/store/prefs.ts` (DECISIONS 012).
 - 문서 수명 (M0-19): `openDoc`으로 연 문서는 LRU로 언로드될 수 있음 (최대 30개, 최근 10초 사용분은 보호). **비동기 작업 동안 문서를 붙잡고 있어야 하면 `retainDoc(name)`을 호출하고 끝나면 release** (PageView·동기화·복제가 그렇게 함). 언로드된 문서 객체에 쓰면 IndexedDB에 저장되지 않음.
 - 에디터 (M0-20): `editorExtensions(doc, { onInvalidContent })` — Collaboration의 `ySyncOptions.onInvalidContent`를 **절대 빼지 말 것** (빼면 y-tiptap이 모르는 노드를 Y에서 삭제). 모르는 내용이 있으면 그 페이지만 읽기 전용 + 안내.
+- 에디터 스키마 (M2-08): 문서 스키마는 `features/editor/schema.ts`(`schemaExtensions`/`docSchema`, React 없음 — 단위 테스트·시드용), UI 확장은 `extensions.ts`. React 노드 뷰가 필요한 노드는 스키마에는 순수 노드를 두고 `editorExtensions`에서 뷰 달린 버전으로 바꿔 끼움 (예: `mention` → `MentionWithView`). `features/editor/` 하위 폴더는 상위 파일을 import할 수 없음(lint) — 순수 로직만 하위 폴더에.
 - 동기화 스케줄 (M0-21): 동기화는 `core/sync/controller.ts`의 `scheduler`를 통해서만 시작 (`syncNow()`=수동 요청). 타이밍 규칙은 `core/sync/schedule.ts` (순수, 테스트 있음).
 - 탭 (M0-23): 동기화는 리더 탭만 (`electLeader`). 다른 탭에서 동기화를 시작하려면 `requestSync`/`syncNow` 사용 (직접 `scheduler.request` 금지). 문서 업데이트는 `tabs` 중계로 실시간 공유되며, 받은 업데이트 origin은 `TAB_ORIGIN`.
 - 지연 로드 패턴 (M1): 클릭해야 보이는 UI(더보기 메뉴 `LazyPageMenu`, 아이콘 선택·정보 `overlayViews`, 트리 드래그 `drag.ts`)는 지연 청크. 메뉴 항목에서 시트·대화상자를 열 때는 `afterMenuClosed()`(`features/page/rename.ts`)를 기다린 뒤 열 것 — 폰에서 메뉴 시트의 history pop과 겹치면 앱 밖으로 나감.

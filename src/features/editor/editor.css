@@ -745,3 +745,65 @@
     height: 44px;
   }
 }
+
+/* ED-I04 / ED-I05 mentions */
+.wn-editor .mention {
+  display: inline;
+}
+.wn-editor .mention > button {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 0 4px;
+  margin: 0 1px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  vertical-align: baseline;
+}
+.wn-editor .mention > button:hover,
+.wn-editor .mention.is-selected > button {
+  background: var(--bg-hover);
+}
+.wn-editor .mention-icon,
+.wn-editor .mention-date svg {
+  align-self: center;
+  display: inline-flex;
+}
+.wn-editor .mention-page .mention-title {
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+.wn-editor .mention-page.is-deleted {
+  color: var(--text-3);
+}
+.wn-editor .mention-page.is-deleted .mention-title {
+  text-decoration: line-through;
+}
+.wn-editor .mention-date {
+  color: var(--accent);
+}
+.mention-date-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 220px;
+}
+.mention-date-picker input {
+  font: inherit;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 44px;
+}
+.mention-date-quick {
+  display: flex;
+  gap: var(--sp-2);
+}

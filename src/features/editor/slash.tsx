@@ -100,7 +100,7 @@ export const SlashList = forwardRef<SlashListHandle, SlashListProps>(function Sl
 })
 
 /** Positions a floating element under the caret, flipping above it when there's no room (e.g. above a phone keyboard). */
-function place(el: HTMLElement, rect: DOMRect | null | undefined) {
+export function place(el: HTMLElement, rect: DOMRect | null | undefined) {
   if (!rect) return
   const vv = window.visualViewport
   const viewTop = vv?.offsetTop ?? 0

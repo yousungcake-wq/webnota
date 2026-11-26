@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import * as Y from 'yjs'
-import { docSchema } from './extensions'
+import { docSchema } from './schema'
 import { findUnknownContent } from './unknown'
 
 function fragmentWith(build: (f: Y.XmlFragment) => void) {

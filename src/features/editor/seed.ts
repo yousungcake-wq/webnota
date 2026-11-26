@@ -1,7 +1,7 @@
 import { prosemirrorJSONToYXmlFragment } from '@tiptap/y-tiptap'
 import type * as Y from 'yjs'
 import { getLang, type Lang } from '@/core/i18n'
-import { docSchema } from './extensions'
+import { docSchema } from './schema'
 
 const p = (text: string) => ({ type: 'paragraph', content: text ? [{ type: 'text', text }] : [] })
 const h = (level: number, text: string) => ({ type: 'heading', attrs: { level }, content: [{ type: 'text', text }] })

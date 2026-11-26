@@ -46,8 +46,8 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-I01 | 굵게, 기울임, 밑줄, 취소선, 인라인 코드 | StarterKit 마크 | P0 | ✅ |
 | ED-I02 | 링크 (편집 팝오버: 열기, 복사, 수정, 제거) | `link` | P0 | ✅ M2-06 |
 | ED-I03 | 글자 색 / 배경색 (AppFlowy 팔레트 10색 + 사용자 지정) | `textStyle`+`color`, `highlight` multicolor | P0 | ✅ M2-07 (schema v5). 팔레트 9색 + 기본 + 사용자 지정(hex). 붙여넣은 HTML의 회색·검정 인라인 색은 버림 |
-| ED-I04 | 페이지 멘션 `@페이지` / `[[` | `mention` (kind=page, viewId) — 제목 실시간 반영, 삭제된 페이지 표시 | P0 | M2 |
-| ED-I05 | 날짜 멘션 `@오늘`, `@내일`, `@2026-12-01` + 리마인더 | `mention` (kind=date, date, reminder) | P0 | M2 / 리마인더 M10 |
+| ED-I04 | 페이지 멘션 `@페이지` / `[[` | `mention` (kind=page, viewId) — 제목 실시간 반영, 삭제된 페이지 표시 | P0 | ✅ M2-08 (schema v6). `@`는 페이지+날짜, `[[`는 페이지만. 최근 연 페이지 우선 |
+| ED-I05 | 날짜 멘션 `@오늘`, `@내일`, `@2026-12-01` + 리마인더 | `mention` (kind=date, date, reminder) | P0 | ✅ M2-08 (날짜 칩 클릭 → 날짜 변경) / 리마인더 M10 |
 | ED-I06 | 인라인 수식 | `inlineMath` | P1 | M3 |
 | ED-I07 | 이모지 `:smile` | 이모지 제안 | P1 | M2 |
 | ED-I08 | 위첨자, 아래첨자 | 마크 | P2 | M2 |
