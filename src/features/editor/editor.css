@@ -1161,3 +1161,6 @@
   background: var(--accent-soft);
   color: var(--accent);
 }
+.kb-selection {
+  border-bottom: 1px solid var(--border);
+}

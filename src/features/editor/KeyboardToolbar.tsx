@@ -9,7 +9,11 @@ import {
   Bold,
   CheckSquare,
   ChevronDown,
+  ClipboardPaste,
   Code,
+  Copy,
+  GripVertical,
+  Scissors,
   Highlighter,
   IndentDecrease,
   IndentIncrease,
@@ -31,6 +35,7 @@ import {
 import { useEffect, useState, type ReactNode } from 'react'
 import { BLOCKS, type BlockItem } from './blocks'
 import { promptLink } from './LinkBubble'
+import { toast } from '@/ui'
 import { recordBlockUse } from './rank'
 import { t } from '@/core/i18n'
 
@@ -90,7 +95,34 @@ function Btn({
   )
 }
 
-export function KeyboardToolbar({ editor, onColor }: { editor: Editor; onColor: () => void }) {
+/** MB-22 paste from the floating bar: the clipboard API (asks for permission), through the normal paste path. */
+async function pasteFromClipboard(editor: Editor) {
+  try {
+    if (navigator.clipboard.read) {
+      for (const item of await navigator.clipboard.read()) {
+        if (item.types.includes('text/html')) {
+          editor.view.pasteHTML(await (await item.getType('text/html')).text())
+          return
+        }
+      }
+    }
+    const text = await navigator.clipboard.readText()
+    if (text) editor.view.pasteText(text)
+  } catch {
+    toast(t('editor.pasteFailed'), { tone: 'error' })
+  }
+}
+
+export function KeyboardToolbar({
+  editor,
+  onColor,
+  onBlockMenu,
+}: {
+  editor: Editor
+  onColor: () => void
+  /** Opens the block menu for the block at the caret (MB-23); the anchor is the button. */
+  onBlockMenu: (anchor: HTMLElement) => void
+}) {
   const inset = useKeyboardInset()
   const [panel, setPanel] = useState<'none' | 'blocks' | 'style'>('none')
   const s = useEditorState({
@@ -111,6 +143,7 @@ export function KeyboardToolbar({ editor, onColor }: { editor: Editor; onColor: 
       align: (e.getAttributes('paragraph').textAlign ?? e.getAttributes('heading').textAlign ?? null) as string | null,
       canUndo: e.can().undo(),
       canRedo: e.can().redo(),
+      selection: !e.state.selection.empty,
     }),
   })
   const itemType = editor.isActive('taskItem') ? 'taskItem' : 'listItem'
@@ -212,6 +245,30 @@ export function KeyboardToolbar({ editor, onColor }: { editor: Editor; onColor: 
           ))}
         </div>
       )}
+      {s.selection && panel === 'none' && (
+        // MB-22: actions for the selection, above the keyboard toolbar (clear of the OS selection menu)
+        <div className="kb-row kb-selection" role="toolbar" aria-label={t('editor.selectionTools')}>
+          <Btn label={t('editor.copy')} onPress={() => document.execCommand('copy')}>
+            <Copy size={20} />
+          </Btn>
+          <Btn label={t('editor.cut')} onPress={() => document.execCommand('cut')}>
+            <Scissors size={20} />
+          </Btn>
+          <Btn label={t('editor.paste')} onPress={() => void pasteFromClipboard(editor)}>
+            <ClipboardPaste size={20} />
+          </Btn>
+          <span className="kb-sep" />
+          <Btn label={t('editor.bold')} active={s.bold} onPress={() => c().toggleBold().run()}>
+            <Bold size={20} />
+          </Btn>
+          <Btn label={t('link.add')} active={s.link} onPress={() => void promptLink(editor)}>
+            <Link size={20} />
+          </Btn>
+          <Btn label={t('color.title')} onPress={onColor}>
+            <Palette size={20} />
+          </Btn>
+        </div>
+      )}
       <div className="kb-row">
         <Btn
           label={panel === 'blocks' ? t('common.close') : t('editor.addBlock')}
@@ -243,6 +300,17 @@ export function KeyboardToolbar({ editor, onColor }: { editor: Editor; onColor: 
           <IndentDecrease size={20} />
         </Btn>
         <span className="kb-sep" />
+        <button
+          type="button"
+          className="kb-btn"
+          aria-label={t('blockMenu.title')}
+          title={t('blockMenu.title')}
+          onMouseDown={keep}
+          onPointerDown={keep}
+          onClick={(e) => onBlockMenu(e.currentTarget)}
+        >
+          <GripVertical size={20} />
+        </button>
         <Btn label={t('editor.moveUp')} onPress={() => c().moveBlockUp().run()}>
           <ArrowUp size={20} />
         </Btn>

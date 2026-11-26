@@ -30,6 +30,7 @@ import { LinkBubble, LinkSheet, promptLink } from './LinkBubble'
 import { openHref } from './link'
 import { BlockMenu } from './BlockMenu'
 import { FindBar } from './FindBar'
+import { useCaretAutoScroll, useLongPressBlock } from './mobileHooks'
 import { findBlock } from './blockOps'
 import { blockRangeOf, blockRangePositions, selectedBlockPositions } from './blockSelection'
 import { KeyboardToolbar } from './KeyboardToolbar'
@@ -170,6 +171,16 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
         ? { positions, ...blockRangePositions(editor.state.doc, range) }
         : undefined
     setBlockMenu({ pos, anchor, selection })
+  }
+
+  // Phones: long press on a block (not while typing) opens its menu (MB-23); keep the caret
+  // above the keyboard (MB-24).
+  useLongPressBlock(editor, wrapRef, coarse && !readOnly, openBlockMenu)
+  useCaretAutoScroll(editor, coarse)
+  const blockMenuAtCaret = (anchor: HTMLElement) => {
+    if (!editor) return
+    const { $from } = editor.state.selection
+    if ($from.depth >= 1) openBlockMenu($from.before(1), anchor)
   }
 
   // Dragging in the page margin (outside the text) selects whole blocks (ED-F04).
@@ -336,7 +347,9 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
           onClose={() => setCalloutPick(null)}
         />
       )}
-      {coarse && focused && !readOnly && <KeyboardToolbar editor={editor} onColor={() => setColorPick(true)} />}
+      {coarse && focused && !readOnly && (
+        <KeyboardToolbar editor={editor} onColor={() => setColorPick(true)} onBlockMenu={blockMenuAtCaret} />
+      )}
     </div>
   )
 }
