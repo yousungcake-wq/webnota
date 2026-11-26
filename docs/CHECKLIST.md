@@ -26,7 +26,7 @@
 - [x] M0-11 `ui/` 기본 컴포넌트: Button, IconButton, Menu(확장), Popover, Sheet, Dialog/Confirm, Toast(실행 취소), Tooltip, Input, Switch, Segmented, Skeleton, EmptyState, OverlayHost — f94a195, 252555f (TextArea/Select/Checkbox/Spinner는 필요할 때)
 - [x] M0-12 `useLayout()` (phone/tablet/desktop + isTouch) — e1b0aef
 - [x] M0-13 ErrorBoundary (화면 단위), 전역 오류 토스트 — 7962653
-- [~] M0-14 기능 플래그 `core/flags.ts` + 설정 → 고급 (ST-12)
+- [x] M0-14 기능 플래그 `core/flags.ts` + 설정 → 고급 (ST-12) — f29e395
 
 ### 데이터
 - [ ] M0-15 스키마 버전 + 마이그레이션 레지스트리 + 읽기 전용 게이트 (spec/02 §6)
