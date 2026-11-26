@@ -9,6 +9,7 @@ import {
   IndentIncrease,
   Italic,
   List,
+  Palette,
   Plus,
   Redo2,
   Strikethrough,
@@ -77,7 +78,7 @@ function Btn({
   )
 }
 
-export function KeyboardToolbar({ editor }: { editor: Editor }) {
+export function KeyboardToolbar({ editor, onColor }: { editor: Editor; onColor: () => void }) {
   const inset = useKeyboardInset()
   const [panel, setPanel] = useState<'none' | 'blocks'>('none')
   const s = useEditorState({
@@ -143,6 +144,9 @@ export function KeyboardToolbar({ editor }: { editor: Editor }) {
         </Btn>
         <Btn label={t('editor.strike')} active={s.strike} onPress={() => c().toggleStrike().run()}>
           <Strikethrough size={20} />
+        </Btn>
+        <Btn label={t('color.title')} onPress={onColor}>
+          <Palette size={20} />
         </Btn>
         <span className="kb-sep" />
         <Btn label={t('block.todo')} active={s.task} onPress={() => c().toggleTaskList().run()}>

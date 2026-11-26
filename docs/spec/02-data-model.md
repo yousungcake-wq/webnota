@@ -192,6 +192,7 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 | 2 | `pages` → `views`(kind=document, layout=document), order → FracKey, `favorite` → `users[login].favorites`, 기본 스페이스 생성, 문서 이름 `page/<id>` → `doc/<id>`, 파일 경로 `data/pages/` → `data/docs/` | M0 |
 | 3 | 노드 타입 `toggle`·`toggleSummary`·`toggleContent` 추가 (데이터 변환 없음, 버전만) | M2-03 |
 | 4 | 노드 타입 `callout`(icon, color) 추가 (버전만) | M2-04 |
+| 5 | 마크 타입 `textStyle`(color) 추가, `highlight`에 `color` 속성 추가 (버전만). 색 값은 팔레트 이름(테마 토큰으로 표시) 또는 `#rrggbb` | M2-07 |
 
 v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다 (M0-17).
 

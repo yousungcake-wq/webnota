@@ -2,7 +2,18 @@ import DragHandle from '@tiptap/extension-drag-handle-react'
 import type { Node as PMNode } from '@tiptap/pm/model'
 import { EditorContent, useEditor, useEditorState, type Editor as TEditor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
-import { Bold, Code, GripVertical, Highlighter, Italic, Link, Plus, Strikethrough, Underline } from 'lucide-react'
+import {
+  Baseline,
+  Bold,
+  Code,
+  GripVertical,
+  Highlighter,
+  Italic,
+  Link,
+  Plus,
+  Strikethrough,
+  Underline,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { schemaStore } from '@/core/schema'
 import { useStore } from '@/core/store/useStore'
@@ -12,6 +23,7 @@ import { useLayout } from '@/platform/layout'
 import { docSchema, editorExtensions } from './extensions'
 import { findUnknownContent } from './unknown'
 import { CalloutPicker } from './CalloutPicker'
+import { ColorPicker } from './ColorPicker'
 import { LinkBubble, LinkSheet, promptLink } from './LinkBubble'
 import { KeyboardToolbar } from './KeyboardToolbar'
 import './editor.css'
@@ -60,6 +72,8 @@ export function Editor({ doc, onReady, locked = false }: Props) {
   const [calloutPick, setCalloutPick] = useState<{ pos: number; anchor: HTMLElement } | null>(null)
   // Links: read-only → open on click; phone editing → link sheet (MB-25); desktop uses LinkBubble.
   const [linkTap, setLinkTap] = useState<{ href: string; anchor: HTMLElement } | null>(null)
+  // Text/background color picker (ED-I03), opened from the format bubble or the keyboard toolbar.
+  const [colorPick, setColorPick] = useState(false)
   useEffect(() => {
     const wrap = wrapRef.current
     if (!wrap || !editor) return
@@ -149,8 +163,11 @@ export function Editor({ doc, onReady, locked = false }: Props) {
           </div>
         </DragHandle>
       )}
-      {!coarse && !readOnly && <FormatBubble editor={editor} />}
+      {!coarse && !readOnly && <FormatBubble editor={editor} onColor={() => setColorPick(true)} />}
       {!coarse && !readOnly && <LinkBubble editor={editor} />}
+      {colorPick && (
+        <ColorPicker editor={editor} anchor={selectionAnchor(editor)} onClose={() => setColorPick(false)} />
+      )}
       {linkTap && (
         <LinkSheet editor={editor} href={linkTap.href} anchor={linkTap.anchor} onClose={() => setLinkTap(null)} />
       )}
@@ -168,14 +185,20 @@ export function Editor({ doc, onReady, locked = false }: Props) {
           onClose={() => setCalloutPick(null)}
         />
       )}
-      {coarse && focused && !readOnly && <KeyboardToolbar editor={editor} />}
+      {coarse && focused && !readOnly && <KeyboardToolbar editor={editor} onColor={() => setColorPick(true)} />}
     </div>
   )
 }
 
 const selectReadOnly = (s: { readOnly: boolean }) => s.readOnly
 
-function FormatBubble({ editor }: { editor: TEditor }) {
+/** Element holding the end of the selection: a stable anchor once the bubble menu hides. */
+function selectionAnchor(editor: TEditor): HTMLElement | null {
+  const { node } = editor.view.domAtPos(editor.state.selection.to)
+  return node instanceof HTMLElement ? node : node.parentElement
+}
+
+function FormatBubble({ editor, onColor }: { editor: TEditor; onColor: () => void }) {
   const s = useEditorState({
     editor,
     selector: ({ editor: e }) => ({
@@ -186,6 +209,7 @@ function FormatBubble({ editor }: { editor: TEditor }) {
       code: e.isActive('code'),
       highlight: e.isActive('highlight'),
       link: e.isActive('link'),
+      color: e.isActive('textStyle'),
     }),
   })
   const btn = (active: boolean, label: string, onClick: () => void, icon: React.ReactNode) => (
@@ -228,6 +252,7 @@ function FormatBubble({ editor }: { editor: TEditor }) {
         () => editor.chain().focus().toggleHighlight().run(),
         <Highlighter size={16} />,
       )}
+      {btn(s.color, t('color.title'), onColor, <Baseline size={16} />)}
     </BubbleMenu>
   )
 }

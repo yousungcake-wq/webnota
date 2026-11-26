@@ -1,7 +1,6 @@
 import { Extension, getSchema, wrappingInputRule, type Extensions } from '@tiptap/core'
 import Blockquote from '@tiptap/extension-blockquote'
 import Collaboration from '@tiptap/extension-collaboration'
-import Highlight from '@tiptap/extension-highlight'
 import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 import { Placeholder } from '@tiptap/extensions'
@@ -11,6 +10,7 @@ import type * as Y from 'yjs'
 import { SlashCommand } from './slash'
 import { CodeBlockPlus } from './code/codeBlock'
 import { Callout } from './nodes/callout'
+import { HighlightColor, TextColor } from './marks/textColor'
 import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
 
 /** Blockquote with `"` + space as its markdown shortcut (ED-B08). Node name unchanged. */
@@ -94,7 +94,8 @@ export function schemaExtensions(): Extensions {
     ToggleContent,
     TaskList,
     TaskItem.configure({ nested: true }),
-    Highlight,
+    HighlightColor,
+    TextColor,
   ]
 }
 

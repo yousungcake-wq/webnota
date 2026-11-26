@@ -612,3 +612,136 @@
   background: var(--bg);
   color: var(--text);
 }
+
+/* ED-I03 text / background colors */
+.wn-editor [data-text-color='gray'],
+.color-swatch[data-text-color='gray'] {
+  color: var(--c-gray-text);
+}
+.wn-editor [data-text-color='brown'],
+.color-swatch[data-text-color='brown'] {
+  color: var(--c-brown-text);
+}
+.wn-editor [data-text-color='orange'],
+.color-swatch[data-text-color='orange'] {
+  color: var(--c-orange-text);
+}
+.wn-editor [data-text-color='yellow'],
+.color-swatch[data-text-color='yellow'] {
+  color: var(--c-yellow-text);
+}
+.wn-editor [data-text-color='green'],
+.color-swatch[data-text-color='green'] {
+  color: var(--c-green-text);
+}
+.wn-editor [data-text-color='blue'],
+.color-swatch[data-text-color='blue'] {
+  color: var(--c-blue-text);
+}
+.wn-editor [data-text-color='purple'],
+.color-swatch[data-text-color='purple'] {
+  color: var(--c-purple-text);
+}
+.wn-editor [data-text-color='pink'],
+.color-swatch[data-text-color='pink'] {
+  color: var(--c-pink-text);
+}
+.wn-editor [data-text-color='red'],
+.color-swatch[data-text-color='red'] {
+  color: var(--c-red-text);
+}
+.wn-editor mark[data-bg-color='gray'],
+.color-swatch[data-bg-color='gray'] {
+  background: var(--c-gray-bg);
+}
+.wn-editor mark[data-bg-color='brown'],
+.color-swatch[data-bg-color='brown'] {
+  background: var(--c-brown-bg);
+}
+.wn-editor mark[data-bg-color='orange'],
+.color-swatch[data-bg-color='orange'] {
+  background: var(--c-orange-bg);
+}
+.wn-editor mark[data-bg-color='yellow'],
+.color-swatch[data-bg-color='yellow'] {
+  background: var(--c-yellow-bg);
+}
+.wn-editor mark[data-bg-color='green'],
+.color-swatch[data-bg-color='green'] {
+  background: var(--c-green-bg);
+}
+.wn-editor mark[data-bg-color='blue'],
+.color-swatch[data-bg-color='blue'] {
+  background: var(--c-blue-bg);
+}
+.wn-editor mark[data-bg-color='purple'],
+.color-swatch[data-bg-color='purple'] {
+  background: var(--c-purple-bg);
+}
+.wn-editor mark[data-bg-color='pink'],
+.color-swatch[data-bg-color='pink'] {
+  background: var(--c-pink-bg);
+}
+.wn-editor mark[data-bg-color='red'],
+.color-swatch[data-bg-color='red'] {
+  background: var(--c-red-bg);
+}
+.color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 280px;
+}
+.color-label {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.color-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--sp-2);
+}
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+.color-swatch.is-selected {
+  box-shadow:
+    0 0 0 2px var(--bg-elev),
+    0 0 0 4px var(--accent);
+}
+.color-custom {
+  position: relative;
+  overflow: hidden;
+  background: conic-gradient(
+    var(--c-red-text),
+    var(--c-yellow-text),
+    var(--c-green-text),
+    var(--c-blue-text),
+    var(--c-purple-text),
+    var(--c-red-text)
+  );
+}
+.color-custom input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+@media (pointer: coarse) {
+  .color-swatch {
+    width: 44px;
+    height: 44px;
+  }
+}

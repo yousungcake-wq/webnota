@@ -31,6 +31,9 @@ const MARKS_AT_VERSION: Record<number, string[]> = {
   3: ['bold', 'code', 'highlight', 'italic', 'link', 'strike', 'underline'],
 }
 MARKS_AT_VERSION[4] = MARKS_AT_VERSION[3]!
+// v5 (M2-07): textStyle mark (text color); highlight gains a `color` attribute.
+NODES_AT_VERSION[5] = NODES_AT_VERSION[4]
+MARKS_AT_VERSION[5] = [...MARKS_AT_VERSION[4], 'textStyle'].sort()
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()
