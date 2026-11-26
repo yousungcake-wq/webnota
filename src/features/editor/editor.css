@@ -337,3 +337,68 @@
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
+
+/* ED-B06/07 toggle list & toggle heading */
+.wn-editor .toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  margin: 2px 0;
+}
+.wn-editor .toggle-arrow {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 26px;
+  margin-left: -2px;
+  border-radius: 4px;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.wn-editor .toggle-arrow:hover {
+  background: var(--bg-hover);
+}
+.wn-editor .toggle-arrow svg {
+  transition: transform var(--dur-fast);
+}
+.wn-editor .toggle.is-open > .toggle-arrow svg {
+  transform: rotate(90deg);
+}
+.wn-editor .toggle-body {
+  flex: 1;
+  min-width: 0;
+}
+.wn-editor [data-type='toggleSummary'] {
+  min-height: 26px;
+  padding: 2px 0;
+}
+.wn-editor .toggle:not(.is-open) > .toggle-body > [data-type='toggleContent'] {
+  display: none;
+}
+.wn-editor .toggle[data-level='1'] > .toggle-body > [data-type='toggleSummary'] {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.wn-editor .toggle[data-level='2'] > .toggle-body > [data-type='toggleSummary'] {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.wn-editor .toggle[data-level='3'] > .toggle-body > [data-type='toggleSummary'] {
+  font-size: 18px;
+  font-weight: 700;
+}
+.wn-editor .toggle[data-level='1'] > .toggle-arrow {
+  height: 40px;
+}
+.wn-editor .toggle[data-level='2'] > .toggle-arrow {
+  height: 32px;
+}
+@media (pointer: coarse) {
+  .wn-editor .toggle-arrow {
+    width: 32px;
+    height: 32px;
+  }
+}

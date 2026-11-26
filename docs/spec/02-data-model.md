@@ -172,7 +172,7 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 2. 노드·마크 타입 이름은 **절대 바꾸거나 지우지 않습니다** (추가만 허용, deprecated 노드도 렌더러 유지).
 3. 속성(attrs)을 추가할 때는 항상 기본값을 둡니다.
 
-마이그레이션은 `core/schema/migrations/NNN-name.ts`에 순수 함수로 작성하고, 각각 단위 테스트를 둡니다.
+마이그레이션은 `core/schema/migrations/NNN-name.ts`에 순수 함수로 작성하고, 각각 단위 테스트를 둡니다. 노드·마크 이름 목록은 `features/editor/schema.test.ts`가 버전별로 고정해서, 버전을 올리지 않고 타입을 추가하거나 이름을 지우면 테스트가 실패합니다.
 
 구현 규칙 (M0-15, `core/schema`):
 - 앱 버전은 `SCHEMA_VERSION`(`core/schema/version.ts`). 버전을 판단하는 문서는 `workspace`이고, 이 게이트가 앱 전체(문서 본문 포함)를 읽기 전용으로 만듭니다.
@@ -190,6 +190,7 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 |---|---|---|
 | 1 | PoC 형식: `workspace.pages` (숫자 order), `page/<id>` 문서 | (현재) |
 | 2 | `pages` → `views`(kind=document, layout=document), order → FracKey, `favorite` → `users[login].favorites`, 기본 스페이스 생성, 문서 이름 `page/<id>` → `doc/<id>`, 파일 경로 `data/pages/` → `data/docs/` | M0 |
+| 3 | 노드 타입 `toggle`·`toggleSummary`·`toggleContent` 추가 (데이터 변환 없음, 버전만) | M2-03 |
 
 v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다 (M0-17).
 

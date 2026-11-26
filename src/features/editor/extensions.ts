@@ -1,4 +1,5 @@
-import { Extension, getSchema, type Extensions } from '@tiptap/core'
+import { Extension, getSchema, wrappingInputRule, type Extensions } from '@tiptap/core'
+import Blockquote from '@tiptap/extension-blockquote'
 import Collaboration from '@tiptap/extension-collaboration'
 import Highlight from '@tiptap/extension-highlight'
 import TaskItem from '@tiptap/extension-task-item'
@@ -8,6 +9,14 @@ import StarterKit from '@tiptap/starter-kit'
 import { Selection, type EditorState, type Transaction } from '@tiptap/pm/state'
 import type * as Y from 'yjs'
 import { SlashCommand } from './slash'
+import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
+
+/** Blockquote with `"` + space as its markdown shortcut (ED-B08). Node name unchanged. */
+const QuoteBlock = Blockquote.extend({
+  addInputRules() {
+    return [wrappingInputRule({ find: /^\s*["“]\s$/, type: this.type })]
+  },
+})
 import { t } from '@/core/i18n'
 
 declare module '@tiptap/core' {
@@ -70,9 +79,14 @@ export function schemaExtensions(): Extensions {
   return [
     StarterKit.configure({
       undoRedo: false, // Yjs provides collaborative undo
+      blockquote: false, // re-added below: `"` + space (`>` + space makes a toggle, spec/04)
       heading: { levels: [1, 2, 3, 4, 5, 6] },
       link: { openOnClick: false, autolink: true },
     }),
+    QuoteBlock,
+    Toggle,
+    ToggleSummary,
+    ToggleContent,
     TaskList,
     TaskItem.configure({ nested: true }),
     Highlight,
