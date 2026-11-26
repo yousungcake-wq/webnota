@@ -6,7 +6,7 @@ import { flattenTree } from './flatten'
 import { useWindow } from './useWindow'
 import { type ViewMeta } from '@/core/model/views'
 import { displayTitle } from '@/features/page'
-import { toggleExpanded, useExpanded, useRecent } from '@/core/store/prefs'
+import { toggleExpanded, useExpanded } from '@/core/store/prefs'
 import { href } from '@/core/store/router'
 import { addPage, PageMenu, pathOf, renameStore, renameView, ViewIcon } from '@/features/page'
 import { ws } from '@/core/docs/workspace'
@@ -222,24 +222,5 @@ export function FavoritesList({
     </section>
   ) : (
     list
-  )
-}
-
-/** Recently opened views on this device (WS-05), newest first. */
-export function RecentList({ max = 30, header }: { max?: number; header?: ReactNode }) {
-  const { alive } = useAliveViews()
-  const recent = useRecent()
-  const items = useMemo(() => {
-    const byId = new Map(alive.map((v) => [v.id, v]))
-    return recent.flatMap((id) => byId.get(id) ?? []).slice(0, max)
-  }, [alive, recent, max])
-  if (!items.length) return null
-  return (
-    <section className="section recent-list">
-      {header}
-      {items.map((p) => (
-        <PageListItem key={p.id} page={p} />
-      ))}
-    </section>
   )
 }
