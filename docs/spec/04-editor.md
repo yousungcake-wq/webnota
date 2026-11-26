@@ -1,0 +1,112 @@
+# 04. 문서 에디터 (`ED`)
+
+AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니다 (AI 제외).
+
+## 1. 원칙
+
+- Tiptap 3 확장 단위로 기능을 나눕니다. 블록 하나 = 폴더 하나 (`features/editor/blocks/<name>/`). 폴더에는 노드 정의, NodeView(필요 시), 슬래시 항목, 스타일, 테스트를 둡니다.
+- 블록 레지스트리(`blocks/registry.ts`)가 슬래시 메뉴, 모바일 블록 패널, "블록 바꾸기" 메뉴, Markdown 변환기의 단일 출처입니다.
+- 무거운 블록(수식, 코드 하이라이트, 표, 인라인 DB)은 NodeView와 의존성을 **지연 로드**합니다.
+- NodeView는 꼭 필요할 때만 씁니다. 가능하면 `renderHTML` + CSS로 처리합니다 (성능).
+
+## 2. 블록 (노드) 목록
+
+| ID | 블록 | Tiptap 노드 | Markdown 단축 | 우선 | 마일스톤 |
+|---|---|---|---|---|---|
+| ED-B01 | 문단 | `paragraph` | — | P0 | ✅ PoC |
+| ED-B02 | 제목 1~6 | `heading` (levels 1–6) | `#`~`######` | P0 | M2 (현재 1–3) |
+| ED-B03 | 할 일 목록 | `taskList`/`taskItem` | `[]`, `[ ]` | P0 | ✅ PoC |
+| ED-B04 | 글머리 기호 목록 | `bulletList` | `-`, `*`, `+` | P0 | ✅ |
+| ED-B05 | 번호 목록 | `orderedList` (시작 번호, 스타일 1/a/i 순환) | `1.` | P0 | ✅ / 스타일 M2 |
+| ED-B06 | 토글 목록 | `toggle` (summary + content, 펼침 상태는 로컬) | `>` + 공백 | P0 | M2 |
+| ED-B07 | 토글 제목 | `toggle` + `level` 속성 | | P1 | M2 |
+| ED-B08 | 인용 | `blockquote` | `"` + 공백 | P0 | ✅ |
+| ED-B09 | 콜아웃 | `callout` (icon, color) | | P0 | M2 |
+| ED-B10 | 코드 블록 | `codeBlock` (language, 줄 바꿈 옵션, 복사 버튼, 하이라이트) | ` ``` ` | P0 | M2 |
+| ED-B11 | 구분선 | `horizontalRule` | `---` | P0 | ✅ |
+| ED-B12 | 이미지 | `image` (src=fileId/url, width, align, caption) | | P0 | M3 |
+| ED-B13 | 동영상 임베드 | `video` (YouTube/Vimeo/직접 URL) | | P1 | M3 |
+| ED-B14 | 파일 | `file` (fileId, name, size) | | P0 | M3 |
+| ED-B15 | 수식 블록 | `mathBlock` (LaTeX, KaTeX) | `$$` | P0 | M3 |
+| ED-B16 | 표 | `table`(simple table: 헤더 행/열, 열 너비, 셀 배경색, 정렬) | | P0 | M2 |
+| ED-B17 | 다단(컬럼) | `columns`/`column` (2~5단, 비율 조절) | | P1 | M2 |
+| ED-B18 | 목차 | `outline` (제목에서 자동 생성, 클릭 이동) | | P1 | M2 |
+| ED-B19 | 하위 페이지 | `subPage` (viewId) — 생성 시 자식 뷰 생성, 블록 삭제 시 휴지통 이동 | | P0 | M2 |
+| ED-B20 | 인라인 데이터베이스 | `database` (databaseId, viewId, layout) | | P0 | M5 |
+| ED-B21 | 링크 미리보기 (북마크) | `linkPreview` (url, title, desc, image 캐시) | URL 붙여넣기 → 선택 | P1 | M3 |
+| ED-B22 | 임베드 | `embed` (iframe 허용 목록: YouTube, Figma, Google Maps …) | | P2 | M3 |
+| ED-B23 | 지원되지 않는 블록 | `unknown` (원본 보존, 읽기 전용) | | P0 | M0 |
+
+## 3. 인라인 (마크 / 인라인 노드)
+
+| ID | 기능 | 구현 | 우선 | 마일스톤 |
+|---|---|---|---|---|
+| ED-I01 | 굵게, 기울임, 밑줄, 취소선, 인라인 코드 | StarterKit 마크 | P0 | ✅ |
+| ED-I02 | 링크 (편집 팝오버: 열기, 복사, 수정, 제거) | `link` | P0 | M2 |
+| ED-I03 | 글자 색 / 배경색 (AppFlowy 팔레트 10색 + 사용자 지정) | `textStyle`+`color`, `highlight` multicolor | P0 | M2 |
+| ED-I04 | 페이지 멘션 `@페이지` / `[[` | `mention` (kind=page, viewId) — 제목 실시간 반영, 삭제된 페이지 표시 | P0 | M2 |
+| ED-I05 | 날짜 멘션 `@오늘`, `@내일`, `@2026-12-01` + 리마인더 | `mention` (kind=date, date, reminder) | P0 | M2 / 리마인더 M10 |
+| ED-I06 | 인라인 수식 | `inlineMath` | P1 | M3 |
+| ED-I07 | 이모지 `:smile` | 이모지 제안 | P1 | M2 |
+| ED-I08 | 위첨자, 아래첨자 | 마크 | P2 | M2 |
+| ED-I09 | 사람 멘션 `@login` (공유 워크스페이스) | `mention` (kind=person) | P2 | M9 |
+
+## 4. 블록 수준 기능
+
+| ID | 기능 | 설명 | 마일스톤 |
+|---|---|---|---|
+| ED-F01 | 슬래시 메뉴 | 블록 레지스트리 기반, 한/영 키워드, 최근 사용 우선, 카테고리 | ✅ / 개선 M2 |
+| ED-F02 | 블록 핸들 (`+`, `⋮⋮`) | 데스크탑 호버. `+` = 아래 삽입, 핸들 클릭 = 블록 메뉴, 드래그 = 이동 | ✅ / 메뉴 M2 |
+| ED-F03 | 블록 메뉴 | 블록 바꾸기, 복제, 삭제, 색상(글자/배경), 블록 링크 복사, 정렬(왼/가운데/오른쪽), 위/아래로 이동 | M2 |
+| ED-F04 | 다중 블록 선택 | 드래그 선택, Shift+클릭, Esc로 블록 선택 모드, 일괄 삭제·이동·바꾸기 | M2 |
+| ED-F05 | 서식 도구 모음 (선택 시) | 굵게…코드, 링크, 색상, 블록 바꾸기, 정렬 | ✅ / 확장 M2 |
+| ED-F06 | 복사 / 붙여넣기 | HTML ↔ 블록, Markdown 텍스트 감지 후 변환, 이미지 붙여넣기 → 업로드, URL 붙여넣기 → 링크/미리보기/임베드 선택 | M2 / M3 |
+| ED-F07 | 찾기 / 바꾸기 | `⌘F` (브라우저 찾기 대신), 대소문자, 모두 바꾸기 | M2 |
+| ED-F08 | 실행 취소 / 다시 실행 | Yjs UndoManager, 묶음 간격 조정, 원격 변경은 되돌리지 않음 | ✅ / 조정 M2 |
+| ED-F09 | 들여쓰기 | Tab/Shift+Tab (목록, 할 일, 토글 하위) | ✅ (목록) / 확장 M2 |
+| ED-F10 | 페이지 스타일 | 글꼴(기본/세리프/모노), 글자 크기, 줄 간격, 전체 폭 | M2 |
+| ED-F11 | 커버 | 색상, 그라디언트, 이미지 업로드, URL, 위치 조정 | M2 / 업로드 M3 |
+| ED-F12 | 페이지 아이콘 | 이모지(전체 목록 + 검색 + 최근), 아이콘, 이미지 업로드 | M1 / 업로드 M3 |
+| ED-F13 | 텍스트 방향 | 블록별 LTR/RTL/자동 | M2 (P2) |
+| ED-F14 | 단어·글자 수 | 페이지 정보에 표시 | M2 (P2) |
+| ED-F15 | 블록 링크 | `#block=<id>`로 이동 후 강조 | M2 |
+| ED-F16 | 마크다운 단축키 | 블록(위 표) + 인라인 `**굵게**`, `*기울임*`, `` `코드` ``, `~~취소~~` | ✅ / 보완 M2 |
+| ED-F17 | 잠금 페이지 읽기 전용 | WS-13 | M2 |
+| ED-F18 | 인쇄 / PDF | 인쇄용 CSS (`@media print`) | M8 |
+
+## 5. 키보드 단축키 (에디터)
+
+AppFlowy `command_shortcuts`, `character_shortcuts`와 맞춥니다.
+
+| 단축키 | 동작 |
+|---|---|
+| `⌘B` `⌘I` `⌘U` `⌘⇧S` `⌘E` | 굵게, 기울임, 밑줄, 취소선, 인라인 코드 |
+| `⌘K` (선택 있음) | 링크 |
+| `⌘⇧H` | 형광펜 |
+| `⌘⌥1`~`6` | 제목 1~6 |
+| `⌘⌥0` | 문단 |
+| `⌘Enter` | 할 일 체크 토글 / 토글 펼치기 |
+| `⌥⇧↑` `⌥⇧↓` | 블록 이동 ✅ |
+| `⌘D` | 블록 복제 |
+| `⌘Z` `⌘⇧Z` | 실행 취소, 다시 실행 |
+| `⌘F` | 찾기 |
+| `Esc` | 블록 선택 모드 |
+
+## 6. 모바일 에디터 (자세한 내용은 [08-mobile.md](08-mobile.md))
+
+- 키보드 위 도구 모음 v3 (AppFlowy `mobile_toolbar_v3`): `+` 블록 삽입 | `Aa` 텍스트 스타일 패널(굵게, 기울임, 밑줄, 취소선, 코드, 제목, 정렬, 색상) | 할 일 | 목록 | 링크 | 들여쓰기/내어쓰기 | 블록 이동 | 실행 취소 | 키보드 닫기.
+- 텍스트를 선택하면 떠 있는 도구 모음(복사, 자르기, 붙여넣기, 굵게, 링크, 색상)을 보여줍니다 (AppFlowy `mobile_floating_toolbar`).
+- 블록 길게 누르기 → 블록 메뉴 하단 시트를 엽니다.
+
+## 7. 성능 요구 사항
+
+- 5,000블록 문서: 열기 < 300ms (IndexedDB 로드 + 첫 페인트), 타이핑 지연 < 16ms.
+- NodeView가 있는 블록은 화면 밖에서 무거운 렌더링(KaTeX, 하이라이트)을 지연합니다 (`IntersectionObserver`).
+- 코드 하이라이트는 디바운스 + 해당 블록만 다시 계산합니다.
+- 이미지는 `loading="lazy"`, `decoding="async"`, 가로세로 비율 예약(레이아웃 이동 방지)을 씁니다.
+- 슬래시 메뉴, 블록 메뉴 같은 오버레이는 열 때만 마운트합니다.
+
+## 8. 테스트
+
+- 블록마다: 스키마 왕복 테스트 (JSON → Y.Doc → JSON), Markdown 왕복 테스트, e2e 1개 (삽입·편집·삭제).
+- 모바일 IME 회귀: CDP `Input.imeSetComposition`으로 한글 조합 테스트를 모든 텍스트 블록에서 실행합니다.

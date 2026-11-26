@@ -6,6 +6,12 @@
 - **GitHub 동기화**: 변경 사항을 모아 커밋 1개로 푸시합니다. 여러 기기에서 동시에 수정해도 Yjs(CRDT)로 자동 병합됩니다.
 - **모든 기기 지원**: 데스크탑, 태블릿, Android, iOS. 홈 화면에 추가하면(PWA) 앱처럼 동작합니다.
 
+## 개발 문서
+
+- 기획서: [docs/spec](docs/spec/00-overview.md)
+- 로드맵: [docs/ROADMAP.md](docs/ROADMAP.md) · 체크리스트: [docs/CHECKLIST.md](docs/CHECKLIST.md) · 진행 상태: [docs/STATUS.md](docs/STATUS.md)
+- AI 개발 가이드: [CLAUDE.md](CLAUDE.md)
+
 ## 구조
 
 ```
