@@ -1,29 +1,70 @@
+import { generateKeyBetween, generateNKeysBetween } from 'fractional-indexing'
 import * as Y from 'yjs'
 import { assertWritable } from './guard'
 
 export { ReadOnlyError } from './guard'
 
 /**
- * Pure operations on the workspace Y.Doc. Each page's metadata is its own
- * Y.Map, so concurrent edits to different fields (title on one device,
- * favorite on another) merge field by field.
+ * Pure operations on the workspace Y.Doc (schema v2, spec/02 §2). Each view is its own
+ * Y.Map, so concurrent edits to different fields merge field by field.
  */
 
+/**
+ * A document view as the current UI sees it (spec/02 §2 `views`, kind=document).
+ * Spaces are not in the UI yet (M1): a view whose parent is a space has `parentId: null`.
+ * `icon` is the emoji value ('' when none or not an emoji); `favorite` is the current
+ * user's favorite.
+ */
 export interface PageMeta {
   id: string
   title: string
   icon: string
   parentId: string | null
-  order: number
+  /** FracKey; siblings sort by (order, id). */
+  order: string
   favorite: boolean
   createdAt: number
   updatedAt: number
   deletedAt: number | null
 }
 
-type MetaMap = Y.Map<unknown>
+type YMap = Y.Map<unknown>
 
-export const pagesOf = (doc: Y.Doc) => doc.getMap<MetaMap>('pages')
+export type IconValue =
+  { type: 'emoji'; value: string } | { type: 'icon'; value: string; color?: string } | { type: 'file'; value: string }
+
+/** Space created by migration v2 for existing pages; new roots go to the first space. */
+export const DEFAULT_SPACE_ID = 'default'
+
+let currentUser = 'local'
+/** User key for per-user state (spec/02 §8). Until a GitHub login is tracked this is `local`. */
+export const getCurrentUser = () => currentUser
+export function setCurrentUser(login: string) {
+  currentUser = login
+}
+
+export const viewsOf = (doc: Y.Doc) => doc.getMap<YMap>('views')
+export const spacesOf = (doc: Y.Doc) => doc.getMap<YMap>('spaces')
+const usersOf = (doc: Y.Doc) => doc.getMap<YMap>('users')
+
+function favoritesOf(doc: Y.Doc, create: false): Y.Map<string> | undefined
+function favoritesOf(doc: Y.Doc, create: true): Y.Map<string>
+function favoritesOf(doc: Y.Doc, create: boolean): Y.Map<string> | undefined {
+  const users = usersOf(doc)
+  let user = users.get(currentUser)
+  if (!(user instanceof Y.Map)) {
+    if (!create) return undefined
+    user = new Y.Map<unknown>()
+    users.set(currentUser, user)
+  }
+  let favs = user.get('favorites')
+  if (!(favs instanceof Y.Map)) {
+    if (!create) return undefined
+    favs = new Y.Map<string>()
+    user.set('favorites', favs)
+  }
+  return favs as Y.Map<string>
+}
 
 export function newId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(9))
@@ -32,14 +73,25 @@ export function newId(): string {
     .slice(0, 14)
 }
 
-function toMeta(id: string, m: MetaMap): PageMeta {
+const cmpKey = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0)
+const bySiblingOrder = (a: { order: string; id: string }, b: { order: string; id: string }) =>
+  cmpKey(a.order, b.order) || cmpKey(a.id, b.id)
+
+const isDocumentView = (m: YMap) => m.get('kind') === 'document' && m.get('embedded') !== true
+
+function emojiOf(icon: unknown): string {
+  return icon && typeof icon === 'object' && (icon as IconValue).type === 'emoji' ? (icon as IconValue).value : ''
+}
+
+function toMeta(doc: Y.Doc, id: string, m: YMap, favs: Y.Map<string> | undefined): PageMeta {
+  const parent = m.get('parentId')
   return {
     id,
     title: (m.get('title') as string) ?? '',
-    icon: (m.get('icon') as string) ?? '',
-    parentId: (m.get('parentId') as string | null) ?? null,
-    order: (m.get('order') as number) ?? 0,
-    favorite: Boolean(m.get('favorite')),
+    icon: emojiOf(m.get('icon')),
+    parentId: typeof parent === 'string' && !spacesOf(doc).has(parent) ? parent : null,
+    order: (m.get('order') as string) ?? '',
+    favorite: favs?.has(id) ?? false,
     createdAt: (m.get('createdAt') as number) ?? 0,
     updatedAt: (m.get('updatedAt') as number) ?? 0,
     deletedAt: (m.get('deletedAt') as number | null) ?? null,
@@ -48,13 +100,39 @@ function toMeta(id: string, m: MetaMap): PageMeta {
 
 export function listPages(doc: Y.Doc): PageMeta[] {
   const out: PageMeta[] = []
-  pagesOf(doc).forEach((m, id) => out.push(toMeta(id, m)))
-  return out.sort((a, b) => a.order - b.order || a.createdAt - b.createdAt)
+  const favs = favoritesOf(doc, false)
+  viewsOf(doc).forEach((m, id) => {
+    if (isDocumentView(m)) out.push(toMeta(doc, id, m, favs))
+  })
+  return out.sort(bySiblingOrder)
 }
 
 export function getPage(doc: Y.Doc, id: string): PageMeta | null {
-  const m = pagesOf(doc).get(id)
-  return m ? toMeta(id, m) : null
+  const m = viewsOf(doc).get(id)
+  return m && isDocumentView(m) ? toMeta(doc, id, m, favoritesOf(doc, false)) : null
+}
+
+/** The space new root pages go into: the first by (order, id), else the default id. */
+export function rootSpaceId(doc: Y.Doc): string {
+  const spaces: { id: string; order: string }[] = []
+  spacesOf(doc).forEach((m, id) => spaces.push({ id, order: (m.get('order') as string) ?? '' }))
+  return spaces.sort(bySiblingOrder)[0]?.id ?? DEFAULT_SPACE_ID
+}
+
+/** Raw sibling list of a stored parent id (space or view), sorted. */
+function siblingsOf(doc: Y.Doc, storedParent: string, exclude?: string) {
+  const out: { id: string; order: string; deleted: boolean }[] = []
+  viewsOf(doc).forEach((m, id) => {
+    if (id !== exclude && m.get('parentId') === storedParent)
+      out.push({ id, order: (m.get('order') as string) ?? '', deleted: m.get('deletedAt') != null })
+  })
+  return out.sort(bySiblingOrder)
+}
+
+/** Order key for a new last child of `storedParent`. */
+function keyAtEnd(doc: Y.Doc, storedParent: string): string {
+  const sibs = siblingsOf(doc, storedParent)
+  return generateKeyBetween(sibs.at(-1)?.order || null, null)
 }
 
 export function createPage(
@@ -63,35 +141,62 @@ export function createPage(
 ): string {
   assertWritable()
   const id = opts.id ?? newId()
-  const parentId = opts.parentId ?? null
-  const siblings = listPages(doc).filter((p) => p.parentId === parentId)
-  const order = siblings.length ? Math.max(...siblings.map((s) => s.order)) + 1 : 0
+  const parent = opts.parentId ?? rootSpaceId(doc)
   const now = Date.now()
   doc.transact(() => {
     const m = new Y.Map<unknown>()
+    m.set('kind', 'document')
+    m.set('layout', 'document')
+    m.set('databaseId', null)
+    m.set('parentId', parent)
+    m.set('order', keyAtEnd(doc, parent))
     m.set('title', opts.title ?? '')
-    m.set('icon', opts.icon ?? '')
-    m.set('parentId', parentId)
-    m.set('order', order)
-    m.set('favorite', false)
+    m.set('icon', opts.icon ? { type: 'emoji', value: opts.icon } : null)
+    m.set('embedded', false)
+    m.set('locked', false)
     m.set('createdAt', now)
+    m.set('createdBy', currentUser)
     m.set('updatedAt', now)
+    m.set('updatedBy', currentUser)
     m.set('deletedAt', null)
-    pagesOf(doc).set(id, m)
+    m.set('deletedBy', null)
+    viewsOf(doc).set(id, m)
   })
   return id
 }
 
 export function updatePage(doc: Y.Doc, id: string, patch: Partial<Omit<PageMeta, 'id'>>) {
   assertWritable()
-  const m = pagesOf(doc).get(id)
+  const m = viewsOf(doc).get(id)
   if (!m) return
   doc.transact(() => {
-    for (const [k, v] of Object.entries(patch)) {
-      if (m.get(k) !== v) m.set(k, v)
+    for (const [k, v] of Object.entries(patch) as [keyof PageMeta, unknown][]) {
+      if (k === 'favorite') {
+        if (v) {
+          const favs = favoritesOf(doc, true)
+          if (!favs.has(id)) favs.set(id, generateKeyBetween(maxValue(favs), null))
+        } else favoritesOf(doc, false)?.delete(id)
+        continue
+      }
+      let value = v
+      if (k === 'icon') {
+        if (emojiOf(m.get('icon')) === v) continue
+        value = v ? { type: 'emoji', value: v } : null
+      } else if (k === 'parentId') value = v ?? rootSpaceId(doc)
+      else if (k === 'deletedAt') m.set('deletedBy', v == null ? null : currentUser)
+      if (m.get(k) !== value) m.set(k, value)
     }
     m.set('updatedAt', Date.now())
+    m.set('updatedBy', currentUser)
   })
+}
+
+function maxValue(map: Y.Map<string>): string | null {
+  let max: string | null = null
+  map.forEach((k) => {
+    if (typeof k === 'string' && (max === null || k > max)) max = k
+  })
+  return max
 }
 
 export function descendantsOf(pages: PageMeta[], id: string): string[] {
@@ -143,29 +248,47 @@ export function restorePage(doc: Y.Doc, id: string) {
   const page = getPage(doc, id)
   if (!page) return
   // If the parent no longer exists, restore to the root.
-  const parentOk = page.parentId ? pagesOf(doc).has(page.parentId) : true
+  const parentOk = page.parentId ? viewsOf(doc).has(page.parentId) : true
   updatePage(doc, id, { deletedAt: null, ...(parentOk ? {} : { parentId: null }) })
 }
 
-/** Removes a page and all of its descendants. Returns removed ids. */
+/**
+ * Removes a page and all of its descendants (and their favorites). Returns removed ids.
+ * Also drops the frozen v1 `pages` entry, or migration v2 would treat it as a leftover
+ * and bring the page back.
+ */
 export function deletePagePermanently(doc: Y.Doc, id: string): string[] {
   assertWritable()
   const ids = [id, ...descendantsOf(listPages(doc), id)]
-  doc.transact(() => ids.forEach((pid) => pagesOf(doc).delete(pid)))
+  doc.transact(() => {
+    ids.forEach((pid) => viewsOf(doc).delete(pid))
+    const legacy = doc.share.has('pages') ? doc.getMap('pages') : null
+    if (legacy) ids.forEach((pid) => legacy.has(pid) && legacy.delete(pid))
+    usersOf(doc).forEach((user) => {
+      const favs = user instanceof Y.Map ? user.get('favorites') : null
+      if (favs instanceof Y.Map) ids.forEach((pid) => favs.has(pid) && favs.delete(pid))
+    })
+  })
   return ids
 }
 
-/** Moves `id` under `parentId` at position `index` among its new siblings. */
+/** Moves `id` under `parentId` (null = root) at position `index` among its live new siblings. */
 export function movePage(doc: Y.Doc, id: string, parentId: string | null, index: number) {
+  assertWritable()
   const all = listPages(doc)
   if (parentId && (parentId === id || descendantsOf(all, id).includes(parentId))) return
-  const siblings = all.filter((p) => p.parentId === parentId && p.id !== id && !p.deletedAt)
-  const before = siblings[index - 1]
-  const after = siblings[index]
-  let order: number
-  if (before && after) order = (before.order + after.order) / 2
-  else if (before) order = before.order + 1
-  else if (after) order = after.order - 1
-  else order = 0
-  updatePage(doc, id, { parentId, order })
+  const stored = parentId ?? rootSpaceId(doc)
+  doc.transact(() => {
+    let live = siblingsOf(doc, stored, id).filter((s) => !s.deleted)
+    const before = live[index - 1]
+    const after = live[index]
+    // Equal keys (concurrent inserts) leave no room between them: re-key the group (spec/02 §5).
+    if (before && after && before.order >= after.order) {
+      const keys = generateNKeysBetween(null, null, live.length)
+      live.forEach((s, i) => viewsOf(doc).get(s.id)!.set('order', keys[i]))
+      live = siblingsOf(doc, stored, id).filter((s) => !s.deleted)
+    }
+    const order = generateKeyBetween(live[index - 1]?.order || null, live[index]?.order || null)
+    updatePage(doc, id, { parentId, order })
+  })
 }

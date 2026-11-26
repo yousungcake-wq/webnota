@@ -1,6 +1,6 @@
 import { t } from '../i18n'
 import type * as Y from 'yjs'
-import { createPage, pagesOf } from '../model/pages'
+import { createPage, viewsOf } from '../model/pages'
 import { openDoc, WORKSPACE } from './registry'
 
 let wsDoc: Y.Doc | null = null
@@ -20,7 +20,7 @@ export function ws(): Y.Doc {
 /** Seeds a welcome page the very first time the app runs on this device. */
 export function seedIfEmpty(): string | null {
   const doc = ws()
-  if (pagesOf(doc).size > 0) return null
+  if (viewsOf(doc).size > 0) return null
   if (localStorage.getItem('webnota:seeded')) return null
   localStorage.setItem('webnota:seeded', '1')
   return createPage(doc, { title: t('page.welcomeTitle'), icon: '👋' })

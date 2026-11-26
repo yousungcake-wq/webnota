@@ -1,7 +1,7 @@
 import { debugLog } from '../flags'
 import { t } from '../i18n'
 import { getToken, setToken } from '../auth/auth'
-import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc } from '../docs/registry'
+import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc, pageDocName } from '../docs/registry'
 import { listPages } from '../model/pages'
 import { createStore } from '../store/createStore'
 import { isReadOnly } from '../schema/gate'
@@ -119,7 +119,7 @@ export async function connect(token: string, repoName = DEFAULT_REPO): Promise<A
 async function markAllDirtyForFirstSync() {
   const ws = await openDoc('workspace')
   markDirty('workspace')
-  for (const p of listPages(ws)) markDirty(`page/${p.id}`)
+  for (const p of listPages(ws)) markDirty(pageDocName(p.id))
 }
 
 export function disconnect() {

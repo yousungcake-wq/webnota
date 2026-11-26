@@ -104,10 +104,10 @@ class Device implements LocalStore {
     return this.doc('workspace')
   }
   text(id: string) {
-    return this.doc(`page/${id}`).getText('t').toString()
+    return this.doc(`doc/${id}`).getText('t').toString()
   }
   type(id: string, at: number, s: string) {
-    this.doc(`page/${id}`).getText('t').insert(at, s)
+    this.doc(`doc/${id}`).getText('t').insert(at, s)
   }
 }
 
@@ -201,7 +201,7 @@ describe('sync engine', () => {
       a.type(id, 0, 'typed during sync')
     }
     await syncOnce(remote, a)
-    expect(a.dirty[`page/${id}`]).toBeGreaterThan(0)
+    expect(a.dirty[`doc/${id}`]).toBeGreaterThan(0)
     await syncOnce(remote, a)
     expect(a.dirty).toEqual({})
     const b = new Device()

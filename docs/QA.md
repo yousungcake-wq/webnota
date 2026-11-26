@@ -19,11 +19,18 @@
 
 ### QA용 디버그 플래그
 
-브라우저 콘솔에서 `localStorage.setItem('webnota:debug', 'crash-editor')` 후 새로고침하면 에디터 렌더링 오류를 흉내 냅니다 (`crash-sidebar`도 가능, 쉼표로 여러 개). `schema-newer`는 데이터가 앱보다 새 버전인 상황(읽기 전용 + 업데이트 배너, spec/02 §6)을 흉내 냅니다 — 데이터는 바꾸지 않습니다. 확인 후 `localStorage.removeItem('webnota:debug')`.
+브라우저 콘솔에서 `localStorage.setItem('webnota:debug', 'crash-editor')` 후 새로고침하면 에디터 렌더링 오류를 흉내 냅니다 (`crash-sidebar`도 가능, 쉼표로 여러 개). `schema-newer`는 데이터가 앱보다 새 버전인 상황(읽기 전용 + 업데이트 배너, spec/02 §6)을 흉내 냅니다 — 데이터는 바꾸지 않습니다. `seed-v1`은 처음 한 번 PoC(v1) 형식 데이터(페이지 3개, 즐겨찾기 1개, 본문 1개)를 IndexedDB에 심어 v2 마이그레이션을 확인합니다 — **빈 브라우저 프로필에서만** 쓰세요. 확인 후 `localStorage.removeItem('webnota:debug')`.
 
 ## 마일스톤별 추가 항목
 
 마일스톤을 시작할 때 이 아래에 추가합니다.
+
+### M0 (데이터 마이그레이션 — 실제 데이터가 있는 기기에서 꼭 확인)
+
+- [ ] PoC(v0.1.0)로 쓰던 기기에서 새 버전을 열면 페이지 트리·순서·아이콘·본문·즐겨찾기·휴지통이 그대로다 (M0-16)
+- [ ] 같은 기기에서 새로고침·앱 재실행 후에도 그대로다 (IndexedDB `page/`→`doc/` 복사)
+- [ ] GitHub 연결된 두 기기: 한 기기를 먼저 업데이트하고 동기화한 뒤, 업데이트 전 기기(캐시된 앱)에서 동기화해도 저장소의 `data/pages/*.yjs` 파일이 사라지지 않는다
+- [ ] 새 기기(빈 브라우저)에서 연결·첫 동기화 후 기존 페이지가 모두 나타난다
 
 ## 기록
 

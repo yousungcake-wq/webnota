@@ -6,8 +6,21 @@ export interface Migration {
   /** The version this migration produces (previous version + 1). */
   version: number
   name: string
-  /** Upgrades `doc` from `version - 1` to `version`. Pure: only touches `doc`. */
-  up(doc: Y.Doc): void
+  /** Upgrades `doc` from `version - 1` to `version`. Pure: only touches `doc`. Must be idempotent. */
+  up(doc: Y.Doc, ctx: MigrationContext): void
+  /**
+   * True when the doc (already at or past `version`) still holds data in the old shape —
+   * e.g. merged in from a device that had not upgraded yet. `up` is then run again.
+   * Keep it cheap: it is checked after every remote update.
+   */
+  leftover?(doc: Y.Doc): boolean
+}
+
+/** Device-side inputs a migration may record (labels, timestamps) — never used for IDs. */
+export interface MigrationContext {
+  now: number
+  /** Localized name of the space created for existing pages (v2). */
+  defaultSpaceName: string
 }
 
 /** Transaction origin of migration writes. They sync like user edits (marked dirty). */
@@ -28,6 +41,7 @@ export interface SchemaCheck {
 export interface MigrateOptions {
   migrations?: Migration[]
   appVersion?: number
+  ctx?: Partial<MigrationContext>
 }
 
 /** Throws unless `migrations` has exactly versions 2..appVersion in order. */
@@ -48,6 +62,8 @@ export function checkRegistry(migrations: Migration[], appVersion: number) {
  *   a scratch copy; only if it succeeds is the difference applied to `doc` in one
  *   transaction (origin `MIGRATION_ORIGIN`) together with the new `schemaVersion`.
  *   A throwing migration therefore leaves `doc` exactly as the previous step left it.
+ * - current: re-runs already-applied migrations whose `leftover()` finds old-shape data
+ *   (merged in from a device that had not upgraded yet), the same atomic way.
  * - newer or unreadable: writes nothing; the caller opens the app read-only.
  */
 export function migrateDoc(doc: Y.Doc, opts: MigrateOptions = {}): SchemaCheck {
@@ -58,15 +74,18 @@ export function migrateDoc(doc: Y.Doc, opts: MigrateOptions = {}): SchemaCheck {
 
   if (Number.isNaN(docVersion) || docVersion > appVersion) return { status: 'newer', ...base, applied: [] }
 
+  const ctx: MigrationContext = { now: Date.now(), defaultSpaceName: 'General', ...opts.ctx }
   const applied: number[] = []
   for (const m of migrations) {
-    if (m.version <= docVersion || m.version > appVersion) continue
+    if (m.version > appVersion) continue
+    const pending = m.version > docVersion
+    if (!pending && !m.leftover?.(doc)) continue
     try {
       const scratch = new Y.Doc({ gc: false })
       Y.applyUpdate(scratch, Y.encodeStateAsUpdate(doc))
       scratch.transact(() => {
-        m.up(scratch)
-        metaOf(scratch).set('schemaVersion', m.version)
+        m.up(scratch, ctx)
+        if (pending) metaOf(scratch).set('schemaVersion', m.version)
       })
       const diff = Y.encodeStateAsUpdate(scratch, Y.encodeStateVector(doc))
       scratch.destroy()

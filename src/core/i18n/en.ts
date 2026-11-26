@@ -26,6 +26,7 @@ export const en: Record<MessageKey, string> = {
   'schema.failed': 'Your data could not be upgraded, so it opens read-only. Nothing was lost.',
   'schema.update': 'Update app',
   'schema.readOnlyToast': 'Changes are disabled in read-only mode',
+  'space.default': 'General',
 
   'app.selectPage': 'Select a page on the left or create a new one.',
   'app.tabbar': 'Bottom navigation',

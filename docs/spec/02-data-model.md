@@ -13,7 +13,7 @@
 | `row/<dbId>/<rowId>` | 행 페이지 본문 | `data/dbs/<dbId>/rows/<rowId>.yjs` | 행 페이지 열 때 |
 | (바이너리) | 이미지, 첨부 파일 | `files/<sha256>.<ext>` | 표시할 때 (캐시) |
 
-- 현재 PoC 경로(`data/pages/<id>.yjs`, doc 이름 `page/<id>`)는 M0 마이그레이션에서 `doc/` 체계로 이전합니다 (§7).
+- PoC 경로(`data/pages/<id>.yjs`, doc 이름 `page/<id>`)는 M0 마이그레이션에서 `doc/` 체계로 이전합니다 (§7). M0-16에서 doc 이름은 `doc/<id>`가 되었고, GitHub 경로는 M0-17까지 `data/pages/<id>.yjs`를 그대로 씁니다.
 - 행을 **샤드**로 나누는 이유: 행 하나를 고쳐도 해당 샤드 파일만 업로드합니다. 10,000행 DB도 커밋당 수백 KB 이하로 유지됩니다. 샤드 수는 DB 생성 시 8개로 고정합니다. 샤드 번호는 `hash(rowId) % 8`입니다.
 
 ## 2. `workspace` 문서
@@ -41,9 +41,10 @@ workspace (Y.Doc)
 │   locked: boolean                 // 읽기 전용 잠금
 │   createdAt, createdBy, updatedAt, updatedBy
 │   deletedAt: number | null, deletedBy: string | null
-└─ users: Y.Map<login, Y.Map>       // 사용자별 상태 (공유 워크스페이스 대비)
-    favorites: Y.Map<viewId, FracKey>
-    lastOpened: string | null
+├─ users: Y.Map<login, Y.Map>       // 사용자별 상태 (공유 워크스페이스 대비)
+│   favorites: Y.Map<viewId, FracKey>
+│   lastOpened: string | null
+└─ pages: Y.Map<id, Y.Map>          // v1(PoC) 형식의 동결 사본 — 읽지도 고치지도 않음 (§7)
 ```
 
 ```ts
@@ -190,7 +191,16 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 | 1 | PoC 형식: `workspace.pages` (숫자 order), `page/<id>` 문서 | (현재) |
 | 2 | `pages` → `views`(kind=document, layout=document), order → FracKey, `favorite` → `users[login].favorites`, 기본 스페이스 생성, 문서 이름 `page/<id>` → `doc/<id>`, 파일 경로 `data/pages/` → `data/docs/` | M0 |
 
-v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다.
+v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다 (M0-17).
+
+v2 구현 세부 (M0-16, `core/schema/migrations/002-views.ts`):
+- 뷰 ID = 페이지 ID. 루트 페이지와 부모가 없는 페이지는 기본 스페이스(ID `default`, 이름은 기기 언어의 "일반"/"General")로 갑니다.
+- 형제 순서는 v1의 `(order, createdAt)` 순서대로 FracKey를 새로 매깁니다. 아이콘 문자열은 `{type:'emoji'}`(빈 문자열은 `null`), 휴지통 상태는 유지(`deletedBy='local'`).
+- 즐겨찾기는 `users.local.favorites`로 옮깁니다 (마이그레이션은 로그인을 모름, §8). 앱도 로그인 추적 전까지는 `local`을 현재 사용자로 씁니다.
+- **`pages`는 비우지 않고 동결 사본으로 남깁니다.** 아직 업데이트되지 않은 v1 앱(다른 기기의 캐시된 PWA)은 스키마 게이트가 없고, 동기화할 때 `pages`에 없는 페이지의 저장소 파일을 삭제하기 때문입니다. v2의 영구 삭제는 `pages`의 같은 항목도 지웁니다.
+- **남은 데이터(leftover)**: 이미 v2인 문서에 뷰가 없는 `pages` 항목이 병합되면(첫 동기화 전에 빈 워크스페이스를 마이그레이션한 새 기기, 또는 v1 앱이 만든 페이지) 게이트가 v2를 다시 실행해 기존 형제 뒤에 붙입니다. 이미 있는 뷰는 덮어쓰지 않습니다.
+- 두 기기가 동시에 마이그레이션해도 ID·순서 키가 결정적이라 병합 결과가 같습니다 (테스트). 다만 같은 뷰의 `Y.Map`이 기기마다 따로 만들어져 하나만 남으므로, 동시 마이그레이션 직후 양쪽에서 한 같은 뷰 편집 중 하나는 사라질 수 있습니다 (드묾, 수용).
+- IndexedDB 복사는 `core/docs/legacy.ts` (기기당 한 번, 지연 로드). 실패하면 구 DB를 남기고 다음 부팅에 다시 시도합니다. QA: `webnota:debug=seed-v1`로 v1 데이터를 심어 확인 (docs/QA.md).
 
 ## 8. 사용자 식별
 

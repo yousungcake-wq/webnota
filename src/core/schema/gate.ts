@@ -1,8 +1,9 @@
 import type * as Y from 'yjs'
 import { setWriteGuard } from '../model/guard'
 import { createStore } from '../store/createStore'
-import { migrateDoc, type MigrateOptions, type SchemaStatus } from './migrate'
-import { getSchemaVersion, metaOf, SCHEMA_VERSION } from './version'
+import { MIGRATION_ORIGIN, migrateDoc, type MigrateOptions, type SchemaStatus } from './migrate'
+import { MIGRATIONS } from './migrations'
+import { getSchemaVersion, SCHEMA_VERSION } from './version'
 
 export interface SchemaState {
   status: SchemaStatus
@@ -35,9 +36,10 @@ function publish(status: SchemaStatus, docVersion: number, appVersion: number) {
 
 /**
  * Read-only gate for the workspace doc (spec/02 §6). Migrates it if older, then keeps
- * watching `meta`: when another device's newer `schemaVersion` is merged in, the app
- * becomes read-only synchronously (before the sync engine can push), and an older
- * version arriving (a merge of concurrent bumps) re-runs the idempotent migrations.
+ * watching it: when another device's newer `schemaVersion` is merged in, the app
+ * becomes read-only synchronously (before the sync engine can push); an older version
+ * (a merge of concurrent bumps) or old-shape data from a not-yet-upgraded device
+ * re-runs the idempotent migrations.
  * While read-only, `core/model` mutations throw `ReadOnlyError`.
  */
 export function initSchema(doc: Y.Doc, opts: MigrateOptions = {}): SchemaState {
@@ -53,17 +55,27 @@ export function initSchema(doc: Y.Doc, opts: MigrateOptions = {}): SchemaState {
   }
   run()
 
-  const meta = metaOf(doc)
-  const onMeta = (e: Y.YMapEvent<unknown>) => {
-    if (!e.keysChanged.has('schemaVersion')) return
+  // After every change (remote merges included): a newer version locks writes at once,
+  // before the sync engine can push; an older version or old-shape leftovers re-run the
+  // idempotent migrations (deferred: no writes inside an update handler).
+  const migrations = opts.migrations ?? MIGRATIONS
+  let scheduled = false
+  const onUpdate = (_u: Uint8Array, origin: unknown) => {
+    if (origin === MIGRATION_ORIGIN) return
     const v = getSchemaVersion(doc)
-    if (Number.isNaN(v) || v > appVersion) publish('newer', v, appVersion)
-    else if (v < appVersion)
-      queueMicrotask(run) // can't write inside an observer
-    else if (schemaStore.get().status === 'newer') publish('current', v, appVersion)
+    if (Number.isNaN(v) || v > appVersion) return publish('newer', v, appVersion)
+    if (v < appVersion || migrations.some((m) => m.version <= v && m.leftover?.(doc))) {
+      if (!scheduled) {
+        scheduled = true
+        queueMicrotask(() => {
+          scheduled = false
+          run()
+        })
+      }
+    } else if (schemaStore.get().status === 'newer') publish('current', v, appVersion)
   }
-  meta.observe(onMeta)
-  detach = () => meta.unobserve(onMeta)
+  doc.on('update', onUpdate)
+  detach = () => doc.off('update', onUpdate)
   return schemaStore.get()
 }
 

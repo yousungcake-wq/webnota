@@ -3,8 +3,8 @@ import { IndexeddbPersistence } from 'y-indexeddb'
 
 /**
  * Every piece of user data lives in a Y.Doc:
- *   - "workspace"     : page tree + page metadata
- *   - "page/<id>"     : the rich-text content of one page
+ *   - "workspace"     : spaces, view tree, per-user state (spec/02 §2)
+ *   - "doc/<id>"      : the rich-text content of one document view
  * Each doc is persisted to IndexedDB immediately (offline-first) and
  * synced to GitHub in batches by the sync engine.
  */
@@ -15,7 +15,7 @@ import { isReadOnly } from '../schema/gate'
 export { REMOTE_ORIGIN }
 
 export const WORKSPACE = 'workspace'
-export const pageDocName = (id: string) => `page/${id}`
+export const pageDocName = (id: string) => `doc/${id}`
 
 interface Entry {
   doc: Y.Doc
@@ -49,6 +49,27 @@ function writeJSON(key: string, value: unknown) {
 
 export function markDirty(name: string) {
   dirty = { ...dirty, [name]: (dirty[name] ?? 0) + 1 }
+  writeJSON(DIRTY_KEY, dirty)
+  dirtyListeners.forEach((l) => l())
+}
+
+/** Set once this device copied its v1 `page/<id>` databases to `doc/<id>` (core/docs/legacy.ts). */
+export const LEGACY_COPY_MARKER = 'webnota:idb-v2'
+
+export function legacyCopyDone(): boolean {
+  try {
+    return localStorage.getItem(LEGACY_COPY_MARKER) === '1'
+  } catch {
+    return false
+  }
+}
+
+/** Moves a dirty flag to a renamed doc (schema v2 `page/` → `doc/`). */
+export function renameDirty(from: string, to: string) {
+  if (!(from in dirty)) return
+  const next = { ...dirty, [to]: (dirty[to] ?? 0) + (dirty[from] ?? 0) }
+  delete next[from]
+  dirty = next
   writeJSON(DIRTY_KEY, dirty)
   dirtyListeners.forEach((l) => l())
 }

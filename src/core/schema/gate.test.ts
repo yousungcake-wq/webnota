@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import * as Y from 'yjs'
-import { createPage, ReadOnlyError, updatePage } from '../model/pages'
+import { createPage, listPages, ReadOnlyError, updatePage } from '../model/pages'
+import { v2Views } from './migrations/002-views'
 import { initSchema, isReadOnly, resetSchemaGate, schemaStore } from './gate'
 
 afterEach(() => resetSchemaGate())
@@ -47,5 +48,18 @@ describe('schema gate', () => {
     }
     initSchema(doc, { migrations: [broken], appVersion: 2 })
     expect(schemaStore.get()).toMatchObject({ status: 'failed', readOnly: true })
+  })
+
+  it('converts legacy data merged in after boot (new device, first sync)', async () => {
+    const doc = new Y.Doc()
+    initSchema(doc, { migrations: [v2Views], appVersion: 2 })
+    const remote = new Y.Doc()
+    const m = new Y.Map<unknown>()
+    m.set('title', 'v1 page')
+    remote.getMap('pages').set('old', m)
+    Y.applyUpdate(doc, Y.encodeStateAsUpdate(remote), 'remote')
+    await Promise.resolve() // conversion is deferred to a microtask
+    expect(listPages(doc).map((p) => p.title)).toEqual(['v1 page'])
+    expect(isReadOnly()).toBe(false)
   })
 })

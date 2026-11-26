@@ -1,4 +1,5 @@
 import type { Migration } from '../migrate'
+import { v2Views } from './002-views'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -15,5 +16,5 @@ import type { Migration } from '../migrate'
  * - Never delete user content that cannot be rebuilt; copy, then remove the old field.
  */
 export const MIGRATIONS: Migration[] = [
-  // v2 (M0-16): pages → views, FracKey, per-user favorites, default space
+  v2Views, // M0-16: pages → views, FracKey, per-user favorites, default space
 ]

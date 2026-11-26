@@ -59,16 +59,20 @@ export interface SyncResult {
 export const REMOTE_ORIGIN = 'webnota-remote'
 const DATA_DIR = 'data/'
 
+/**
+ * Doc name ↔ repository path. `doc/<id>` still lives at the PoC path `data/pages/<id>.yjs`
+ * until M0-17 moves it to `data/docs/` (spec/02 §1, SY-02a).
+ */
 export function pathForDoc(name: string): string | null {
   if (name === 'workspace') return `${DATA_DIR}workspace.yjs`
-  if (name.startsWith('page/')) return `${DATA_DIR}pages/${name.slice(5)}.yjs`
+  if (name.startsWith('doc/')) return `${DATA_DIR}pages/${name.slice(4)}.yjs`
   return null
 }
 
 export function docForPath(path: string): string | null {
   if (path === `${DATA_DIR}workspace.yjs`) return 'workspace'
   const m = /^data\/pages\/([A-Za-z0-9_-]+)\.yjs$/.exec(path)
-  return m ? `page/${m[1]}` : null
+  return m ? `doc/${m[1]}` : null
 }
 
 export class ConflictRetryError extends Error {}
@@ -104,7 +108,7 @@ export async function syncOnce(
         if (docForPath(e.path)) remote.set(e.path, e.sha)
       }
     }
-    // Workspace first so we know which pages exist before touching page files.
+    // Workspace first so we know which views exist before touching their files.
     const remotePaths = [...remote.keys()].sort(
       (a, b) => Number(b.endsWith('workspace.yjs')) - Number(a.endsWith('workspace.yjs')),
     )
@@ -124,7 +128,7 @@ export async function syncOnce(
 
     // ---- decide what to push ----
     const ws = await store.getDoc('workspace')
-    const livePages = new Set(ws.getMap('pages').keys())
+    const livePages = new Set(ws.getMap('views').keys())
     const entries: { path: string; sha: string | null }[] = []
     const pushedGens: [string, number][] = []
     const newBlobs: Record<string, string | null> = {}
@@ -132,7 +136,7 @@ export async function syncOnce(
     for (const name of dirtyNames) {
       const path = pathForDoc(name)!
       const gen = dirty[name] ?? 0
-      if (name.startsWith('page/') && !livePages.has(name.slice(5))) {
+      if (name.startsWith('doc/') && !livePages.has(name.slice(4))) {
         pushedGens.push([name, gen])
         continue // deleted page: handled below
       }
@@ -151,7 +155,7 @@ export async function syncOnce(
 
     for (const path of remote.keys()) {
       const name = docForPath(path)!
-      if (name.startsWith('page/') && !livePages.has(name.slice(5))) {
+      if (name.startsWith('doc/') && !livePages.has(name.slice(4))) {
         entries.push({ path, sha: null })
         newBlobs[path] = null
       }
