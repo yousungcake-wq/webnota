@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M0 기반 정비
-- **진행 상황**: M0 26개 중 8개 완료 (M0-01~08: 린트, tsconfig, 번들 예산, verify, CI, Playwright Test, 구조 이전, useY/createStore)
+- **진행 상황**: M0 26개 중 9개 완료 (M0-01~09: 린트, tsconfig, 번들 예산, verify, CI, Playwright Test, 구조 이전, useY/createStore, 토큰 CSS)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M0-09 `styles/tokens.css` + 기능별 CSS 분리, 하드코딩 색 제거 (spec/12 토큰). `src/styles/app.css` 1,200줄을 토큰·base·기능별로 나누고, 화면은 e2e 스크린샷으로 회귀 확인
+- **다음 할 일**: M0-10 i18n — `core/i18n`에 `t()` + `ko.ts`/`en.ts` 사전, 기존 하드코딩 문자열(features/*, core/model `displayTitle`, 동기화 오류 메시지) 이전, `navigator.language` 감지 + 설정 화면 언어 선택
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -21,6 +21,8 @@
 
 - 구조 (M0-07): 다른 최상위 모듈은 `@/` 경로로 import (lint 강제). feature 공개 API는 `index.ts`만. 에디터는 `@/features/editor`의 `loadEditor()`/`loadSeed()`로만 접근 (정적 import 금지 — 초기 번들에 섞임). 라우터는 `core/store/router.ts`, 테마·펼침 상태는 `core/store/prefs.ts` (DECISIONS 012).
 - 상태 구독: Yjs는 `useY(doc, 고정 셀렉터, 비교 함수)`, 그 외는 `createStore` + `useStore`. 새 리스너 Set을 직접 만들지 말 것.
+- 스타일: 색은 `styles/tokens.css`에만 (테스트 강제). 기능 CSS는 그 기능 컴포넌트에서 import. 간격·반경 px는 아직 토큰으로 바꾸지 않음 (화면을 고칠 때 점진적으로).
+- CSS 리팩터링 시 회귀 확인: 스크래치 스크립트로 `vite preview` 화면 19장을 찍어 바이트 비교했음 (데스크탑·Pixel 7·iPhone 14·iPad, 라이트·다크). 필요하면 `tests/perf`나 e2e 스크린샷 테스트로 정식화 검토.
 - `core/schema`, `core/persistence`는 아직 없음. IndexedDB는 `core/docs/registry.ts`가 y-indexeddb를 직접 씀 → M0-15/M0-18에서 분리.
 
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
@@ -41,3 +43,4 @@
 | 2026-11-26 | M0-01~06: 린트·타입·번들 예산(에디터 지연 로드로 초기 269→110KB)·verify·CI·Playwright Test | 615ec5c, 3396cb1 |
 | 2026-11-26 | M0-07: 구조 이전 (core/features/ui/platform/app), `@/` 별칭, 경계 lint 강화 | d1f4ea1 |
 | 2026-11-26 | M0-08: useY(selectY) + createStore/useStore, usePages·동기화·테마·펼침·라우터 이전 | 083bdf8 |
+| 2026-11-26 | M0-09: tokens.css(spec/12 전체) + CSS 13개 파일 분리, 색 토큰화, 스타일 가드 테스트 | 262d388 |
