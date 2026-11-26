@@ -6,7 +6,7 @@ test('phone: insert a table from the block panel, table menu opens as a sheet (E
   await page.locator('.wn-editor p').first().tap()
   await page.keyboard.press('End')
   await page.keyboard.press('Enter')
-  await page.getByRole('button', { name: '블록 바꾸기' }).tap()
+  await page.getByRole('button', { name: '블록 추가' }).tap()
   await page.locator('.kb-panel').getByRole('button', { name: '표', exact: true }).tap()
   const table = page.locator('.wn-editor table')
   await expect(table.locator('tr')).toHaveCount(3)

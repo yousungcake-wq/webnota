@@ -32,19 +32,23 @@ test.describe('phone', () => {
     await expect(page.locator('.wn-editor p').first()).toHaveText('한글 입력')
   })
 
-  test('keyboard toolbar: block panel, indent, bold, undo — keeps editor focus', async ({ page }) => {
+  test('keyboard toolbar: add block, indent, text style, undo — keeps editor focus (MB-21)', async ({ page }) => {
     await newPageAndFocusBody(page)
     await page.keyboard.type('첫 줄')
-    await page.getByLabel('블록 바꾸기').tap()
+    // `+` on a non-empty line adds the block below it
+    await page.getByLabel('블록 추가').tap()
     await page.locator('.kb-block', { hasText: '할 일 목록' }).tap()
     await expect(page.locator('.wn-editor ul[data-type="taskList"]')).toHaveCount(1)
+    await expect(page.locator('.wn-editor > p').first()).toHaveText('첫 줄')
     expect(await page.evaluate(() => document.activeElement?.classList.contains('wn-editor'))).toBe(true)
 
+    await page.keyboard.type('할 일')
     await page.keyboard.press('Enter')
     await page.keyboard.type('두 번째')
     await page.getByLabel('들여쓰기').tap()
     await expect(page.locator('.wn-editor li li')).toHaveCount(1)
 
+    await page.getByRole('button', { name: '텍스트 스타일' }).tap()
     await page.getByLabel('굵게').tap()
     await page.keyboard.type('굵게')
     await expect(page.locator('.wn-editor strong')).toHaveCount(1)

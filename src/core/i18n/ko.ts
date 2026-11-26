@@ -250,6 +250,8 @@ export const ko = {
   'editor.highlight': '형광펜',
   'editor.changeBlock': '블록 바꾸기',
   'editor.indent': '들여쓰기',
+  'editor.addBlock': '블록 추가',
+  'editor.textStyle': '텍스트 스타일',
   'editor.outdent': '내어쓰기',
   'editor.moveUp': '블록 위로 이동',
   'editor.moveDown': '블록 아래로 이동',

@@ -13,6 +13,7 @@ test('phone: color sheet from the keyboard toolbar (ED-I03)', async ({ page }) =
     sel.removeAllRanges()
     sel.addRange(r)
   })
+  await page.getByRole('button', { name: '텍스트 스타일' }).tap()
   await page.getByRole('button', { name: '색상' }).tap()
   const sheet = page.getByRole('dialog', { name: '색상' })
   await expect(sheet).toBeVisible()

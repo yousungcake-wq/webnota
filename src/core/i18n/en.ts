@@ -245,6 +245,8 @@ export const en: Record<MessageKey, string> = {
   'editor.highlight': 'Highlight',
   'editor.changeBlock': 'Turn into',
   'editor.indent': 'Indent',
+  'editor.addBlock': 'Add block',
+  'editor.textStyle': 'Text style',
   'editor.outdent': 'Outdent',
   'editor.moveUp': 'Move block up',
   'editor.moveDown': 'Move block down',

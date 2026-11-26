@@ -1128,3 +1128,36 @@
     min-height: 44px;
   }
 }
+
+/* MB-21 text style panel (Aa) */
+.kb-style {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.kb-style-row {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.kb-style-btn {
+  flex: 1 0 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--bg-side);
+  color: var(--text-2);
+}
+.kb-style-btn.is-text {
+  font-size: 13px;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+.kb-style-btn.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
