@@ -46,6 +46,7 @@ async function boot() {
 
   const welcome = isReadOnly() ? null : seedIfEmpty()
   if (debugFlag('seed-unknown') && !isReadOnly()) await (await import('./qa/seedUnknown')).seedUnknown(wsDoc) // QA: ED-B23
+  if (debugFlag('seed-many') && !isReadOnly()) (await import('./qa/seedMany')).seedMany(wsDoc) // QA: virtual tree
   if (welcome) {
     const { seedWelcome } = await loadSeed() // editor schema is a lazy chunk
     seedWelcome(await openDoc(pageDocName(welcome)))

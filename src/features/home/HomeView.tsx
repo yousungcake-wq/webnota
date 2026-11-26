@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react'
-import { useViews } from '@/core/store/views'
+import { useCurrentSpace } from '@/core/store/views'
 import { addPage } from '@/features/page'
 import { PageTree } from '@/features/sidebar'
 import { SyncBadge } from '@/features/sync'
@@ -8,7 +8,7 @@ import { t } from '@/core/i18n'
 
 /** Mobile home screen: the page tree, full width. */
 export function HomeView() {
-  const pages = useViews()
+  const spaceId = useCurrentSpace()
   return (
     <div className="view">
       <ViewHeader title="WebNota" right={<SyncBadge />} />
@@ -17,7 +17,7 @@ export function HomeView() {
           <span>{t('common.pages')}</span>
           <IconButton size="sm" icon={Plus} label={t('common.newPage')} onClick={() => addPage(null)} />
         </div>
-        <PageTree pages={pages} />
+        <PageTree spaceId={spaceId} />
       </section>
       <button type="button" className="fab" aria-label={t('common.newPage')} onClick={() => addPage(null)}>
         <Plus size={26} />

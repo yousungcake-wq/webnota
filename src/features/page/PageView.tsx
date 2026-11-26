@@ -115,9 +115,7 @@ export function PageView({
           <IconButton icon={MoreHorizontal} label={t('common.more')} onClick={(e) => setMenuAnchor(e.currentTarget)} />
         </div>
       </header>
-      {menuAnchor && (
-        <PageMenu page={page} anchor={menuAnchor} currentId={page.id} onClose={() => setMenuAnchor(null)} />
-      )}
+      {menuAnchor && <PageMenu page={page} anchor={menuAnchor} onClose={() => setMenuAnchor(null)} />}
 
       <div className="page-scroll">
         {/* Keyed by page so the whole subtree (editor DOM managed by ProseMirror included) is replaced in one piece. */}

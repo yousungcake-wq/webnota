@@ -8,12 +8,10 @@ import { t } from '@/core/i18n'
 export function PageMenu({
   page,
   anchor,
-  currentId,
   onClose,
 }: {
   page: ViewMeta
   anchor: HTMLElement | null
-  currentId?: string
   onClose: () => void
 }) {
   return (
@@ -29,7 +27,7 @@ export function PageMenu({
           onSelect: () => toggleFavorite(page.id),
         },
         { label: t('page.duplicate'), icon: Copy, onSelect: () => void duplicatePage(page.id) },
-        { label: t('page.moveToTrash'), icon: Trash2, danger: true, onSelect: () => moveToTrash(page.id, currentId) },
+        { label: t('page.moveToTrash'), icon: Trash2, danger: true, onSelect: () => moveToTrash(page.id) },
       ]}
     />
   )

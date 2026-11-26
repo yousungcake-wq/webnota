@@ -60,7 +60,7 @@ test.describe('desktop', () => {
     await row.getByLabel('하위 페이지 추가').click()
     await waitForNewPage(page)
     await page.fill('.page-title', '하위 페이지')
-    await expect(page.locator('.tree [role=group] .tree-title', { hasText: '하위 페이지' })).toHaveCount(1)
+    await expect(page.locator('.tree [aria-level="2"] .tree-title', { hasText: '하위 페이지' })).toHaveCount(1)
     await expect(page.locator('.crumbs')).toContainText('부모')
 
     await page.getByLabel('더보기').last().click()

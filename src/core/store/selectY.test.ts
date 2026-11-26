@@ -60,3 +60,17 @@ describe('selectY', () => {
     expect(sel.getSnapshot()).toBe(1) // useSyncExternalStore re-checks after subscribing
   })
 })
+
+describe('listViewsStable', () => {
+  it('keeps unchanged view objects across updates', async () => {
+    const { listViewsStable } = await import('./views')
+    const doc = new Y.Doc()
+    const a = createView(doc, { title: 'A' })
+    createView(doc, { title: 'B' })
+    const first = listViewsStable(doc)
+    updateView(doc, a, { title: 'A2' })
+    const second = listViewsStable(doc)
+    expect(second[0]).not.toBe(first[0])
+    expect(second[1]).toBe(first[1])
+  })
+})

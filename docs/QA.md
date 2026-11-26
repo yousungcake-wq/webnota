@@ -19,7 +19,7 @@
 
 ### QA용 디버그 플래그
 
-브라우저 콘솔에서 `localStorage.setItem('webnota:debug', 'crash-editor')` 후 새로고침하면 에디터 렌더링 오류를 흉내 냅니다 (`crash-sidebar`도 가능, 쉼표로 여러 개). `schema-newer`는 데이터가 앱보다 새 버전인 상황(읽기 전용 + 업데이트 배너, spec/02 §6)을 흉내 냅니다 — 데이터는 바꾸지 않습니다. `seed-v1`은 처음 한 번 PoC(v1) 형식 데이터(페이지 3개, 즐겨찾기 1개, 본문 1개)를 IndexedDB에 심어 v2 마이그레이션을 확인합니다 — **빈 브라우저 프로필에서만** 쓰세요. `seed-unknown`은 한 번 "Unknown content test" 페이지(모르는 블록·마크 포함, ED-B23)를 추가합니다. 확인 후 `localStorage.removeItem('webnota:debug')`.
+브라우저 콘솔에서 `localStorage.setItem('webnota:debug', 'crash-editor')` 후 새로고침하면 에디터 렌더링 오류를 흉내 냅니다 (`crash-sidebar`도 가능, 쉼표로 여러 개). `schema-newer`는 데이터가 앱보다 새 버전인 상황(읽기 전용 + 업데이트 배너, spec/02 §6)을 흉내 냅니다 — 데이터는 바꾸지 않습니다. `seed-v1`은 처음 한 번 PoC(v1) 형식 데이터(페이지 3개, 즐겨찾기 1개, 본문 1개)를 IndexedDB에 심어 v2 마이그레이션을 확인합니다 — **빈 브라우저 프로필에서만** 쓰세요. `seed-many`는 한 번 페이지 300개(하위 20개 묶음 포함)를 추가합니다(가상 스크롤 확인). `seed-unknown`은 한 번 "Unknown content test" 페이지(모르는 블록·마크 포함, ED-B23)를 추가합니다. 확인 후 `localStorage.removeItem('webnota:debug')`.
 
 ## 마일스톤별 추가 항목
 

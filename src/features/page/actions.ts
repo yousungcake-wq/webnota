@@ -13,7 +13,7 @@ import {
 } from '@/core/model/views'
 import { ws } from '@/core/docs/workspace'
 import { toggleExpanded } from '@/core/store/prefs'
-import { navigate } from '@/core/store/router'
+import { currentRoute, navigate } from '@/core/store/router'
 import { t } from '@/core/i18n'
 import { toast } from '@/ui'
 import { displayTitle } from './titles'
@@ -31,7 +31,9 @@ export function toggleFavorite(id: string) {
   if (p) updateView(ws(), id, { favorite: !p.favorite })
 }
 
-export function moveToTrash(id: string, currentPageId?: string) {
+export function moveToTrash(id: string) {
+  const route = currentRoute()
+  const currentPageId = route.name === 'page' ? route.id : undefined
   const page = getView(ws(), id)
   trashView(ws(), id)
   toast(t('page.movedToTrash', { title: displayTitle(page?.title ?? '') }), {

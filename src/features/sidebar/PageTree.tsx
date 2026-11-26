@@ -1,5 +1,8 @@
 import { ChevronRight, MoreHorizontal, Plus } from 'lucide-react'
-import { memo, useMemo, useState } from 'react'
+import { memo, useMemo, useRef, useState } from 'react'
+import { useViews } from '@/core/store/views'
+import { flattenTree } from './flatten'
+import { useWindow } from './useWindow'
 import { type ViewMeta } from '@/core/model/views'
 import { displayTitle } from '@/features/page'
 import { toggleExpanded, useExpanded } from '@/core/store/prefs'
@@ -9,55 +12,39 @@ import './tree.css'
 import { t } from '@/core/i18n'
 import { IconButton } from '@/ui'
 
-export function usePageIndex(pages: ViewMeta[]) {
-  return useMemo(() => {
-    const byId = new Map(pages.map((p) => [p.id, p]))
-    const children = new Map<string | null, ViewMeta[]>()
-    for (const p of pages) {
-      if (p.deletedAt) continue
-      const key = p.parentId && byId.has(p.parentId) ? p.parentId : null
-      if (!children.has(key)) children.set(key, [])
-      children.get(key)!.push(p)
-    }
-    return { byId, children }
-  }, [pages])
+interface RowProps {
+  view: ViewMeta
+  depth: number
+  hasChildren: boolean
+  open: boolean
+  current: boolean
 }
 
-type Index = ReturnType<typeof usePageIndex>
-
-const Row = memo(function Row({
-  page,
-  depth,
-  index,
-  currentId,
-  expanded,
-}: {
-  page: ViewMeta
-  depth: number
-  index: Index
-  currentId?: string
-  expanded: Set<string>
-}) {
-  const kids = index.children.get(page.id) ?? []
-  const open = expanded.has(page.id)
+/** One tree row. Memoized: re-renders only when its own view or position changes. */
+const Row = memo(function Row({ view, depth, hasChildren, open, current }: RowProps) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
-
   return (
-    <li role="treeitem" aria-expanded={kids.length ? open : undefined} aria-selected={currentId === page.id}>
-      <div className={`tree-row${currentId === page.id ? ' is-current' : ''}`} style={{ paddingLeft: 4 + depth * 16 }}>
+    <li
+      role="treeitem"
+      data-row
+      aria-level={depth + 1}
+      aria-expanded={hasChildren ? open : undefined}
+      aria-selected={current}
+    >
+      <div className={`tree-row${current ? ' is-current' : ''}`} style={{ paddingLeft: 4 + depth * 16 }}>
         <button
           type="button"
           className={`tree-toggle${open ? ' is-open' : ''}`}
           aria-label={open ? t('tree.collapse') : t('tree.expand')}
-          onClick={() => toggleExpanded(page.id)}
+          onClick={() => toggleExpanded(view.id)}
         >
-          {kids.length ? <ChevronRight size={16} /> : <span className="tree-dot" />}
+          {hasChildren ? <ChevronRight size={16} /> : <span className="tree-dot" />}
         </button>
-        <a className="tree-link" href={href({ name: 'page', id: page.id })}>
+        <a className="tree-link" href={href({ name: 'page', id: view.id })}>
           <span className="tree-icon">
-            <ViewIcon icon={page.icon} />
+            <ViewIcon icon={view.icon} />
           </span>
-          <span className="tree-title">{displayTitle(page.title)}</span>
+          <span className="tree-title">{displayTitle(view.title)}</span>
         </a>
         <div className="tree-actions">
           <IconButton
@@ -66,34 +53,41 @@ const Row = memo(function Row({
             label={t('common.more')}
             onClick={(e) => setMenuAnchor(e.currentTarget)}
           />
-          <IconButton size="sm" icon={Plus} label={t('tree.addChild')} onClick={() => addPage(page.id)} />
+          <IconButton size="sm" icon={Plus} label={t('tree.addChild')} onClick={() => addPage(view.id)} />
         </div>
       </div>
-      {menuAnchor && (
-        <PageMenu page={page} anchor={menuAnchor} currentId={currentId} onClose={() => setMenuAnchor(null)} />
-      )}
-      {open && kids.length > 0 && (
-        <ul role="group">
-          {kids.map((k) => (
-            <Row key={k.id} page={k} depth={depth + 1} index={index} currentId={currentId} expanded={expanded} />
-          ))}
-        </ul>
-      )}
+      {menuAnchor && <PageMenu page={view} anchor={menuAnchor} onClose={() => setMenuAnchor(null)} />}
     </li>
   )
 })
 
-export function PageTree({ pages, currentId }: { pages: ViewMeta[]; currentId?: string }) {
-  const index = usePageIndex(pages)
+/**
+ * The view tree of one space (WS-03): flattened, then only the rows on screen are
+ * rendered once it grows past 50 rows (spec/10 §2).
+ */
+export function PageTree({ spaceId, currentId }: { spaceId: string; currentId?: string }) {
+  const views = useViews()
   const expanded = useExpanded()
-  const roots = index.children.get(null) ?? []
-  if (!roots.length) {
-    return <p className="tree-empty">{t('tree.empty')}</p>
-  }
+  const rows = useMemo(() => flattenTree(views, spaceId, expanded), [views, spaceId, expanded])
+  const listRef = useRef<HTMLUListElement>(null)
+  const { start, end, rowHeight } = useWindow(listRef, rows.length)
+  if (!rows.length) return <p className="tree-empty">{t('tree.empty')}</p>
   return (
-    <ul className="tree" role="tree">
-      {roots.map((p) => (
-        <Row key={p.id} page={p} depth={0} index={index} currentId={currentId} expanded={expanded} />
+    <ul
+      ref={listRef}
+      className="tree"
+      role="tree"
+      style={{ paddingTop: start * rowHeight, paddingBottom: (rows.length - end) * rowHeight }}
+    >
+      {rows.slice(start, end).map((r) => (
+        <Row
+          key={r.view.id}
+          view={r.view}
+          depth={r.depth}
+          hasChildren={r.hasChildren}
+          open={r.open}
+          current={r.view.id === currentId}
+        />
       ))}
     </ul>
   )

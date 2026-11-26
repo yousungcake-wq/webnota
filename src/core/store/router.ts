@@ -83,3 +83,4 @@ window.addEventListener('hashchange', () => {
 })
 
 export const useRoute = (): Route => useStore(routeStore)
+export const currentRoute = (): Route => routeStore.get()
