@@ -7,7 +7,7 @@
 - **마일스톤**: M2 에디터 완성 (M1 완료 — 실기기 확인은 docs/QA.md "M1", 사용자 선택)
 - **진행 상황**: M0 26/26, M1 21/21 완료. M2 0/21
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M2-17 들여쓰기 확장·마크다운 단축키·텍스트 방향
+- **다음 할 일**: M2-18 페이지 스타일·커버·잠금 표시
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -116,3 +116,4 @@
 | 2026-11-26 | M2-14: M2-14 다중 블록 선택 | 7804fe8 |
 | 2026-11-26 | M2-15: M2-15 붙여넣기 Markdown/URL, favorites e2e 안정화 | a46d39c |
 | 2026-11-26 | M2-16: M2-16 찾기/바꾸기·실행 취소 묶음 | 43e76b1 |
+| 2026-11-26 | M2-17: M2-17 들여쓰기 확장·마크다운 링크·텍스트 방향, schema v12 | 169b610 |
