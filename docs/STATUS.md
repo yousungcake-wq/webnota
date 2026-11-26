@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M0 기반 정비
-- **진행 상황**: M0 26개 중 9개 완료 (M0-01~09: 린트, tsconfig, 번들 예산, verify, CI, Playwright Test, 구조 이전, useY/createStore, 토큰 CSS)
+- **진행 상황**: M0 26개 중 10개 완료 (M0-01~10: 린트, tsconfig, 번들 예산, verify, CI, Playwright Test, 구조 이전, useY/createStore, 토큰 CSS, i18n)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M0-10 i18n — `core/i18n`에 `t()` + `ko.ts`/`en.ts` 사전, 기존 하드코딩 문자열(features/*, core/model `displayTitle`, 동기화 오류 메시지) 이전, `navigator.language` 감지 + 설정 화면 언어 선택
+- **다음 할 일**: M0-11 `ui/` 기본 컴포넌트 (Button, IconButton, Menu 확장, Popover, Sheet, Dialog/Confirm, Toast(실행 취소), Tooltip, Input, Switch, Segmented, Skeleton, EmptyState, OverlayHost). 기존 `.btn`/`.icon-btn` 마크업과 `confirm()`/`alert()` 호출을 새 컴포넌트로 교체. 큰 항목이므로 컴포넌트 묶음별로 커밋 권장
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -23,6 +23,7 @@
 - 상태 구독: Yjs는 `useY(doc, 고정 셀렉터, 비교 함수)`, 그 외는 `createStore` + `useStore`. 새 리스너 Set을 직접 만들지 말 것.
 - 스타일: 색은 `styles/tokens.css`에만 (테스트 강제). 기능 CSS는 그 기능 컴포넌트에서 import. 간격·반경 px는 아직 토큰으로 바꾸지 않음 (화면을 고칠 때 점진적으로).
 - CSS 리팩터링 시 회귀 확인: 스크래치 스크립트로 `vite preview` 화면 19장을 찍어 바이트 비교했음 (데스크탑·Pixel 7·iPhone 14·iPad, 라이트·다크). 필요하면 `tests/perf`나 e2e 스크린샷 테스트로 정식화 검토.
+- i18n: 문자열은 `t('key')`, 키는 `core/i18n/ko.ts`에 먼저 추가 후 `en.ts`. 사전은 부팅 시 `initI18n()`이 현재 언어 것만 로드하므로 **모듈 최상위에서 `t()` 호출 금지** (지연 청크 안은 괜찮음, 예: editor/blocks.ts). e2e는 `locale: 'ko-KR'` 고정, 영어는 `desktop.i18n.spec.ts`.
 - `core/schema`, `core/persistence`는 아직 없음. IndexedDB는 `core/docs/registry.ts`가 y-indexeddb를 직접 씀 → M0-15/M0-18에서 분리.
 
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
@@ -44,3 +45,4 @@
 | 2026-11-26 | M0-07: 구조 이전 (core/features/ui/platform/app), `@/` 별칭, 경계 lint 강화 | d1f4ea1 |
 | 2026-11-26 | M0-08: useY(selectY) + createStore/useStore, usePages·동기화·테마·펼침·라우터 이전 | 083bdf8 |
 | 2026-11-26 | M0-09: tokens.css(spec/12 전체) + CSS 13개 파일 분리, 색 토큰화, 스타일 가드 테스트 | 262d388 |
+| 2026-11-26 | M0-10: i18n (t/tParts, ko/en 사전 지연 로드, 언어 감지·설정, 문자열 165개 이전, 가드 테스트) | b1f2a1e |
