@@ -7,7 +7,7 @@
 - **마일스톤**: M2 에디터 완성 (M1 완료 — 실기기 확인은 docs/QA.md "M1", 사용자 선택)
 - **진행 상황**: M0 26/26, M1 21/21 완료. M2 0/21
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M2-03 토글 목록·토글 제목 (schema v3)
+- **다음 할 일**: M2-04 콜아웃 (schema v4)
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -98,3 +98,4 @@
 | 2026-11-26 | M1-21: 페이지 전환 75ms 확인(측정 보정), M1 성능 기록 | 6dff226 |
 | 2026-11-26 | M2-01: 블록 레지스트리(카테고리·최근·검색 점수·바꾸기 대상) | 9effabd |
 | 2026-11-26 | M2-02: 제목 4~6, 번호 목록 중첩 스타일 | e08b99f |
+| 2026-11-26 | M2-03: 토글 목록·토글 제목, schema v3, 노드 이름 가드 테스트 | d02b828 |
