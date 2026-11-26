@@ -26,7 +26,10 @@ test('phone: Aa panel turns blocks into headings, aligns, superscript; link butt
   await page.keyboard.press('Enter')
   await page.keyboard.type('링크')
   await page.keyboard.press('Shift+Home')
-  await page.getByRole('button', { name: '링크', exact: true }).tap()
+  // with a selection, the selection bar (MB-22) has its own link button
+  const bar = page.getByRole('toolbar', { name: '선택한 텍스트' })
+  await expect(bar).toBeVisible()
+  await bar.getByRole('button', { name: '링크', exact: true }).tap()
   const dialog = page.getByRole('dialog', { name: '링크' })
   await dialog.getByLabel('링크 주소').fill('example.com')
   await dialog.getByRole('button', { name: '확인' }).tap()

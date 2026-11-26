@@ -1,4 +1,5 @@
 import { mergeAttributes, Node, type JSONContent } from '@tiptap/core'
+import { TextSelection } from '@tiptap/pm/state'
 
 /**
  * Columns (ED-B17): `columns` holds 2–5 `column`s; each column's `width` is its share
@@ -136,13 +137,22 @@ export const Columns = Node.create({
     return {
       insertColumns:
         (count) =>
-        ({ commands }) => {
+        ({ commands, tr }) => {
           const n = Math.min(MAX_COLUMNS, Math.max(MIN_COLUMNS, count))
           const content: JSONContent = {
             type: 'columns',
             content: Array.from({ length: n }, () => ({ type: 'column', content: [{ type: 'paragraph' }] })),
           }
-          return commands.insertContent(content)
+          const from = tr.selection.from
+          if (!commands.insertContent(content)) return false
+          // caret into the first cell / column, not after the block
+          let at = -1
+          tr.doc.nodesBetween(Math.max(0, from - 2), tr.doc.content.size, (n, pos) => {
+            if (at < 0 && n.type.name === 'columns') at = pos
+            return at < 0
+          })
+          if (at >= 0) tr.setSelection(TextSelection.near(tr.doc.resolve(at + 1)))
+          return true
         },
     }
   },

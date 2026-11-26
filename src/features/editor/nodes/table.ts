@@ -1,4 +1,5 @@
 import { callOrReturn, getExtensionField, mergeAttributes, Node, type JSONContent } from '@tiptap/core'
+import { TextSelection } from '@tiptap/pm/state'
 import { colorAttrs, elementColor } from './colors'
 
 /**
@@ -137,7 +138,7 @@ export const Table = Node.create({
     return {
       insertTable:
         ({ rows = 3, cols = 3 } = {}) =>
-        ({ commands }) => {
+        ({ commands, tr }) => {
           const cell = (header: boolean): JSONContent => ({
             type: header ? 'tableHeader' : 'tableCell',
             content: [{ type: 'paragraph' }],
@@ -149,7 +150,16 @@ export const Table = Node.create({
               content: Array.from({ length: cols }, () => cell(r === 0)),
             })),
           }
-          return commands.insertContent(content)
+          const from = tr.selection.from
+          if (!commands.insertContent(content)) return false
+          // caret into the first cell / column, not after the block
+          let at = -1
+          tr.doc.nodesBetween(Math.max(0, from - 2), tr.doc.content.size, (n, pos) => {
+            if (at < 0 && n.type.name === 'table') at = pos
+            return at < 0
+          })
+          if (at >= 0) tr.setSelection(TextSelection.near(tr.doc.resolve(at + 1)))
+          return true
         },
     }
   },
