@@ -19,7 +19,7 @@
 - [x] M0-06 e2e를 `tests/e2e/*.spec.ts`(Playwright Test)로 이전, 기능별 파일 분리 — 3396cb1
 
 ### 구조 이전 (spec/01 §3)
-- [ ] M0-07 `src/core/{docs,persistence,sync,schema,model,store,auth}`로 이동, `src/features/*`, `src/ui/*`, `src/platform/*`, `src/app/*`로 분리
+- [x] M0-07 `src/core/{docs,persistence,sync,schema,model,store,auth}`로 이동, `src/features/*`, `src/ui/*`, `src/platform/*`, `src/app/*`로 분리 — d1f4ea1 (persistence·schema는 M0-15/18에서 생성)
 - [ ] M0-08 `useY` 셀렉터 훅 + `createStore` 유틸, 기존 `usePages` 대체
 - [ ] M0-09 `styles/tokens.css` + 기능별 CSS 분리, 하드코딩 색 제거
 - [ ] M0-10 i18n: `t()` + `ko.ts`/`en.ts` 사전, 기존 문자열 이전, 언어 감지
