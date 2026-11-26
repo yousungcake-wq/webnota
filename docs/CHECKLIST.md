@@ -34,7 +34,7 @@
 - [x] M0-17 동기화 경로 v2 + 구 경로 이전 (SY-02a), FakeRemote 테스트 — 087a184
 - [x] M0-18 IndexedDB 이름 공간 `wn:<wsId>:` (SY-05 대비) — b672776
 - [x] M0-19 문서 레지스트리 LRU 언로드 (SY-01) — e2a1b3b
-- [ ] M0-20 `unknown` 노드 보존 처리 (ED-B23)
+- [x] M0-20 `unknown` 노드 보존 처리 (ED-B23) — e666598
 
 ### 동기화 보강
 - [ ] M0-21 스케줄: 최대 대기 60초, 백오프, rate-limit 대기 (SY-02b,c)
