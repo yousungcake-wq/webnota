@@ -25,7 +25,7 @@
 - [x] M0-10 i18n: `t()` + `ko.ts`/`en.ts` 사전, 기존 문자열 이전, 언어 감지 — b1f2a1e
 - [x] M0-11 `ui/` 기본 컴포넌트: Button, IconButton, Menu(확장), Popover, Sheet, Dialog/Confirm, Toast(실행 취소), Tooltip, Input, Switch, Segmented, Skeleton, EmptyState, OverlayHost — f94a195, 252555f (TextArea/Select/Checkbox/Spinner는 필요할 때)
 - [x] M0-12 `useLayout()` (phone/tablet/desktop + isTouch) — e1b0aef
-- [~] M0-13 ErrorBoundary (화면 단위), 전역 오류 토스트
+- [x] M0-13 ErrorBoundary (화면 단위), 전역 오류 토스트 — 7962653
 - [ ] M0-14 기능 플래그 `core/flags.ts` + 설정 → 고급 (ST-12)
 
 ### 데이터
