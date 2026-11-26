@@ -150,3 +150,28 @@ body.is-resizing {
     animation: none;
   }
 }
+
+.shortcut-list {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.shortcut-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+.shortcut-list dt {
+  color: var(--text-2);
+}
+.shortcut-list dd {
+  margin: 0;
+}
+.shortcut-list kbd {
+  font: inherit;
+  font-size: 13px;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-code);
+}

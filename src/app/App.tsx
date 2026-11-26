@@ -1,5 +1,5 @@
 import { Home, Search, Settings, Star } from 'lucide-react'
-import { lazy, Suspense, useEffect, type ReactNode } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react'
 import { useViews } from '@/core/store/views'
 import { pushRecent } from '@/core/store/prefs'
 import { wsKey } from '@/core/docs/slots'
@@ -11,6 +11,7 @@ import { useLayout } from '@/platform/layout'
 import { t } from '@/core/i18n'
 import { EmptyState, ErrorBoundary } from '@/ui'
 import { DesktopShell } from './DesktopShell'
+import { useGlobalShortcuts } from './shortcuts'
 import { SchemaBanner } from './SchemaBanner'
 
 const LAST_KEY = wsKey('last-page')
@@ -50,7 +51,27 @@ export function App() {
 
   return (
     <>
-      <DesktopShell route={route} tablet={layout === 'tablet'}>
+      <DesktopFrame route={route} tablet={layout === 'tablet'} />
+      <PageOverlays />
+      <PaletteHost />
+    </>
+  )
+}
+
+const ShortcutHelp = lazy(() => import('./ShortcutHelp'))
+
+function DesktopFrame({ route, tablet }: { route: Route; tablet: boolean }) {
+  const [help, setHelp] = useState(false)
+  const openHelp = useCallback(() => setHelp(true), [])
+  useGlobalShortcuts(openHelp)
+  return (
+    <>
+      {help && (
+        <Lazy>
+          <ShortcutHelp onClose={() => setHelp(false)} />
+        </Lazy>
+      )}
+      <DesktopShell route={route} tablet={tablet}>
         {(hidden, openSidebar) => (
           <>
             <SchemaBanner />
@@ -60,8 +81,6 @@ export function App() {
           </>
         )}
       </DesktopShell>
-      <PageOverlays />
-      <PaletteHost />
     </>
   )
 }
