@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M0 기반 정비
-- **진행 상황**: M0 26개 중 23개 완료 (M0-01~23: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2, IndexedDB 이름 공간, 문서 LRU, 모르는 노드 보존, 동기화 스케줄, ETag, 탭 리더)
+- **진행 상황**: M0 26개 중 24개 완료 (M0-01~24: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2, IndexedDB 이름 공간, 문서 LRU, 모르는 노드 보존, 동기화 스케줄, ETag, 탭 리더, 동기화 로그)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M0-24 동기화 로그 + 설정 화면 표시 (SY-02d, ST-04). 로그는 리더 탭에서 기록되므로 다른 탭 표시는 storage/중계로 공유할 것.
+- **다음 할 일**: M0-26 PWA 아이콘 PNG + manifest shortcuts (MB-42, MB-44), 그다음 M0-25 PoC 회귀 e2e·성능 기준선 → 마일스톤 마무리 (M1 체크리스트 펼치기, QA.md, 사용자 실기기 확인 요청).
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -70,3 +70,4 @@
 | 2026-11-26 | M0-21: 동기화 스케줄러(60초 최대 대기, 지수 백오프, rate-limit 대기, 401 재시도 안 함) | 7229244 |
 | 2026-11-26 | M0-22: ETag 조건부 GET (304 캐시 응답, blob·tree 제외) | a21cb35 |
 | 2026-11-26 | M0-23: 탭 간 리더 선출(Web Locks) + BroadcastChannel 문서 업데이트 중계, 더티·계정·상태 공유 | bceedce |
+| 2026-11-26 | M0-24: 동기화 로그(최근 50건, 반복 접기, 탭 공유) + 설정 화면 표시 | fc9254b |
