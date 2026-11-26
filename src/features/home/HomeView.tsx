@@ -3,7 +3,7 @@ import { usePages } from '@/core/store/pages'
 import { addPage } from '@/features/page'
 import { PageTree } from '@/features/sidebar'
 import { SyncBadge } from '@/features/sync'
-import { ViewHeader } from '@/ui'
+import { IconButton, ViewHeader } from '@/ui'
 import { t } from '@/core/i18n'
 
 /** Mobile home screen: the page tree, full width. */
@@ -15,9 +15,7 @@ export function HomeView() {
       <section className="section">
         <div className="section-head">
           <span>{t('common.pages')}</span>
-          <button type="button" className="icon-btn sm" aria-label={t('common.newPage')} onClick={() => addPage(null)}>
-            <Plus size={16} />
-          </button>
+          <IconButton size="sm" icon={Plus} label={t('common.newPage')} onClick={() => addPage(null)} />
         </div>
         <PageTree pages={pages} />
       </section>

@@ -8,6 +8,7 @@ import { SyncBadge } from '@/features/sync'
 import { PageListItem, PageTree } from './PageTree'
 import './sidebar.css'
 import { t } from '@/core/i18n'
+import { IconButton } from '@/ui'
 
 export function Sidebar({ route, onClose }: { route: Route; onClose: () => void }) {
   const pages = usePages()
@@ -24,9 +25,7 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
           <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={22} height={22} />
           <span>WebNota</span>
         </div>
-        <button type="button" className="icon-btn sm" aria-label={t('sidebar.close')} onClick={onClose}>
-          <PanelLeftClose size={16} />
-        </button>
+        <IconButton size="sm" icon={PanelLeftClose} label={t('sidebar.close')} onClick={onClose} />
       </div>
 
       <nav className="side-nav">
@@ -56,14 +55,7 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
         <section className="section">
           <div className="section-head">
             <span>{t('common.pages')}</span>
-            <button
-              type="button"
-              className="icon-btn sm"
-              aria-label={t('common.newPage')}
-              onClick={() => addPage(null)}
-            >
-              <Plus size={16} />
-            </button>
+            <IconButton size="sm" icon={Plus} label={t('common.newPage')} onClick={() => addPage(null)} />
           </div>
           <PageTree pages={pages} currentId={currentId} />
         </section>

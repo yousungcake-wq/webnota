@@ -2,7 +2,7 @@ import { RotateCcw, Trash2 } from 'lucide-react'
 import { displayTitle } from '@/features/page'
 import { usePages } from '@/core/store/pages'
 import { deleteForever, restore } from '@/features/page'
-import { confirmDialog, ViewHeader } from '@/ui'
+import { confirmDialog, IconButton, ViewHeader } from '@/ui'
 import { t, getLang } from '@/core/i18n'
 
 export function TrashView() {
@@ -21,20 +21,11 @@ export function TrashView() {
                 {t('trash.deletedAt', { date: new Date(p.deletedAt!).toLocaleString(getLang()) })}
               </span>
             </span>
-            <button
-              type="button"
-              className="icon-btn"
-              aria-label={t('trash.restore')}
-              title={t('trash.restore')}
-              onClick={() => restore(p.id)}
-            >
-              <RotateCcw size={18} />
-            </button>
-            <button
-              type="button"
-              className="icon-btn danger"
-              aria-label={t('trash.deleteForever')}
-              title={t('trash.deleteForever')}
+            <IconButton icon={RotateCcw} label={t('trash.restore')} onClick={() => restore(p.id)} />
+            <IconButton
+              icon={Trash2}
+              tone="danger"
+              label={t('trash.deleteForever')}
               onClick={() => {
                 void confirmDialog({
                   title: t('trash.deleteTitle'),
@@ -45,9 +36,7 @@ export function TrashView() {
                   if (ok) void deleteForever(p.id)
                 })
               }}
-            >
-              <Trash2 size={18} />
-            </button>
+            />
           </div>
         ))}
         {!trashed.length && <p className="muted pad">{t('trash.empty')}</p>}

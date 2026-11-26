@@ -1,0 +1,139 @@
+.empty-state {
+  margin: auto;
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--text-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.field input {
+  color: var(--text);
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg);
+  font-size: 16px;
+}
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--bg-side);
+  border: 1px solid var(--border);
+}
+.segmented button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 7px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+.segmented button.is-on {
+  background: var(--bg-elev);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+.empty-icon {
+  color: var(--text-3);
+}
+.field label {
+  color: var(--text-2);
+}
+.field input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+.field-hint {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+.field-error {
+  color: var(--danger);
+  font-size: var(--fs-xs);
+}
+.segmented button:focus-visible {
+  outline-offset: -2px;
+}
+
+/* switch */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 44px;
+  text-align: left;
+}
+.switch-text {
+  display: flex;
+  flex-direction: column;
+}
+.switch-desc {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+.switch {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--border-strong);
+  transition: background var(--dur-fast) var(--ease);
+}
+.switch.is-on {
+  background: var(--accent);
+}
+.switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-fast) var(--ease);
+}
+.switch.is-on .switch-thumb {
+  transform: translateX(16px);
+}
+
+/* skeleton */
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 0;
+}
+.skeleton-line {
+  display: block;
+  height: 14px;
+  border-radius: var(--r-sm);
+  background: var(--bg-hover);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-line {
+    animation: none;
+  }
+}

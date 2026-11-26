@@ -11,6 +11,7 @@ import { Sidebar } from '@/features/sidebar'
 import { TrashView } from '@/features/trash'
 import { useMedia } from '@/platform/media'
 import { t } from '@/core/i18n'
+import { EmptyState } from '@/ui'
 
 const LAST_KEY = 'webnota:last-page'
 
@@ -64,11 +65,7 @@ function MainContent({
     case 'settings':
       return <SettingsView />
     default:
-      return (
-        <div className="empty-state">
-          <p>{t('app.selectPage')}</p>
-        </div>
-      )
+      return <EmptyState title={t('app.selectPage')} />
   }
 }
 

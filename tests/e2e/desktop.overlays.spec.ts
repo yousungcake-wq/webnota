@@ -60,4 +60,11 @@ test.describe('desktop overlays', () => {
     await page.getByRole('alertdialog').getByRole('button', { name: '영구 삭제' }).click()
     await expect(item).toHaveCount(0)
   })
+
+  test('icon buttons show a tooltip on hover', async ({ page }) => {
+    await page.locator('.topbar').getByLabel('더보기').hover()
+    await expect(page.getByRole('tooltip')).toHaveText('더보기')
+    await page.mouse.move(600, 500)
+    await expect(page.getByRole('tooltip')).toHaveCount(0)
+  })
 })

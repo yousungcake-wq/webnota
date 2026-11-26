@@ -7,6 +7,7 @@ import { href } from '@/core/store/router'
 import { addPage, PageMenu } from '@/features/page'
 import './tree.css'
 import { t } from '@/core/i18n'
+import { IconButton } from '@/ui'
 
 export function usePageIndex(pages: PageMeta[]) {
   return useMemo(() => {
@@ -57,22 +58,13 @@ const Row = memo(function Row({
           <span className="tree-title">{displayTitle(page.title)}</span>
         </a>
         <div className="tree-actions">
-          <button
-            type="button"
-            className="icon-btn sm"
-            aria-label={t('common.more')}
+          <IconButton
+            size="sm"
+            icon={MoreHorizontal}
+            label={t('common.more')}
             onClick={(e) => setMenuAnchor(e.currentTarget)}
-          >
-            <MoreHorizontal size={16} />
-          </button>
-          <button
-            type="button"
-            className="icon-btn sm"
-            aria-label={t('tree.addChild')}
-            onClick={() => addPage(page.id)}
-          >
-            <Plus size={16} />
-          </button>
+          />
+          <IconButton size="sm" icon={Plus} label={t('tree.addChild')} onClick={() => addPage(page.id)} />
         </div>
       </div>
       {menuAnchor && (

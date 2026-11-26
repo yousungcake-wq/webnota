@@ -11,7 +11,7 @@ import { goBack, href } from '@/core/store/router'
 import { loadEditor } from '@/features/editor'
 import { SyncBadge } from '@/features/sync'
 import { useMedia } from '@/platform/media'
-import { Overlay } from '@/ui'
+import { Button, EmptyState, IconButton, LinkButton, Overlay, Skeleton } from '@/ui'
 import { toggleFavorite } from './actions'
 import { PageMenu } from './PageMenu'
 import './page.css'
@@ -57,13 +57,11 @@ export function PageView({
 
   if (!page) {
     return (
-      <div className="empty-state">
-        <p>{t('page.notFound')}</p>
-        <p className="muted">{t('page.notFoundHint')}</p>
-        <a className="btn" href={href({ name: 'home' })}>
-          {t('page.goHome')}
-        </a>
-      </div>
+      <EmptyState
+        title={t('page.notFound')}
+        description={t('page.notFoundHint')}
+        action={<LinkButton href={href({ name: 'home' })}>{t('page.goHome')}</LinkButton>}
+      />
     )
   }
 
@@ -71,15 +69,9 @@ export function PageView({
     <div className="page">
       <header className="topbar">
         {phone ? (
-          <button type="button" className="icon-btn" aria-label={t('common.back')} onClick={goBack}>
-            <ChevronLeft size={22} />
-          </button>
+          <IconButton icon={ChevronLeft} iconSize={22} label={t('common.back')} onClick={goBack} />
         ) : (
-          !sidebarOpen && (
-            <button type="button" className="icon-btn" aria-label={t('sidebar.open')} onClick={onToggleSidebar}>
-              <PanelLeft size={18} />
-            </button>
-          )
+          !sidebarOpen && <IconButton icon={PanelLeft} label={t('sidebar.open')} onClick={onToggleSidebar} />
         )}
         <nav className="crumbs" aria-label={t('page.breadcrumbs')}>
           {!phone &&
@@ -99,23 +91,15 @@ export function PageView({
         </nav>
         <div className="topbar-actions">
           <SyncBadge compact={phone} />
-          <button
-            type="button"
-            className={`icon-btn${page.favorite ? ' is-fav' : ''}`}
-            aria-label={page.favorite ? t('page.favoriteRemove') : t('page.favoriteAdd')}
-            aria-pressed={page.favorite}
+          <IconButton
+            icon={Star}
+            tone="star"
+            active={page.favorite}
+            filled={page.favorite}
+            label={page.favorite ? t('page.favoriteRemove') : t('page.favoriteAdd')}
             onClick={() => toggleFavorite(page.id)}
-          >
-            <Star size={18} fill={page.favorite ? 'currentColor' : 'none'} />
-          </button>
-          <button
-            type="button"
-            className="icon-btn"
-            aria-label={t('common.more')}
-            onClick={(e) => setMenuAnchor(e.currentTarget)}
-          >
-            <MoreHorizontal size={18} />
-          </button>
+          />
+          <IconButton icon={MoreHorizontal} label={t('common.more')} onClick={(e) => setMenuAnchor(e.currentTarget)} />
         </div>
       </header>
       {menuAnchor && (
@@ -138,11 +122,11 @@ export function PageView({
             }}
           />
           {doc ? (
-            <Suspense fallback={<div className="editor-loading" />}>
+            <Suspense fallback={<Skeleton className="editor-loading" />}>
               <Editor key={id} doc={doc} onReady={onReady} />
             </Suspense>
           ) : (
-            <div className="editor-loading" />
+            <Skeleton className="editor-loading" />
           )}
         </div>
       </div>
@@ -226,16 +210,16 @@ function PageHead({ page, onEnter }: { page: PageMeta; onEnter: () => void }) {
             ))}
           </div>
           {page.icon && (
-            <button
-              type="button"
-              className="btn ghost full"
+            <Button
+              variant="ghost"
+              full
               onClick={() => {
                 updatePage(ws(), page.id, { icon: '' })
                 setPicker(null)
               }}
             >
               {t('page.removeIcon')}
-            </button>
+            </Button>
           )}
         </Overlay>
       )}

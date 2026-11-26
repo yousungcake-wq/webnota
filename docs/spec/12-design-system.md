@@ -34,23 +34,26 @@ CSS 파일 배치 (M0-09 ✅):
 
 | 컴포넌트 | 비고 | 상태 |
 |---|---|---|
-| `Button` (primary, secondary, ghost, danger / sm, md) | | M0 |
-| `IconButton` | 툴팁 + aria-label 필수 | M0 |
-| `Menu` (데스크탑 팝오버 ↔ 폰 시트 자동 전환) | 키보드 탐색, 하위 메뉴, 구분선, 단축키 표시 | ✅ 기본 / M0 확장 |
-| `Popover`, `Sheet`, `Dialog`, `ConfirmDialog` | 포커스 트랩, Esc, 뒤로 가기 연동 (MB-14) | M0 |
-| `Toast` | 실행 취소 버튼 지원 ("휴지통으로 이동함 [실행 취소]") | M0 |
-| `Tooltip` | 데스크탑만 | M0 |
-| `Input`, `TextArea`, `Select`, `Switch`, `Checkbox`, `Segmented` | | M0 |
+| `Button` (primary, secondary, ghost, danger / sm, md), `LinkButton` | | ✅ M0 |
+| `IconButton` | 툴팁 + aria-label 필수 (`label` prop 하나로 둘 다) | ✅ M0 |
+| `Menu` (데스크탑 팝오버 ↔ 폰 시트 자동 전환) | 키보드 탐색, 하위 메뉴, 구분선, 단축키 표시, 체크 | ✅ M0 |
+| `Popover`, `Sheet`, `Dialog`, `confirmDialog()` | 포커스 트랩, Esc, 뒤로 가기 연동 (MB-14, 시트·대화상자만), 시트 끌어서 닫기 | ✅ M0 (시트 높이 단계는 이후) |
+| `toast()` | 실행 취소 버튼 지원 ("휴지통으로 이동함 [실행 취소]"), 최대 3개, 호버 시 멈춤 | ✅ M0 |
+| Tooltip | 데스크탑만. `data-tooltip` 속성 하나로 (OverlayHost의 전역 리스너) | ✅ M0 |
+| `Input`, `Switch`, `Segmented` ✅ / `TextArea`, `Select`, `Checkbox` | 필요해지는 마일스톤에서 추가 | M0 일부 |
 | `EmojiPicker` | 전체 이모지 데이터(지연 로드), 검색(한/영), 최근, 피부색 | M1 |
 | `IconPicker` | lucide 아이콘 + 색 | M1 |
 | `ColorPicker` | 블록 색 팔레트 | M2 |
 | `DatePicker` | 월 달력, 시간, 범위 | M4 |
 | `VirtualList` | @tanstack/react-virtual 래퍼 | M1 |
 | `Sortable` | dnd-kit 래퍼 (마우스·터치·키보드) | M1 |
-| `Skeleton`, `Spinner`, `EmptyState` | | M0 |
+| `Skeleton`, `EmptyState` ✅ / `Spinner` | | M0 |
 
 규칙:
-- 모든 오버레이는 하나의 `OverlayHost`가 관리합니다 (쌓임 순서, 뒤로 가기, 스크롤 잠금).
+- 모든 오버레이는 `ui/overlay/stack.ts` 레이어 스택에 등록됩니다 (쌓임 순서, Esc는 최상위만, 뒤로 가기, 스크롤 잠금). `OverlayHost`(앱에 한 번 마운트)는 명령형 오버레이(`confirmDialog`, `toast`)와 툴팁을 그립니다.
+- 뒤로 가기 연동: 시트·대화상자는 열 때 history 항목을 추가하고, 다른 방법으로 닫히면 그 항목을 되돌립니다 (`platform/history.ts`). router의 `navigate`/`goBack`은 이 정리가 끝난 뒤 실행되므로 메뉴 항목에서 바로 이동해도 됩니다.
+- `ui`는 `core/i18n`을 못 쓰므로 기본 문구(확인/취소/닫기)는 부팅 시 `configureUi()`로 받습니다. 그 외 문구는 props로 받습니다.
+- `window.confirm`/`alert`는 쓰지 않습니다.
 - 터치 크기 44px 이상, 데스크탑 밀도는 32px 행 높이를 기준으로 합니다.
 - 아이콘 크기는 16(데스크탑 밀집), 18(기본), 20~22(폰)입니다.
 

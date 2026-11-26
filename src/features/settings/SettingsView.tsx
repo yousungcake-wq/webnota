@@ -6,7 +6,7 @@ import { setTheme, useTheme } from '@/core/store/prefs'
 import { useSync } from '@/core/store/sync'
 import { connect, disconnect, syncNow } from '@/core/sync/controller'
 import { SyncBadge } from '@/features/sync'
-import { confirmDialog, ViewHeader } from '@/ui'
+import { Button, confirmDialog, Input, LinkButton, Segmented, ViewHeader } from '@/ui'
 import './settings.css'
 
 function Github({ size = 18 }: { size?: number }) {
@@ -73,12 +73,12 @@ export function SettingsView() {
             </div>
             {sync.error && <p className="error">{sync.error}</p>}
             <div className="row-gap">
-              <button type="button" className="btn" onClick={() => void syncNow()}>
-                <RefreshCw size={16} /> {t('settings.syncNow')}
-              </button>
-              <button
-                type="button"
-                className="btn ghost"
+              <Button icon={RefreshCw} onClick={() => void syncNow()}>
+                {t('settings.syncNow')}
+              </Button>
+              <Button
+                variant="ghost"
+                icon={LogOut}
                 onClick={() => {
                   void confirmDialog({
                     title: t('settings.disconnectTitle'),
@@ -89,8 +89,8 @@ export function SettingsView() {
                   })
                 }}
               >
-                <LogOut size={16} /> {t('settings.disconnect')}
-              </button>
+                {t('settings.disconnect')}
+              </Button>
             </div>
           </>
         ) : (
@@ -98,9 +98,9 @@ export function SettingsView() {
             <p className="muted">{t('settings.githubIntro')}</p>
             {sync.error && <p className="error">{sync.error}</p>}
             {oauthAvailable && (
-              <button type="button" className="btn primary full" onClick={() => startLogin()}>
+              <Button variant="primary" full onClick={() => startLogin()}>
                 <Github size={18} /> {t('settings.login')}
-              </button>
+              </Button>
             )}
             <details className="pat" open={!oauthAvailable}>
               <summary>{oauthAvailable ? t('settings.patAdvanced') : t('settings.pat')}</summary>
@@ -109,31 +109,27 @@ export function SettingsView() {
                 <li>{parts('settings.patStep2', { permission: <b>Contents: Read and write</b> })}</li>
                 <li>{t('settings.patStep3')}</li>
               </ol>
-              <label className="field">
-                <span>{t('settings.repoName')}</span>
-                <input
-                  value={repo}
-                  onChange={(e) => setRepo(e.target.value)}
-                  autoCapitalize="none"
-                  spellCheck={false}
-                />
-              </label>
-              <label className="field">
-                <span>{t('settings.token')}</span>
-                <input
-                  type="password"
-                  value={pat}
-                  onChange={(e) => setPat(e.target.value)}
-                  placeholder="github_pat_…"
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-              </label>
+              <Input
+                label={t('settings.repoName')}
+                value={repo}
+                onChange={(e) => setRepo(e.target.value)}
+                autoCapitalize="none"
+                spellCheck={false}
+              />
+              <Input
+                label={t('settings.token')}
+                type="password"
+                value={pat}
+                onChange={(e) => setPat(e.target.value)}
+                placeholder="github_pat_…"
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+              />
               {err && <p className="error">{err}</p>}
-              <button type="button" className="btn primary" disabled={!pat.trim() || busy} onClick={doConnect}>
+              <Button variant="primary" disabled={!pat.trim() || busy} onClick={doConnect}>
                 {busy ? t('settings.connecting') : t('settings.connect')}
-              </button>
+              </Button>
             </details>
           </>
         )}
@@ -141,57 +137,41 @@ export function SettingsView() {
 
       <section className="card">
         <h2>{t('settings.theme')}</h2>
-        <div className="segmented" role="radiogroup" aria-label={t('settings.theme')}>
-          {(
-            [
-              ['system', t('settings.theme.system'), Monitor],
-              ['light', t('settings.theme.light'), Sun],
-              ['dark', t('settings.theme.dark'), Moon],
-            ] as const
-          ).map(([v, label, Icon]) => (
-            <button
-              key={v}
-              type="button"
-              role="radio"
-              aria-checked={theme === v}
-              className={theme === v ? 'is-on' : ''}
-              onClick={() => setTheme(v)}
-            >
-              <Icon size={16} /> {label}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          label={t('settings.theme')}
+          value={theme}
+          onChange={setTheme}
+          options={[
+            { value: 'system', label: t('settings.theme.system'), icon: Monitor },
+            { value: 'light', label: t('settings.theme.light'), icon: Sun },
+            { value: 'dark', label: t('settings.theme.dark'), icon: Moon },
+          ]}
+        />
       </section>
 
       <section className="card">
         <h2>{t('settings.language')}</h2>
-        <div className="segmented" role="radiogroup" aria-label={t('settings.language')}>
-          {(['system', ...LANGS] as const).map((v) => (
-            <button
-              key={v}
-              type="button"
-              role="radio"
-              lang={v === 'system' ? undefined : v}
-              aria-checked={langPref === v}
-              className={langPref === v ? 'is-on' : ''}
-              onClick={() => {
-                if (v === langPref) return
-                setLangPref(v)
-                location.reload() // every string, including module-level ones, is resolved at load
-              }}
-            >
-              {v === 'system' ? t('settings.language.system') : LANG_NAMES[v]}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          label={t('settings.language')}
+          value={langPref}
+          onChange={(v) => {
+            if (v === langPref) return
+            setLangPref(v)
+            location.reload() // every string, including module-level ones, is resolved at load
+          }}
+          options={[
+            { value: 'system', label: t('settings.language.system') },
+            ...LANGS.map((l) => ({ value: l, label: LANG_NAMES[l], lang: l })),
+          ]}
+        />
       </section>
 
       <section className="card">
         <h2>{t('settings.about')}</h2>
         <p className="muted small">{t('settings.aboutText', { version: __APP_VERSION__ })}</p>
-        <a className="btn ghost" href="#/trash">
-          <Trash2 size={16} /> {t('common.trash')}
-        </a>
+        <LinkButton variant="ghost" icon={Trash2} href="#/trash">
+          {t('common.trash')}
+        </LinkButton>
       </section>
     </div>
   )
