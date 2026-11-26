@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M0 기반 정비
-- **진행 상황**: M0 26개 중 15개 완료 (M0-01~15: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트)
+- **진행 상황**: M0 26개 중 16개 완료 (M0-01~16: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M0-16 마이그레이션 v2 (pages→views, FracKey, 즐겨찾기 사용자별, 기본 스페이스, `page/`→`doc/` IndexedDB 복사). 아래 "스키마" 주의 사항 먼저 읽기. 테스트 먼저.
+- **다음 할 일**: M0-17 동기화 경로 v2 (`doc/<id>` → `data/docs/<id>.yjs`) + 구 경로 이전 (SY-02a), FakeRemote 테스트. 아래 "스키마"·"M0-17 주의" 먼저 읽기.
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -25,20 +25,20 @@
 - CSS 리팩터링 시 회귀 확인: 스크래치 스크립트로 `vite preview` 화면 19장을 찍어 바이트 비교했음 (데스크탑·Pixel 7·iPhone 14·iPad, 라이트·다크). 필요하면 `tests/perf`나 e2e 스크린샷 테스트로 정식화 검토.
 - i18n: 문자열은 `t('key')`, 키는 `core/i18n/ko.ts`에 먼저 추가 후 `en.ts`. 사전은 부팅 시 `initI18n()`이 현재 언어 것만 로드하므로 **모듈 최상위에서 `t()` 호출 금지** (지연 청크 안은 괜찮음, 예: editor/blocks.ts). e2e는 `locale: 'ko-KR'` 고정, 영어는 `desktop.i18n.spec.ts`.
 - ui (M0-11): `@/ui` index에서 import. 오버레이는 레이어 스택(`ui/overlay/stack.ts`)에 등록되고, 시트·대화상자는 history 항목을 씀 → **오버레이를 닫은 직후 `history.back()`/`location.hash`를 직접 건드리지 말고 router의 `navigate`/`goBack`을 쓸 것** (정리 대기). `confirm()`/`alert()` 금지 → `confirmDialog()`/`toast()`. 아이콘 버튼은 `IconButton`(label 필수).
-- 번들: 초기 115.2KB / 125KB (M0-15 스키마 게이트 +1KB). 남은 여유 약 10KB — 새 기능은 지연 로드 필수.
+- 번들: 초기 118.0KB / 125KB (M0-15 게이트 +1KB, M0-16 fractional-indexing·마이그레이션 v2 +2.8KB). 남은 여유 7KB — 새 기능은 지연 로드 필수. 더 줄여야 하면 마이그레이션 `up`을 지연 로드하는 방안(게이트의 버전 판단은 동기 유지).
 - 레이아웃 분기는 `useLayout()`(`@/platform/layout`)만 사용. 태블릿은 아직 데스크탑 셸 (드로어는 M1-12).
 - 오류 처리: 새 화면/지연 로드 영역은 `ErrorBoundary`로 감싸고 key로 리셋. QA 플래그 `webnota:debug` (docs/QA.md).
 - 미완성 기능은 `core/flags.ts`의 `FLAGS`에 `kind: 'feature'`로 추가하고 `useFlag`/`isEnabled`로 가림. 완성 시 플래그 제거.
 - `core/persistence`는 아직 없음. IndexedDB는 `core/docs/registry.ts`가 y-indexeddb를 직접 씀 → M0-18에서 분리.
 - 스키마 (M0-15, spec/02 §6 구현 규칙): `SCHEMA_VERSION`은 `core/schema/version.ts`. 새 마이그레이션은 `core/schema/migrations/NNN-name.ts` + 테스트, `MIGRATIONS`에 등록하고 `SCHEMA_VERSION`을 올림. 마이그레이션은 `core/model`을 쓰지 말고 raw Y 코드로, 결정적·멱등(고정 ID). 부팅 순서: `initWorkspace` → `initSchema` → `seedIfEmpty`(읽기 전용이면 생략). 모델 변경 함수에는 `assertWritable()`를 넣음 (`core/model/guard.ts`).
-- **M0-16에서 꼭 처리할 것**: 새 기기의 빈 workspace는 마이그레이션 후 v2로 찍힌 다음, 첫 동기화로 원격 v1 데이터(`pages`)가 병합될 수 있음 → 버전은 2인데 `pages`가 남는 상태. v2 마이그레이션을 "남은 `pages`를 언제든 변환"하는 멱등 함수로 만들고, 동기화 pull 후(또는 `pages` 관찰 시) 다시 실행하는 경로가 필요. 반대로 v1 앱이 v2 데이터를 받으면 게이트가 읽기 전용으로 막음 (테스트 있음).
+- 데이터 모델 v2 (M0-16): workspace는 `views`/`spaces`/`users`. UI용 `PageMeta`(`core/model/pages.ts`)는 그대로지만 `order`는 FracKey 문자열, 스페이스가 부모면 `parentId: null`, `icon`은 이모지 값. 현재 사용자는 `getCurrentUser()`=`local` (DECISIONS 015). v1 `pages`는 **동결 사본으로 남아 있음 — 지우지 말 것** (구버전 앱이 원격 파일을 지움). 영구 삭제 시 `pages` 항목도 함께 지움.
+- **M0-17 주의**: 지금 doc 이름은 `doc/<id>`, 원격 경로는 아직 `data/pages/<id>.yjs` (`engine.ts` `pathForDoc`). 경로를 `data/docs/`로 옮길 때 v1 앱은 `data/docs/`를 무시하고 `pages` 동결 사본 기준으로만 지우므로 새 경로 파일은 안전. 구 경로 삭제 시 v1 앱은 본문을 못 받게 됨(읽기 전용도 아님) — 수용하거나 한동안 두 경로에 다 쓰는 방안 검토.
 
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
 - 실기기 한글 IME 미검증 (에뮬레이션 CDP 테스트만 통과).
 - Tiptap DragHandle/EditorContent가 DOM을 직접 옮겨서 React 재조정이 어긋난 적이 있음 → `page-body`를 `key={id}`로 감싸서 해결. 에디터 주변 구조를 바꿀 때 주의.
 - 작업 환경에서는 `*.github.io`에 접속할 수 없어 배포본 e2e를 돌릴 수 없음. 로컬 `npm run e2e` (vite preview)로 테스트.
 - 첫 실행 시 환영 페이지 시드가 에디터 청크를 기다려서 에디터 표시까지 약 1초 (재방문은 빠름). M0-25 성능 기준선에서 측정·개선 검토.
-- 번들 초기 진입 109.6KB / 예산 125KB. 여유가 15KB뿐이므로 M1 기능은 지연 로드를 기본으로.
 - React Compiler 린트 규칙(react-hooks 7)이 수동 메모이제이션을 엄격하게 검사함. 간단한 계산은 useMemo 없이 `core` 순수 함수로.
 - 작업 환경의 `gh`는 이 저장소 범위 API만 허용됨 (Pages 설정 API 등은 불가).
 
@@ -58,3 +58,4 @@
 | 2026-11-26 | M0-13: ErrorBoundary(앱·사이드바·본문·에디터) + 전역 오류 토스트, QA 디버그 플래그 | 7962653 |
 | 2026-11-26 | M0-14: 기능 플래그 레지스트리 + 설정 → 고급(디버그 로그) | f29e395 |
 | 2026-11-26 | M0-15: 스키마 버전·마이그레이션 레지스트리(원자적 단계)·읽기 전용 게이트(배너, 에디터 잠금, push 차단), QA 플래그 schema-newer | 68fa08a |
+| 2026-11-26 | M0-16: 마이그레이션 v2(pages→views·FracKey·사용자별 즐겨찾기·기본 스페이스, leftover 재변환, v1 pages 동결 유지), 모델 재작성, IndexedDB page/→doc/ 복사, QA 플래그 seed-v1 + e2e | e71fe99 |
