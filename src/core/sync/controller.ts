@@ -6,8 +6,7 @@ import { currentWorkspaceId } from '../docs/slots'
 import { adoptFavorites, listViews, setCurrentUser } from '../model/views'
 import { createStore } from '../store/createStore'
 import { isReadOnly } from '../schema/gate'
-import { ConflictRetryError, syncOnce, type LocalStore, type SyncState } from './engine'
-import { GitHubClient, GitHubError, GitHubGitApi } from './github'
+import type { LocalStore, SyncState } from './engine'
 import { electLeader } from './leader'
 import { recordSync } from './log'
 import { createScheduler, PULL_INTERVAL_MS, type SyncOutcome, type SyncReason } from './schedule'
@@ -77,6 +76,8 @@ function localStore(a: Account, releases: (() => void)[]): LocalStore {
   }
 }
 
+const remote = () => import('./remote')
+
 const LOGIN_KEY = 'webnota:login'
 
 /**
@@ -110,6 +111,7 @@ export async function initUser() {
 
 /** Validates a token, creates the private data repo if needed, and stores the account. */
 export async function connect(token: string, repoName = DEFAULT_REPO): Promise<Account> {
+  const { GitHubClient, GitHubError, GitHubGitApi } = await remote()
   const gh = new GitHubClient(token)
   const user = await gh.getUser()
   let repo = await gh.getRepo(user.login, repoName)
@@ -198,7 +200,10 @@ async function runSync(): Promise<SyncOutcome> {
   }
   set({ status: 'syncing', error: null })
   const releases: (() => void)[] = []
+  let net: Awaited<ReturnType<typeof remote>> | undefined
   try {
+    net = await remote()
+    const { GitHubClient, GitHubGitApi, syncOnce } = net
     const api = new GitHubGitApi(new GitHubClient(token), account.owner, account.repo, account.branch)
     const started = performance.now()
     debugLog('sync', 'start', `${account.owner}/${account.repo}@${account.branch}`, 'dirty:', Object.keys(getDirty()))
@@ -213,6 +218,9 @@ async function runSync(): Promise<SyncOutcome> {
     return { ok: true }
   } catch (e) {
     console.error('[webnota] sync failed', e)
+    const GitHubError = net?.GitHubError
+    const isGh = (x: unknown): x is InstanceType<NonNullable<typeof GitHubError>> =>
+      !!GitHubError && x instanceof GitHubError
     recordSync({
       at: Date.now(),
       ok: false,
@@ -220,18 +228,23 @@ async function runSync(): Promise<SyncOutcome> {
       pushed: 0,
       deleted: 0,
       ms: 0,
-      error: e instanceof Error ? `${e instanceof GitHubError ? `${e.status} ` : ''}${e.message}` : String(e),
+      error: e instanceof Error ? `${isGh(e) ? `${e.status} ` : ''}${e.message}` : String(e),
     })
-    if (e instanceof GitHubError && e.status === 401) {
+    if (isGh(e) && e.status === 401) {
       disconnect()
       set({ error: t('sync.err.expired') })
       return { ok: false, error: e, final: true }
     }
     set({
       status: navigator.onLine ? 'error' : 'offline',
-      error: e instanceof ConflictRetryError ? t('sync.err.conflict') : e instanceof Error ? e.message : String(e),
+      error:
+        net && e instanceof net.ConflictRetryError
+          ? t('sync.err.conflict')
+          : e instanceof Error
+            ? e.message
+            : String(e),
     })
-    return { ok: false, error: e, retryAfterMs: e instanceof GitHubError ? e.retryAfterMs : null }
+    return { ok: false, error: e, retryAfterMs: isGh(e) ? e.retryAfterMs : null }
   } finally {
     releases.forEach((r) => r())
   }

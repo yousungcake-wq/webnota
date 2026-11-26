@@ -10,7 +10,7 @@ import { IndexeddbPersistence } from 'y-indexeddb'
  */
 
 /** Origin used when applying updates that came from GitHub, so they don't mark docs dirty. */
-import { REMOTE_ORIGIN } from '../sync/engine'
+import { REMOTE_ORIGIN } from '../sync/origins'
 import { isReadOnly } from '../schema/gate'
 import { currentWorkspaceId, idbName } from './slots'
 import { createTabRelay, TAB_ORIGIN } from './tabs'

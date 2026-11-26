@@ -31,7 +31,7 @@
 - i18n: 문자열은 `t('key')`, 키는 `core/i18n/ko.ts`에 먼저 추가 후 `en.ts`. 사전은 부팅 시 `initI18n()`이 현재 언어 것만 로드하므로 **모듈 최상위에서 `t()` 호출 금지** (지연 청크 안은 괜찮음, 예: editor/blocks.ts). e2e는 `locale: 'ko-KR'` 고정, 영어는 `desktop.i18n.spec.ts`.
 - ui (M0-11): `@/ui` index에서 import. 오버레이는 레이어 스택(`ui/overlay/stack.ts`)에 등록되고, 시트·대화상자는 history 항목을 씀 → **오버레이를 닫은 직후 `history.back()`/`location.hash`를 직접 건드리지 말고 router의 `navigate`/`goBack`을 쓸 것** (정리 대기). `confirm()`/`alert()` 금지 → `confirmDialog()`/`toast()`. 아이콘 버튼은 `IconButton`(label 필수).
 - 성능 기준선 (M0-25): `npm run build && npm run perf` → `docs/perf-history.md`에 마일스톤마다 기록. 20% 이상 나빠지면 마일스톤 완료 불가.
-- 번들: 초기 120.6KB / 125KB (M0 완료). 남은 여유 4.4KB — 새 기능은 지연 로드 필수. 더 줄여야 하면 마이그레이션 `up`을 지연 로드하는 방안(게이트의 버전 판단은 동기 유지).
+- 번들: 초기 120.7KB / 125KB (M1-06 후, 동기화 엔진·GitHub 클라이언트 지연 로드). 남은 여유 4.3KB — 새 기능은 지연 로드 필수. 더 줄여야 하면 마이그레이션 `up`을 지연 로드하는 방안(게이트의 버전 판단은 동기 유지).
 - 레이아웃 분기는 `useLayout()`(`@/platform/layout`)만 사용. 태블릿은 아직 데스크탑 셸 (드로어는 M1-12).
 - 오류 처리: 새 화면/지연 로드 영역은 `ErrorBoundary`로 감싸고 key로 리셋. QA 플래그 `webnota:debug` (docs/QA.md).
 - 미완성 기능은 `core/flags.ts`의 `FLAGS`에 `kind: 'feature'`로 추가하고 `useFlag`/`isEnabled`로 가림. 완성 시 플래그 제거.

@@ -58,7 +58,8 @@ export interface SyncResult {
   attempts: number
 }
 
-export const REMOTE_ORIGIN = 'webnota-remote'
+import { REMOTE_ORIGIN } from './origins'
+export { REMOTE_ORIGIN }
 const DATA_DIR = 'data/'
 
 const ID = '[A-Za-z0-9_-]+'
