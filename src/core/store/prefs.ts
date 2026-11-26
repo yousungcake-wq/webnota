@@ -1,18 +1,29 @@
-import { useSyncExternalStore } from 'react'
+import { createStore } from './createStore'
+import { useStore } from './useStore'
 
 /** Per-device preferences in localStorage (spec/01 §6). Every access is wrapped in try/catch. */
 
-export type Theme = 'system' | 'light' | 'dark'
-const THEME_KEY = 'webnota:theme'
-const themeListeners = new Set<() => void>()
-
-export function getTheme(): Theme {
+function read(key: string): string | null {
   try {
-    return (localStorage.getItem(THEME_KEY) as Theme) || 'system'
+    return localStorage.getItem(key)
   } catch {
-    return 'system'
+    return null
   }
 }
+
+function write(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    /* storage full or blocked: keep the in-memory value */
+  }
+}
+
+export type Theme = 'system' | 'light' | 'dark'
+const THEME_KEY = 'webnota:theme'
+const themeStore = createStore<Theme>((read(THEME_KEY) as Theme | null) || 'system')
+
+export const getTheme = (): Theme => themeStore.get()
 
 export function applyTheme(t: Theme = getTheme()) {
   const root = document.documentElement
@@ -23,53 +34,33 @@ export function applyTheme(t: Theme = getTheme()) {
 }
 
 export function setTheme(t: Theme) {
-  try {
-    localStorage.setItem(THEME_KEY, t)
-  } catch {
-    /* ignore */
-  }
+  write(THEME_KEY, t)
   applyTheme(t)
-  themeListeners.forEach((l) => l())
+  themeStore.set(t)
 }
 
-export function useTheme(): Theme {
-  return useSyncExternalStore((cb) => {
-    themeListeners.add(cb)
-    return () => themeListeners.delete(cb)
-  }, getTheme)
-}
+export const useTheme = (): Theme => useStore(themeStore)
 
 /** Per-device set of expanded tree nodes. */
 const EXP_KEY = 'webnota:expanded'
-let expanded = new Set<string>(
-  (() => {
-    try {
-      return JSON.parse(localStorage.getItem(EXP_KEY) || '[]') as string[]
-    } catch {
-      return []
-    }
-  })(),
+const expandedStore = createStore(
+  new Set<string>(
+    (() => {
+      try {
+        return JSON.parse(read(EXP_KEY) || '[]') as string[]
+      } catch {
+        return []
+      }
+    })(),
+  ),
 )
-const expListeners = new Set<() => void>()
+
 export function toggleExpanded(id: string, value?: boolean) {
-  const next = new Set(expanded)
-  const v = value ?? !next.has(id)
-  if (v) next.add(id)
+  const next = new Set(expandedStore.get())
+  if (value ?? !next.has(id)) next.add(id)
   else next.delete(id)
-  expanded = next
-  try {
-    localStorage.setItem(EXP_KEY, JSON.stringify([...next]))
-  } catch {
-    /* ignore */
-  }
-  expListeners.forEach((l) => l())
+  write(EXP_KEY, JSON.stringify([...next]))
+  expandedStore.set(next)
 }
-export function useExpanded(): Set<string> {
-  return useSyncExternalStore(
-    (cb) => {
-      expListeners.add(cb)
-      return () => expListeners.delete(cb)
-    },
-    () => expanded,
-  )
-}
+
+export const useExpanded = (): Set<string> => useStore(expandedStore)

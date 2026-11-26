@@ -1,6 +1,7 @@
 import { getToken, setToken } from '../auth/auth'
 import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc } from '../docs/registry'
 import { listPages } from '../model/pages'
+import { createStore } from '../store/createStore'
 import { syncOnce, type LocalStore, type SyncState } from './engine'
 import { GitHubClient, GitHubError, GitHubGitApi } from './github'
 
@@ -26,13 +27,13 @@ const DEFAULT_REPO = 'webnota-data'
 const PUSH_DEBOUNCE_MS = 8_000
 const PULL_INTERVAL_MS = 60_000
 
-let state: ControllerState = {
+/** Read in React with `useSync()` (core/store/sync.ts). */
+export const syncStore = createStore<ControllerState>({
   status: 'disconnected',
   account: readAccount(),
   lastSyncedAt: null,
   error: null,
-}
-const listeners = new Set<() => void>()
+})
 
 function readAccount(): Account | null {
   try {
@@ -44,19 +45,8 @@ function readAccount(): Account | null {
 }
 
 function set(patch: Partial<ControllerState>) {
-  state = { ...state, ...patch }
-  listeners.forEach((l) => l())
+  syncStore.set((s) => ({ ...s, ...patch }))
 }
-
-/** External-store contract for `core/store` hooks. */
-export function subscribeSync(cb: () => void) {
-  listeners.add(cb)
-  return () => {
-    listeners.delete(cb)
-  }
-}
-
-export const getSyncState = (): ControllerState => state
 
 function stateKey(a: Account) {
   return `webnota:sync-state:${a.owner}/${a.repo}@${a.branch}`
@@ -158,7 +148,7 @@ export function syncNow(): Promise<void> {
 }
 
 async function runSync() {
-  const account = state.account
+  const account = syncStore.get().account
   const token = getToken()
   if (!account || !token) {
     set({ status: 'disconnected' })
@@ -202,26 +192,26 @@ export function startAutoSync() {
   let timer: ReturnType<typeof setTimeout> | null = null
 
   onDirtyChange(() => {
-    if (!state.account) return
+    if (!syncStore.get().account) return
     if (Object.keys(getDirty()).length === 0) return
-    if (state.status === 'idle') set({ status: 'pending' })
+    if (syncStore.get().status === 'idle') set({ status: 'pending' })
     if (timer) clearTimeout(timer)
     timer = setTimeout(() => void syncNow(), PUSH_DEBOUNCE_MS)
   })
 
   setInterval(() => {
-    if (state.account && document.visibilityState === 'visible') void syncNow()
+    if (syncStore.get().account && document.visibilityState === 'visible') void syncNow()
   }, PULL_INTERVAL_MS)
 
   document.addEventListener('visibilitychange', () => {
-    if (!state.account) return
+    if (!syncStore.get().account) return
     // hidden: flush pending edits before the OS may kill the tab; visible: pull fresh changes
     void syncNow()
   })
   window.addEventListener('online', () => void syncNow())
-  window.addEventListener('offline', () => state.account && set({ status: 'offline' }))
+  window.addEventListener('offline', () => syncStore.get().account && set({ status: 'offline' }))
 
-  if (state.account) {
+  if (syncStore.get().account) {
     set({ status: 'idle' })
     void syncNow()
   }

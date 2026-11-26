@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { createStore } from './createStore'
+import { shallowEqual } from './equality'
+import { useStore } from './useStore'
 
 export type Route =
   | { name: 'home' }
@@ -63,12 +65,10 @@ export function goBack() {
   else navigate({ name: 'home' }, { replace: true })
 }
 
-export function useRoute(): Route {
-  const [route, setRoute] = useState(() => parse(location.hash))
-  useEffect(() => {
-    const on = () => setRoute(parse(location.hash))
-    window.addEventListener('hashchange', on)
-    return () => window.removeEventListener('hashchange', on)
-  }, [])
-  return route
-}
+const routeStore = createStore<Route>(parse(location.hash))
+window.addEventListener('hashchange', () => {
+  const next = parse(location.hash)
+  routeStore.set((prev) => (shallowEqual(prev, next) ? prev : next))
+})
+
+export const useRoute = (): Route => useStore(routeStore)

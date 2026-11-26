@@ -129,9 +129,9 @@ tests/
 
 ## 6. 상태 관리
 
-- **영속 상태**: Yjs. React에서는 `useY(doc, selector, equalityFn)`로 구독합니다. `useSyncExternalStore`를 쓰고, 셀렉터 결과를 메모이즈해서 관련 없는 변경으로는 다시 렌더링하지 않습니다.
+- **영속 상태**: Yjs. React에서는 `useY(doc, selector, equalityFn)`로 구독합니다. `useSyncExternalStore`를 쓰고, 셀렉터 결과를 메모이즈해서 관련 없는 변경으로는 다시 렌더링하지 않습니다. 구현은 `core/store/useY.ts`(훅)와 `core/store/selectY.ts`(React 없는 메모이즈 로직, 단위 테스트 대상)입니다. 셀렉터는 모듈 수준 함수나 `useCallback`으로 고정해서 넘깁니다 (인라인 화살표는 렌더마다 구독을 새로 만듭니다). 비교 함수는 `core/store/equality.ts`의 `shallowEqual`, `shallowItemsEqual`.
 - **기기별 설정** (테마, 펼침 상태, 사이드바 폭, 최근 항목): `core/store/prefs.ts`, localStorage. 모든 접근은 try/catch로 감쌉니다.
-- **화면 일시 상태**: 컴포넌트 로컬 state 또는 작은 `createStore()` (외부 라이브러리 없이 약 30줄).
+- **화면 일시 상태**: 컴포넌트 로컬 state 또는 작은 `createStore()` (외부 라이브러리 없이 약 30줄). `core/store/createStore.ts`(React 없음, `core/*`가 소유 가능) + `useStore(store, selector?)`. 동기화 상태, 테마, 트리 펼침, 현재 경로가 이 방식입니다.
 - 전역 상태 라이브러리(Redux, Zustand)는 쓰지 않습니다.
 
 ## 7. 오류 처리 원칙

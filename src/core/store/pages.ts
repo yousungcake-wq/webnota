@@ -1,9 +1,12 @@
-import { useMemo, useSyncExternalStore } from 'react'
-import { getPagesSnapshot, subscribePages } from '../docs/workspace'
-import { isAlive, type PageMeta } from '../model/pages'
+import { useMemo } from 'react'
+import { ws } from '../docs/workspace'
+import { isAlive, listPages, type PageMeta } from '../model/pages'
+import { shallowItemsEqual } from './equality'
+import { useY } from './useY'
 
+/** All page metadata, sorted. Re-renders only when some page's metadata actually changed. */
 export function usePages(): PageMeta[] {
-  return useSyncExternalStore(subscribePages, getPagesSnapshot)
+  return useY(ws(), listPages, shallowItemsEqual)
 }
 
 /** All pages plus the ones not in the trash (directly or via an ancestor). */

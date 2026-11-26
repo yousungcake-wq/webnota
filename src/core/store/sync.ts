@@ -1,6 +1,6 @@
-import { useSyncExternalStore } from 'react'
-import { getSyncState, subscribeSync, type ControllerState } from '../sync/controller'
+import { syncStore, type ControllerState } from '../sync/controller'
+import { useStore } from './useStore'
 
 export function useSync(): ControllerState {
-  return useSyncExternalStore(subscribeSync, getSyncState)
+  return useStore(syncStore)
 }
