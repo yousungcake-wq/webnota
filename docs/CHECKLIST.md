@@ -53,7 +53,7 @@
 - [x] M1-01 뷰 모델 API (`core/model/views.ts`): `pages.ts`를 views/spaces 모델로 정리(스페이스 부모 노출, IconValue 전체), create/update/move/trash/restore/delete/duplicate + 테스트. 기존 `PageMeta` 사용처 이전 — e530a72
 - [x] M1-02 사이드바 재작성: 가상 스크롤 트리 + 셀렉터 구독 (WS-03) — c35f052
 - [x] M1-03 트리 DnD (마우스·터치·키보드, 위/아래/안으로) (WS-03) — 2fbedea
-- [ ] M1-04 인라인 이름 바꾸기, F2, 더보기 메뉴 전체 항목 (WS-03)
+- [x] M1-04 인라인 이름 바꾸기, F2, 더보기 메뉴 전체 항목 (WS-03) — de81ac0
 - [ ] M1-05 스페이스: 생성/수정/삭제/전환/정렬 (WS-02)
 - [ ] M1-06 즐겨찾기 정렬(FracKey DnD) + 로그인 사용자 추적: 연결 시 `users.local` 상태를 로그인 사용자로 합치기 (WS-04, spec/02 §8, DECISIONS 015)
 - [ ] M1-07 최근 항목 (WS-05)
