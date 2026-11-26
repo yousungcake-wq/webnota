@@ -11,6 +11,13 @@
   --bg-active: #e3ebff;
   --bg-elev: #ffffff;
   --bg-code: #f4f5f7;
+  --code-keyword: #a626a4;
+  --code-string: #50a14f;
+  --code-number: #986801;
+  --code-comment: #a0a1a7;
+  --code-title: #4078f2;
+  --code-attr: #c18401;
+  --code-type: #0184bc;
   --bg-overlay: rgba(0, 0, 0, 0.32);
   /* text */
   --text: #1f2329;
@@ -105,6 +112,13 @@
     --bg-active: #273556;
     --bg-elev: #26282c;
     --bg-code: #2a2c31;
+    --code-keyword: #c678dd;
+    --code-string: #98c379;
+    --code-number: #d19a66;
+    --code-comment: #7f848e;
+    --code-title: #61afef;
+    --code-attr: #e5c07b;
+    --code-type: #56b6c2;
     --bg-overlay: rgba(0, 0, 0, 0.5);
     --text: #e8e9ec;
     --text-2: #a9adb6;
@@ -146,6 +160,13 @@
   --bg-active: #273556;
   --bg-elev: #26282c;
   --bg-code: #2a2c31;
+  --code-keyword: #c678dd;
+  --code-string: #98c379;
+  --code-number: #d19a66;
+  --code-comment: #7f848e;
+  --code-title: #61afef;
+  --code-attr: #e5c07b;
+  --code-type: #56b6c2;
   --bg-overlay: rgba(0, 0, 0, 0.5);
   --text: #e8e9ec;
   --text-2: #a9adb6;

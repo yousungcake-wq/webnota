@@ -9,6 +9,7 @@ import StarterKit from '@tiptap/starter-kit'
 import { Selection, type EditorState, type Transaction } from '@tiptap/pm/state'
 import type * as Y from 'yjs'
 import { SlashCommand } from './slash'
+import { CodeBlockPlus } from './code/codeBlock'
 import { Callout } from './nodes/callout'
 import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
 
@@ -81,10 +82,12 @@ export function schemaExtensions(): Extensions {
     StarterKit.configure({
       undoRedo: false, // Yjs provides collaborative undo
       blockquote: false, // re-added below: `"` + space (`>` + space makes a toggle, spec/04)
+      codeBlock: false, // CodeBlockPlus: language, wrap, copy, lazy highlighting
       heading: { levels: [1, 2, 3, 4, 5, 6] },
       link: { openOnClick: false, autolink: true },
     }),
     QuoteBlock,
+    CodeBlockPlus,
     Callout,
     Toggle,
     ToggleSummary,

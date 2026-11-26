@@ -8,7 +8,17 @@ const base = process.env.VITE_BASE || '/'
 
 export default defineConfig({
   base,
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  resolve: {
+    alias: [
+      { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
+      // lowlight's entry re-exports every highlight.js grammar (not tree-shaken): use the
+      // core only; grammars are imported one by one (features/editor/code/languages.ts).
+      {
+        find: /^lowlight$/,
+        replacement: fileURLToPath(new URL('./node_modules/lowlight/lib/index.js', import.meta.url)),
+      },
+    ],
+  },
   define: { __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev') },
   plugins: [
     react(),

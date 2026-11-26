@@ -16,6 +16,8 @@ const BUDGETS = {
   sync: { kb: 12, entry: 'src/core/sync/remote.ts' }, // GitHub client + engine, only once connected
   emoji: { kb: 20, entry: 'src/features/emoji/EmojiPicker.tsx' }, // picker UI + icon set, on first open
   emojiData: { kb: 40, entry: 'src/features/emoji/emoji-data.json' }, // names for search (한/영), loaded by the picker
+  // lowlight core, when a doc has code (+ ≤5KB per grammar); loads after the editor
+  highlight: { kb: 15, entry: 'src/features/editor/code/highlighter.ts', after: 'editor' },
   migrations: { kb: 8, entry: 'src/core/schema/migrations/index.ts' }, // only when data needs migrating
   // Add as features land: database: { kb: 120, entry: 'src/features/database/index.ts' }, …
 }
@@ -53,7 +55,9 @@ for (const [name, b] of Object.entries(BUDGETS)) {
     console.error(`✗ ${name}: ${b.entry} is loaded eagerly — it must be dynamically imported`)
     process.exitCode = 1
   }
-  const extra = [...closure(b.entry)].filter((f) => !initialFiles.has(f))
+  // `after`: a group that is always loaded first (its files are not this group's cost).
+  const before = b.after ? closure(BUDGETS[b.after].entry) : new Set()
+  const extra = [...closure(b.entry)].filter((f) => !initialFiles.has(f) && !before.has(f))
   sizes[name] = extra.reduce((n, f) => n + gz(f), 0)
 }
 

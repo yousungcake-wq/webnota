@@ -22,7 +22,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-B07 | 토글 제목 | `toggle` + `level` 속성 | | P1 | ✅ M2-03 |
 | ED-B08 | 인용 | `blockquote` | `"` + 공백 | P0 | ✅ (M2-03부터 `"`+공백, `>`+공백은 토글) |
 | ED-B09 | 콜아웃 | `callout` (icon, color) | | P0 | ✅ M2-04 (schema v4). 아이콘을 누르면 색 10가지 + 이모지 선택 |
-| ED-B10 | 코드 블록 | `codeBlock` (language, 줄 바꿈 옵션, 복사 버튼, 하이라이트) | ` ``` ` | P0 | M2 |
+| ED-B10 | 코드 블록 | `codeBlock` (language, 줄 바꿈 옵션, 복사 버튼, 하이라이트) | ` ``` ` | P0 | ✅ M2-05: 언어 22개(`code/languages.ts`, id는 저장 데이터), `wrap` 속성(기본값 false), 하이라이트는 코드 블록이 있을 때 lowlight 코어 + 해당 문법만 지연 로드 |
 | ED-B11 | 구분선 | `horizontalRule` | `---` | P0 | ✅ |
 | ED-B12 | 이미지 | `image` (src=fileId/url, width, align, caption) | | P0 | M3 |
 | ED-B13 | 동영상 임베드 | `video` (YouTube/Vimeo/직접 URL) | | P1 | M3 |
