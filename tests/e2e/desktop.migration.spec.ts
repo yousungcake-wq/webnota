@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { failOnConsoleErrors } from './helpers'
 
-// spec/02 §7 end to end: PoC (v1) data in IndexedDB → schema v2 + `doc/` databases.
+// spec/02 §7 end to end: PoC (v1) data in IndexedDB → schema v2 + `wn:<wsId>:doc/` databases (M0-16, M0-18).
 // `webnota:debug=seed-v1` writes the v1 fixture (src/app/qa/seedV1.ts) before boot.
 test('upgrades PoC data: tree, order, favorites, icons and page bodies survive', async ({ page }) => {
   const checkConsole = failOnConsoleErrors(page)
@@ -24,8 +24,10 @@ test('upgrades PoC data: tree, order, favorites, icons and page bodies survive',
   await expect(tree).toHaveText(['Old page', 'Child page', 'Second page'])
 
   const dbs = await page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name).sort())
-  expect(dbs).toContain('webnota:doc/v1root')
-  expect(dbs.filter((n) => n?.startsWith('webnota:page/'))).toEqual([])
+  const wsId = await page.evaluate(() => JSON.parse(localStorage.getItem('webnota:workspaces')!).current)
+  expect(dbs).toContain(`wn:${wsId}:doc/v1root`)
+  expect(dbs).toContain(`wn:${wsId}:workspace`)
+  expect(dbs.filter((n) => n?.startsWith('webnota:'))).toEqual([]) // legacy names all moved
 
   // edits land in the new databases and survive a reload
   await page.locator('.wn-editor p').first().click()

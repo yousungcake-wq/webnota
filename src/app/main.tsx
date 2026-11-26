@@ -4,8 +4,8 @@ import { createRoot } from 'react-dom/client'
 import { completeLoginFromUrl } from '@/core/auth/auth'
 import { getLang, initI18n, t } from '@/core/i18n'
 import { legacyCopyDone, openDoc, pageDocName } from '@/core/docs/registry'
+import { currentWorkspaceId } from '@/core/docs/slots'
 import { initWorkspace, seedIfEmpty } from '@/core/docs/workspace'
-import { viewsOf } from '@/core/model/pages'
 import { initSchema, isReadOnly } from '@/core/schema'
 import { debugFlag } from '@/platform/debug'
 import { applyTheme } from '@/core/store/prefs'
@@ -23,6 +23,9 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 async function boot() {
   const root = createRoot(document.getElementById('root')!)
   if (debugFlag('seed-v1')) await (await import('./qa/seedV1')).seedV1() // QA: PoC-format data
+  // Move PoC-era IndexedDB databases into this workspace's namespace, once per device,
+  // before any doc is opened (spec/02 §7, SY-05).
+  if (!legacyCopyDone()) await (await import('@/core/docs/legacy')).runLegacyDocCopy(currentWorkspaceId())
   const [wsDoc] = await Promise.all([initWorkspace(), initI18n()])
   // Migrate or gate before anything reads or writes the workspace (spec/02 §6).
   // QA: `webnota:debug=schema-newer` pretends the data is newer than this build.
@@ -30,11 +33,6 @@ async function boot() {
     ctx: { defaultSpaceName: t('space.default') },
     ...(debugFlag('schema-newer') ? { appVersion: 0 } : {}),
   })
-  // v2 doc names: copy `page/<id>` IndexedDB databases to `doc/<id>` once per device.
-  if (!legacyCopyDone()) {
-    const { runLegacyDocCopy } = await import('@/core/docs/legacy') // once per device
-    await runLegacyDocCopy(() => [...viewsOf(wsDoc).keys()])
-  }
   configureUi({
     ok: t('common.ok'),
     cancel: t('common.cancel'),

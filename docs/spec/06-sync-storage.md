@@ -2,7 +2,7 @@
 
 ## SY-01 로컬 저장 (✅ PoC, M0 보강)
 
-- Y.Doc마다 y-indexeddb 데이터베이스 하나를 씁니다 (`wn:<wsId>:<docName>`).
+- Y.Doc마다 y-indexeddb 데이터베이스 하나를 씁니다 (`wn:<wsId>:<docName>`). `wsId`는 **기기 로컬 워크스페이스 슬롯 ID**(`core/docs/slots.ts`, localStorage `webnota:workspaces`)이며 Y 문서에 저장하지 않습니다 (DECISIONS 016). PoC의 `webnota:<docName>` DB는 첫 실행 시 한 번 옮깁니다 (M0-18). 더티 표시·동기화 상태(localStorage)의 워크스페이스별 분리는 SY-05(M1)에서 합니다.
 - **문서 레지스트리 LRU**: 열린 문서는 최대 30개까지 메모리에 둡니다. 화면에 없고 더티가 아닌 문서부터 언로드합니다 (destroy + persistence 연결 해제).
 - 부팅 시 `navigator.storage.persist()`를 요청합니다 ✅. 설정 화면에 사용량을 표시합니다 (`navigator.storage.estimate()`).
 - iOS Safari: 홈 화면 설치를 유도합니다. 설치하지 않은 사이트는 7일 미방문 시 데이터가 삭제될 수 있어서, GitHub 미연결 사용자에게 경고합니다.

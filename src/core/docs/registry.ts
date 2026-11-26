@@ -12,6 +12,7 @@ import { IndexeddbPersistence } from 'y-indexeddb'
 /** Origin used when applying updates that came from GitHub, so they don't mark docs dirty. */
 import { REMOTE_ORIGIN } from '../sync/engine'
 import { isReadOnly } from '../schema/gate'
+import { idbName } from './slots'
 export { REMOTE_ORIGIN }
 
 export const WORKSPACE = 'workspace'
@@ -53,8 +54,8 @@ export function markDirty(name: string) {
   dirtyListeners.forEach((l) => l())
 }
 
-/** Set once this device copied its v1 `page/<id>` databases to `doc/<id>` (core/docs/legacy.ts). */
-export const LEGACY_COPY_MARKER = 'webnota:idb-v2'
+/** Set once this device moved its `webnota:*` databases into `wn:<wsId>:*` (core/docs/legacy.ts). */
+export const LEGACY_COPY_MARKER = 'webnota:idb-ns'
 
 export function legacyCopyDone(): boolean {
   try {
@@ -97,7 +98,7 @@ export function openDoc(name: string): Promise<Y.Doc> {
   const existing = registry.get(name)
   if (existing) return existing.ready
   const doc = new Y.Doc({ guid: name, gc: true })
-  const persistence = new IndexeddbPersistence(`webnota:${name}`, doc)
+  const persistence = new IndexeddbPersistence(idbName(name), doc)
   doc.on('update', (_update: Uint8Array, origin: unknown) => {
     if (origin === REMOTE_ORIGIN || origin === persistence) return
     // Read-only (spec/02 §6): nothing local may be queued for upload. Backstop — the
@@ -121,7 +122,7 @@ export async function destroyDoc(name: string) {
     await entry.persistence.clearData()
     entry.doc.destroy()
   } else {
-    const p = new IndexeddbPersistence(`webnota:${name}`, new Y.Doc())
+    const p = new IndexeddbPersistence(idbName(name), new Y.Doc())
     await p.whenSynced
     await p.clearData()
   }
