@@ -37,7 +37,9 @@ test('move dialog: under another page, own subtree excluded, to another space (W
   dialog = await openMove(page)
   await expect(dialog.getByRole('option', { name: 'Yank' })).toBeDisabled() // descendant
   await dialog.getByRole('option', { name: 'Other' }).click()
-  await expect(page.locator('.sidebar').getByRole('button', { name: '스페이스 전환', exact: true })).toContainText('Other')
+  await expect(page.locator('.sidebar').getByRole('button', { name: '스페이스 전환', exact: true })).toContainText(
+    'Other',
+  )
   await expect(page.locator('.sidebar .tree-title').first()).toHaveText('Xray')
   check()
 })
