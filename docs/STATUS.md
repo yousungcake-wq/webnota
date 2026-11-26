@@ -7,7 +7,7 @@
 - **마일스톤**: M1 워크스페이스와 탐색 (M0 완료, 실기기 확인은 사용자 선택)
 - **진행 상황**: M0 26개 모두 완료 (M0-01~26: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2, IndexedDB 이름 공간, 문서 LRU, 모르는 노드 보존, 동기화 스케줄, ETag, 탭 리더, 동기화 로그, PWA 아이콘, 회귀 e2e·성능 기준선)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M1-06 즐겨찾기 정렬(드래그) + 로그인 사용자 추적·adoptFavorites
+- **다음 할 일**: M1-07 최근 항목 (WS-05). 초기 번들 여유 2KB — 먼저 동기화 엔진·GitHub 클라이언트 지연 로드
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -80,3 +80,4 @@
 | 2026-11-26 | M1-03: 트리 DnD(마우스·터치·키보드), 초기 청크 통합(DECISIONS 018) | 2fbedea |
 | 2026-11-26 | M1-04: 인라인 이름 바꾸기·F2, 더보기 메뉴 전체(링크·새 탭·잠금·정보), promptDialog, 메뉴 지연 로드 | de81ac0 |
 | 2026-11-26 | M1-05: 스페이스 UI(전환·생성·설정·삭제·순서), 현재 스페이스 기기별 저장 | 73c2501 |
+| 2026-11-26 | M1-06: 즐겨찾기 순서·드래그 정렬, 로그인 사용자 추적·local 즐겨찾기 합치기 | 4a10188 |
