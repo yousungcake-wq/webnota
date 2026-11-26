@@ -1,15 +1,12 @@
 import { Home, Search, Settings, Star } from 'lucide-react'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
 import { useViews } from '@/core/store/views'
 import { pushRecent } from '@/core/store/prefs'
 import { wsKey } from '@/core/docs/slots'
 import { href, navigate, useRoute, type Route } from '@/core/store/router'
-import { FavoritesView } from '@/features/favorites'
 import { HomeView } from '@/features/home'
 import { PageOverlays, PageView } from '@/features/page'
 import { PaletteHost, SearchView } from '@/features/search'
-import { SettingsView } from '@/features/settings'
-import { TrashView } from '@/features/trash'
 import { useLayout } from '@/platform/layout'
 import { t } from '@/core/i18n'
 import { EmptyState, ErrorBoundary } from '@/ui'
@@ -17,6 +14,12 @@ import { DesktopShell } from './DesktopShell'
 import { SchemaBanner } from './SchemaBanner'
 
 const LAST_KEY = wsKey('last-page')
+
+// Screens that are never the first thing shown load on demand (spec/10 §2).
+const FavoritesView = lazy(() => import('@/features/favorites').then((m) => ({ default: m.FavoritesView })))
+const TrashView = lazy(() => import('@/features/trash').then((m) => ({ default: m.TrashView })))
+const SettingsView = lazy(() => import('@/features/settings').then((m) => ({ default: m.SettingsView })))
+const Lazy = ({ children }: { children: ReactNode }) => <Suspense fallback={null}>{children}</Suspense>
 
 export function App() {
   const route = useRoute()
@@ -78,11 +81,23 @@ function MainContent({
     case 'search':
       return <SearchView />
     case 'favorites':
-      return <FavoritesView />
+      return (
+        <Lazy>
+          <FavoritesView />
+        </Lazy>
+      )
     case 'trash':
-      return <TrashView />
+      return (
+        <Lazy>
+          <TrashView />
+        </Lazy>
+      )
     case 'settings':
-      return <SettingsView />
+      return (
+        <Lazy>
+          <SettingsView />
+        </Lazy>
+      )
     default:
       return <EmptyState title={t('app.selectPage')} />
   }
@@ -112,13 +127,19 @@ function PhoneShell({ route }: { route: Route }) {
       <div className="phone-content">
         <ErrorBoundary key={href(route)}>
           {route.name === 'favorites' ? (
-            <FavoritesView />
+            <Lazy>
+              <FavoritesView />
+            </Lazy>
           ) : route.name === 'search' ? (
             <SearchView autoFocus={false} />
           ) : route.name === 'settings' ? (
-            <SettingsView />
+            <Lazy>
+              <SettingsView />
+            </Lazy>
           ) : route.name === 'trash' ? (
-            <TrashView />
+            <Lazy>
+              <TrashView />
+            </Lazy>
           ) : (
             <HomeView />
           )}
