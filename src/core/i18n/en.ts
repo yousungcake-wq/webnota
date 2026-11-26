@@ -17,6 +17,11 @@ export const en: Record<MessageKey, string> = {
   'common.cancel': 'Cancel',
   'common.dismiss': 'Dismiss',
   'common.undo': 'Undo',
+  'error.screen': 'This screen could not be displayed',
+  'error.editor': 'The editor could not be displayed. Your content is saved safely.',
+  'error.sidebar': 'Sidebar error',
+  'error.retry': 'Try again',
+  'error.unexpected': 'Something went wrong: {message}',
 
   'app.selectPage': 'Select a page on the left or create a new one.',
   'app.tabbar': 'Bottom navigation',

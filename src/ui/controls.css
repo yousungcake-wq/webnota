@@ -137,3 +137,19 @@
     animation: none;
   }
 }
+.error-boundary {
+  display: flex;
+  height: 100%;
+  min-height: 160px;
+}
+.error-boundary .muted {
+  max-width: 480px;
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+.error-boundary.compact {
+  min-height: 0;
+}
+.error-boundary.compact .empty-state {
+  padding: var(--sp-4) var(--sp-2);
+}

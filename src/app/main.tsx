@@ -9,8 +9,9 @@ import { applyTheme } from '@/core/store/prefs'
 import { navigate } from '@/core/store/router'
 import { connect, startAutoSync } from '@/core/sync/controller'
 import { loadSeed, preloadEditor } from '@/features/editor'
-import { configureUi, OverlayHost, toast } from '@/ui'
+import { configureUi, ErrorBoundary, OverlayHost, toast } from '@/ui'
 import { App } from './App'
+import { installGlobalErrorToasts } from './errors'
 
 document.documentElement.lang = getLang()
 applyTheme()
@@ -24,7 +25,10 @@ async function boot() {
     cancel: t('common.cancel'),
     close: t('common.close'),
     dismiss: t('common.dismiss'),
+    retry: t('error.retry'),
+    errorTitle: t('error.screen'),
   })
+  installGlobalErrorToasts()
 
   const welcome = seedIfEmpty()
   if (welcome) {
@@ -35,7 +39,9 @@ async function boot() {
 
   root.render(
     <StrictMode>
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
       <OverlayHost />
     </StrictMode>,
   )

@@ -11,7 +11,7 @@ import { Sidebar } from '@/features/sidebar'
 import { TrashView } from '@/features/trash'
 import { useLayout } from '@/platform/layout'
 import { t } from '@/core/i18n'
-import { EmptyState } from '@/ui'
+import { EmptyState, ErrorBoundary } from '@/ui'
 
 const LAST_KEY = 'webnota:last-page'
 
@@ -36,9 +36,15 @@ export function App() {
 
   return (
     <div className={`desktop${sidebarOpen ? '' : ' sidebar-collapsed'}`}>
-      {sidebarOpen && <Sidebar route={route} onClose={() => setSidebarOpen(false)} />}
+      {sidebarOpen && (
+        <ErrorBoundary compact title={t('error.sidebar')}>
+          <Sidebar route={route} onClose={() => setSidebarOpen(false)} />
+        </ErrorBoundary>
+      )}
       <main className="main">
-        <MainContent route={route} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(true)} />
+        <ErrorBoundary key={href(route)}>
+          <MainContent route={route} sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(true)} />
+        </ErrorBoundary>
       </main>
     </div>
   )
@@ -74,7 +80,9 @@ function PhoneShell({ route }: { route: Route }) {
   if (route.name === 'page') {
     return (
       <div className="phone">
-        <PageView id={route.id} />
+        <ErrorBoundary key={route.id}>
+          <PageView id={route.id} />
+        </ErrorBoundary>
       </div>
     )
   }
@@ -87,17 +95,19 @@ function PhoneShell({ route }: { route: Route }) {
   return (
     <div className="phone">
       <div className="phone-content">
-        {route.name === 'favorites' ? (
-          <FavoritesView />
-        ) : route.name === 'search' ? (
-          <SearchView autoFocus={false} />
-        ) : route.name === 'settings' ? (
-          <SettingsView />
-        ) : route.name === 'trash' ? (
-          <TrashView />
-        ) : (
-          <HomeView />
-        )}
+        <ErrorBoundary key={href(route)}>
+          {route.name === 'favorites' ? (
+            <FavoritesView />
+          ) : route.name === 'search' ? (
+            <SearchView autoFocus={false} />
+          ) : route.name === 'settings' ? (
+            <SettingsView />
+          ) : route.name === 'trash' ? (
+            <TrashView />
+          ) : (
+            <HomeView />
+          )}
+        </ErrorBoundary>
       </div>
       <nav className="tabbar" aria-label={t('app.tabbar')}>
         {tabs.map((t) => {

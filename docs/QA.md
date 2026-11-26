@@ -17,6 +17,10 @@
 | Q9 | 두 기기 동시 편집 후 병합 | | | | | | |
 | Q10 | 다크 모드, 회전 | | | | | | |
 
+### QA용 디버그 플래그
+
+브라우저 콘솔에서 `localStorage.setItem('webnota:debug', 'crash-editor')` 후 새로고침하면 에디터 렌더링 오류를 흉내 냅니다 (`crash-sidebar`도 가능, 쉼표로 여러 개). 확인 후 `localStorage.removeItem('webnota:debug')`.
+
 ## 마일스톤별 추가 항목
 
 마일스톤을 시작할 때 이 아래에 추가합니다.

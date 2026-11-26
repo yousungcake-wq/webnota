@@ -20,6 +20,11 @@ export const ko = {
   'common.cancel': '취소',
   'common.dismiss': '닫기',
   'common.undo': '실행 취소',
+  'error.screen': '이 화면을 표시하지 못했습니다',
+  'error.editor': '에디터를 표시하지 못했습니다. 내용은 안전하게 저장되어 있습니다.',
+  'error.sidebar': '사이드바 오류',
+  'error.retry': '다시 시도',
+  'error.unexpected': '오류가 발생했습니다: {message}',
 
   // app shell
   'app.selectPage': '왼쪽에서 페이지를 선택하거나 새 페이지를 만드세요.',

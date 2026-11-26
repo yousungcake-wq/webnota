@@ -9,8 +9,10 @@ import { PageListItem, PageTree } from './PageTree'
 import './sidebar.css'
 import { t } from '@/core/i18n'
 import { IconButton } from '@/ui'
+import { debugCrash } from '@/platform/debug'
 
 export function Sidebar({ route, onClose }: { route: Route; onClose: () => void }) {
+  debugCrash('sidebar')
   const pages = usePages()
   const currentId = route.name === 'page' ? route.id : undefined
   const favorites = useMemo(() => {

@@ -11,7 +11,7 @@ import { goBack, href } from '@/core/store/router'
 import { loadEditor } from '@/features/editor'
 import { SyncBadge } from '@/features/sync'
 import { useLayout } from '@/platform/layout'
-import { Button, EmptyState, IconButton, LinkButton, Overlay, Skeleton } from '@/ui'
+import { Button, EmptyState, ErrorBoundary, IconButton, LinkButton, Overlay, Skeleton } from '@/ui'
 import { toggleFavorite } from './actions'
 import { PageMenu } from './PageMenu'
 import './page.css'
@@ -123,7 +123,9 @@ export function PageView({
           />
           {doc ? (
             <Suspense fallback={<Skeleton className="editor-loading" />}>
-              <Editor key={id} doc={doc} onReady={onReady} />
+              <ErrorBoundary key={id} title={t('error.editor')}>
+                <Editor key={id} doc={doc} onReady={onReady} />
+              </ErrorBoundary>
             </Suspense>
           ) : (
             <Skeleton className="editor-loading" />
