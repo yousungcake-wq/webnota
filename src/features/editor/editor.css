@@ -293,3 +293,13 @@
   background: var(--accent-soft);
   color: var(--accent);
 }
+
+/* ED-B23: unknown content notice */
+.editor-unknown {
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r);
+  background: var(--c-yellow-bg);
+  color: var(--text);
+  font-size: 14px;
+}

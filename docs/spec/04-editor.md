@@ -35,7 +35,9 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-B20 | 인라인 데이터베이스 | `database` (databaseId, viewId, layout) | | P0 | M5 |
 | ED-B21 | 링크 미리보기 (북마크) | `linkPreview` (url, title, desc, image 캐시) | URL 붙여넣기 → 선택 | P1 | M3 |
 | ED-B22 | 임베드 | `embed` (iframe 허용 목록: YouTube, Figma, Google Maps …) | | P2 | M3 |
-| ED-B23 | 지원되지 않는 블록 | `unknown` (원본 보존, 읽기 전용) | | P0 | M0 |
+| ED-B23 | 지원되지 않는 블록 | 원본 보존 + 페이지 읽기 전용 (아래) | | P0 | M0 ✅ |
+
+**ED-B23 구현 (M0-20)**: y-tiptap은 기본적으로 스키마에 없는 노드·마크를 렌더링하면서 Y 문서에서 **삭제**합니다. 그래서 `ySyncOptions.onInvalidContent`를 항상 지정해, 모르는 내용이 있으면 삭제하지 않고 그 페이지의 바인딩이 쓰기를 멈추게 합니다(에디터 `editable=false`). 본문 위에 "표시할 수 없는 내용(타입 목록)이 있어 읽기 전용, 내용은 보존됨, 앱 업데이트" 안내를 띄웁니다. 모르는 블록 자체는 화면에 표시하지 않습니다. 모르는 타입마다 동적으로 자리 표시 노드를 만드는 방식은, 속성이 다시 써지면서 사라질 위험이 있어서 보류했습니다 (DECISIONS 017). QA: `webnota:debug=seed-unknown`.
 
 ## 3. 인라인 (마크 / 인라인 노드)
 

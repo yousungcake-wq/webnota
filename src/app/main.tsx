@@ -44,6 +44,7 @@ async function boot() {
   installGlobalErrorToasts()
 
   const welcome = isReadOnly() ? null : seedIfEmpty()
+  if (debugFlag('seed-unknown') && !isReadOnly()) await (await import('./qa/seedUnknown')).seedUnknown(wsDoc) // QA: ED-B23
   if (welcome) {
     const { seedWelcome } = await loadSeed() // editor schema is a lazy chunk
     seedWelcome(await openDoc(pageDocName(welcome)))

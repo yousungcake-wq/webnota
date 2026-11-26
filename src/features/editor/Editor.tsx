@@ -9,7 +9,8 @@ import { useStore } from '@/core/store/useStore'
 import type * as Y from 'yjs'
 import { debugCrash } from '@/platform/debug'
 import { useLayout } from '@/platform/layout'
-import { editorExtensions } from './extensions'
+import { docSchema, editorExtensions } from './extensions'
+import { findUnknownContent } from './unknown'
 import { KeyboardToolbar } from './KeyboardToolbar'
 import './editor.css'
 import { t } from '@/core/i18n'
@@ -22,10 +23,18 @@ interface Props {
 export function Editor({ doc, onReady }: Props) {
   debugCrash('editor')
   const coarse = useLayout().isTouch
-  const readOnly = useStore(schemaStore, selectReadOnly)
+  const schemaReadOnly = useStore(schemaStore, selectReadOnly)
+  // Content from a newer app version (ED-B23): kept as is, page opens read-only.
+  const [unknown, setUnknown] = useState<string[] | null>(null)
+  const readOnly = schemaReadOnly || unknown !== null
   const editor = useEditor(
     {
-      extensions: editorExtensions(doc),
+      extensions: editorExtensions(doc, {
+        onInvalidContent: () => {
+          const found = findUnknownContent(doc.getXmlFragment('default'), docSchema())
+          setUnknown([...found.nodes, ...found.marks])
+        },
+      }),
       editable: !readOnly,
       editorProps: {
         attributes: {
@@ -43,7 +52,8 @@ export function Editor({ doc, onReady }: Props) {
     if (editor) onReady?.(editor)
   }, [editor, onReady])
 
-  // Schema read-only gate (spec/02 §6): an older app must not rewrite newer content.
+  // Schema read-only gate (spec/02 §6) and unknown content (ED-B23): an older app must
+  // not rewrite newer content.
   useEffect(() => {
     if (editor && editor.isEditable === readOnly) editor.setEditable(!readOnly)
   }, [editor, readOnly])
@@ -107,6 +117,11 @@ export function Editor({ doc, onReady }: Props) {
         </DragHandle>
       )}
       {!coarse && !readOnly && <FormatBubble editor={editor} />}
+      {unknown && (
+        <p className="editor-unknown" role="note">
+          {t('editor.unknownContent', { types: unknown.join(', ') || '?' })}
+        </p>
+      )}
       <EditorContent editor={editor} />
       {coarse && focused && !readOnly && <KeyboardToolbar editor={editor} />}
     </div>

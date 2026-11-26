@@ -64,6 +64,8 @@ export const ko = {
 
   // editor
   'editor.body': '페이지 본문',
+  'editor.unknownContent':
+    '이 페이지에는 이 버전에서 표시할 수 없는 내용({types})이 있어 읽기 전용으로 엽니다. 내용은 지워지지 않고 그대로 보존됩니다. 앱을 업데이트하세요.',
   'editor.addBelow': '아래에 블록 추가',
   'editor.dragToMove': '드래그해서 이동',
   'editor.placeholder': "'/'를 입력해 명령어 사용",

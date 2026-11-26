@@ -57,6 +57,8 @@ export const en: Record<MessageKey, string> = {
   'page.movedToTrash': 'Moved "{title}" to trash',
 
   'editor.body': 'Page content',
+  'editor.unknownContent':
+    'This page contains content this version cannot show ({types}), so it opens read-only. Nothing is removed. Update the app to edit it.',
   'editor.addBelow': 'Add block below',
   'editor.dragToMove': 'Drag to move',
   'editor.placeholder': "Type '/' for commands",

@@ -79,7 +79,16 @@ export function schemaExtensions(): Extensions {
   ]
 }
 
-export function editorExtensions(doc: Y.Doc): Extensions {
+export interface EditorOptions {
+  /**
+   * Called when the page holds content this schema does not know (ED-B23). Without it
+   * y-tiptap deletes that content while rendering; with it the content is kept and the
+   * binding stops writing to the doc (the page becomes read-only).
+   */
+  onInvalidContent?: (error: Error) => void
+}
+
+export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensions {
   return [
     ...schemaExtensions(),
     Placeholder.configure({
@@ -89,7 +98,11 @@ export function editorExtensions(doc: Y.Doc): Extensions {
       },
       showOnlyCurrent: true,
     }),
-    Collaboration.configure({ document: doc, field: 'default' }),
+    Collaboration.configure({
+      document: doc,
+      field: 'default',
+      ySyncOptions: { onInvalidContent: opts.onInvalidContent ?? (() => {}) },
+    }),
     SlashCommand,
     BlockMove,
   ]
