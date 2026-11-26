@@ -10,9 +10,9 @@
 
 | 청크 | 예산 | 현재 (PoC) | 로드 시점 |
 |---|---|---|---|
-| 초기 진입 (셸 + 사이드바 + core) | **≤ 125 KB** | 109.6 KB (M0-03 측정: React 19 약 60KB, Yjs + y-indexeddb 약 35KB 포함) | 즉시 |
-| CSS 전체 | ≤ 25 KB | 약 4 KB | 즉시 |
-| 에디터 코어 | ≤ 210 KB | 166.5 KB | 페이지 열 때 (유휴 시간 프리로드) |
+| 초기 진입 (셸 + 사이드바 + core) | **≤ 125 KB** | 120.6 KB (M0 완료 시점. M0-03 109.6KB에서 i18n·ui·스키마·동기화 보강으로 증가) | 즉시 |
+| CSS 전체 | ≤ 25 KB | 6.3 KB | 즉시 |
+| 에디터 코어 | ≤ 210 KB | 166.3 KB | 페이지 열 때 (유휴 시간 프리로드) |
 | 데이터베이스 | ≤ 120 KB | — | DB 뷰 열 때 |
 | 수식 (KaTeX + CSS) | ≤ 120 KB | — | 수식 블록이 있을 때 |
 | 코드 하이라이트 | 코어 ≤ 15 KB + 언어당 ≤ 5 KB | — | 코드 블록이 있을 때 |
@@ -53,7 +53,7 @@
 
 ## 3. 측정
 
-- `tests/perf/`에 Playwright 기반 벤치마크를 둡니다: 대형 문서 열기, 10k Grid 스크롤 FPS, 사이드바 1k 스크롤, 타이핑 지연. CPU 4배 감속(CDP `Emulation.setCPUThrottlingRate`)으로 중간 사양 Android를 흉내 냅니다.
+- `tests/perf/`에 Playwright 기반 벤치마크를 둡니다 (M0: `baseline.mjs` — 첫 실행, 재방문, 페이지 전환, 타이핑. `npm run perf`): 대형 문서 열기, 10k Grid 스크롤 FPS, 사이드바 1k 스크롤, 타이핑 지연. CPU 4배 감속(CDP `Emulation.setCPUThrottlingRate`)으로 중간 사양 Android를 흉내 냅니다.
 - 결과는 `docs/perf-history.md`에 마일스톤마다 기록합니다.
 - 회귀 기준: 이전 기록보다 20% 이상 나빠지면 마일스톤을 완료할 수 없습니다.
 - 개발 모드에서 `?debug=perf`를 붙이면 렌더링 횟수와 Y 업데이트 크기를 오버레이로 보여줍니다 (P2).

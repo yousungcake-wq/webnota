@@ -13,7 +13,8 @@
     "lint:fix": "eslint . --fix && prettier --write .",
     "size": "node scripts/check-size.mjs",
     "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm run size",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "perf": "node tests/perf/baseline.mjs"
   },
   "dependencies": {
     "@tiptap/core": "^3.35.0",
