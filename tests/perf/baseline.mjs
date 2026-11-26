@@ -56,7 +56,7 @@ await withPage(async (page) => {
     await page.reload()
     await page.locator('.tabbar').waitFor()
     revisitShell.push(Date.now() - t0)
-    const link = page.locator('a[href*="#/page/"]').first()
+    const link = page.locator('.tree-link').first()
     const t1 = Date.now()
     await link.click()
     await page.locator('.wn-editor').waitFor()
@@ -97,16 +97,34 @@ await withPage(
     await page.click('.sidebar-bottom >> text=새 페이지')
     await page.waitForFunction(() => document.querySelector('.page-title')?.value === '')
     await page.fill('.page-title', 'B')
-    const links = page.locator('.tree-link')
+    await page.locator('.wn-editor').click()
+    await page.keyboard.type('some text in B')
+    // Measured inside the page (click → title and editor content painted): Playwright
+    // round-trips would otherwise dominate (M0 measured ~187ms that way).
     for (let i = 0; i < RUNS * 2; i++) {
-      const t0 = Date.now()
-      await links.nth(i % 2).click()
-      await page.waitForFunction(
-        (want) => document.querySelector('.page-title')?.value === want,
-        i % 2 ? 'B' : 'WebNota 시작하기',
+      const want = i % 2 ? 'B' : 'WebNota 시작하기'
+      switchMs.push(
+        await page.evaluate(
+          (want) =>
+            new Promise((resolve) => {
+              const link = [...document.querySelectorAll('.tree-link')].find((a) =>
+                a.textContent.includes(want === 'B' ? 'B' : 'WebNota'),
+              )
+              const t0 = performance.now()
+              const check = () => {
+                const ed = document.querySelector('.wn-editor')
+                const ok =
+                  document.querySelector('.page-title')?.value === want &&
+                  ed?.textContent.includes(want === 'B' ? 'some text' : 'WebNota')
+                if (ok) resolve(Math.round(performance.now() - t0))
+                else requestAnimationFrame(check)
+              }
+              link.click()
+              requestAnimationFrame(check)
+            }),
+          want,
+        ),
       )
-      await page.locator('.wn-editor').waitFor()
-      switchMs.push(Date.now() - t0)
     }
   },
   { mobile: false },

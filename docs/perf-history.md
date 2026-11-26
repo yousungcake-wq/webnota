@@ -9,7 +9,7 @@ spec/10 §3. 마일스톤마다 `npm run build && npm run perf`(`tests/perf/base
 | firstRunEditorMs | 빈 브라우저에서 첫 방문 → 환영 페이지 에디터 표시 (시드 포함) | LCP < 2.0s (4G) |
 | revisitShellMs | 재방문 새로고침 → 폰 하단 탭 표시 | < 400ms |
 | openPageFromHomeMs | 재방문 직후 홈에서 페이지 열기 → 에디터 표시 (에디터 청크 로드 포함) | — |
-| pageSwitchDesktopMs | IndexedDB에 있는 두 페이지 사이 전환 → 제목·에디터 표시 | < 150ms |
+| pageSwitchDesktopMs | IndexedDB에 있는 두 페이지 사이 전환 → 제목·에디터 내용 표시 (M1부터 페이지 안에서 측정: 클릭 → 그려진 프레임) | < 150ms |
 | typingToPaintMs | 문자 입력 → DOM 반영 후 다음 프레임 | INP < 50ms |
 
 ## 기록
@@ -17,3 +17,4 @@ spec/10 §3. 마일스톤마다 `npm run build && npm run perf`(`tests/perf/base
 | 마일스톤 | 커밋 | 초기 번들 | 에디터 | CSS | firstRunEditorMs | revisitShellMs | openPageFromHomeMs | pageSwitchDesktopMs | typingToPaintMs | 메모 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | M0 기준선 | 6695af5 | 120.6 KB | 166.3 KB | 6.3 KB | 1380 | 252 | 549 | 187 | 15.2 | 두 번 측정 평균. 페이지 전환이 목표(150ms)보다 느림 → M1에서 원인 분석 (에디터 재생성 비용 추정). 첫 실행은 에디터 청크를 기다리는 환영 시드 포함 |
+| M1 | (M1-21) | 122.3 KB | 166.7 KB | 8.3 KB | 1216 | 226 | 509 | 75 | 12.4 | 페이지 전환은 측정 방식 변경(M0의 187ms는 Playwright 왕복 포함, 같은 방식으로 재면 M0도 약 70ms). 나머지는 M0 대비 개선 |
