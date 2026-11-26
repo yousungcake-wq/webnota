@@ -12,7 +12,8 @@
     "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint . --fix && prettier --write .",
     "size": "node scripts/check-size.mjs",
-    "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm run size"
+    "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm run size",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@tiptap/core": "^3.35.0",
@@ -39,6 +40,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22.20.7",
     "@types/react": "^19.3.3",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",

@@ -36,11 +36,10 @@ npm run typecheck
 npm run build              # 프로덕션 빌드 (dist/)
 npm run verify             # 커밋 전 필수: lint + typecheck + test + build + 번들 예산
 npm run lint:fix           # eslint --fix + prettier --write
-npx vite preview --port 4173 &
-NODE_PATH=$(npm root -g) node tests/e2e.mjs http://localhost:4173/ test-results   # e2e (M0-06에서 Playwright Test로 이전 예정)
+npm run e2e                # Playwright Test (tests/e2e, 데스크탑·Pixel 7·iPhone 14), 빌드 후 실행
 ```
 
-작업 환경 참고: Playwright와 Chromium이 미리 설치되어 있습니다 (`NODE_PATH=$(npm root -g)`로 사용, 재설치 금지). `*.github.io`는 작업 환경에서 접속할 수 없습니다.
+작업 환경 참고: Chromium이 `/opt/pw-browsers`에 미리 설치되어 있고 `@playwright/test`는 같은 버전(1.63.0)으로 고정했습니다. `playwright install`은 실행하지 마세요 (CI에서만 실행). `*.github.io`는 작업 환경에서 접속할 수 없습니다.
 
 ## 문서 지도
 

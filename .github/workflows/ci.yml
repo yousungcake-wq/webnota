@@ -1,0 +1,79 @@
+name: CI & Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - id: pages
+        if: github.ref == 'refs/heads/main'
+        uses: actions/configure-pages@v6
+      - run: npm ci
+      # lint + typecheck + unit tests + build + bundle budget (docs/spec/10-performance.md)
+      - run: npm run verify
+        env:
+          VITE_BASE: ${{ steps.pages.outputs.base_path && format('{0}/', steps.pages.outputs.base_path) || '/' }}
+          VITE_GITHUB_CLIENT_ID: ${{ vars.WEBNOTA_GITHUB_CLIENT_ID }}
+          VITE_AUTH_PROXY_URL: ${{ vars.WEBNOTA_AUTH_PROXY_URL }}
+      # e2e runs against a root-based build so preview URLs are simple
+      - name: e2e
+        run: |
+          npx playwright install --with-deps chromium
+          npx vite build --outDir dist-e2e --emptyOutDir
+          npx playwright test
+        env:
+          E2E_DIST: dist-e2e
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: e2e-results
+          path: test-results
+          retention-days: 7
+      - uses: actions/upload-pages-artifact@v5
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: dist
+
+  worker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx tsc -p .
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: [verify, worker]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

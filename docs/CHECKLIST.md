@@ -11,12 +11,12 @@
 ## M0 기반 정비
 
 ### 도구와 품질 게이트
-- [x] M0-01 ESLint(flat config, typescript-eslint, react-hooks, import 경계 규칙) + Prettier + `npm run lint`
-- [x] M0-02 `tsconfig` 강화 (`noUncheckedIndexedAccess`), 위반 수정
-- [x] M0-03 `scripts/check-size.mjs` 번들 예산 검사 (spec/10 §1.1)
-- [x] M0-04 `npm run verify` (lint + typecheck + test + build + size)
-- [ ] M0-05 CI: PR/main에서 verify + e2e (Playwright), main은 배포. 배포 워크플로 액션 버전 갱신 (Node 20 경고)
-- [ ] M0-06 e2e를 `tests/e2e/*.spec.ts`(Playwright Test)로 이전, 기능별 파일 분리
+- [x] M0-01 ESLint(flat config, typescript-eslint, react-hooks, import 경계 규칙) + Prettier + `npm run lint` — 615ec5c
+- [x] M0-02 `tsconfig` 강화 (`noUncheckedIndexedAccess`), 위반 수정 — 615ec5c
+- [x] M0-03 `scripts/check-size.mjs` 번들 예산 검사 (spec/10 §1.1) — 615ec5c
+- [x] M0-04 `npm run verify` (lint + typecheck + test + build + size) — 615ec5c
+- [x] M0-05 CI: PR/main에서 verify + e2e (Playwright), main은 배포. 배포 워크플로 액션 버전 갱신 (Node 20 경고)
+- [x] M0-06 e2e를 `tests/e2e/*.spec.ts`(Playwright Test)로 이전, 기능별 파일 분리
 
 ### 구조 이전 (spec/01 §3)
 - [ ] M0-07 `src/core/{docs,persistence,sync,schema,model,store,auth}`로 이동, `src/features/*`, `src/ui/*`, `src/platform/*`, `src/app/*`로 분리

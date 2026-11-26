@@ -5,3 +5,4 @@ worker/.dev.vars
 *.log
 test-results
 tsconfig.tsbuildinfo
+dist-e2e
