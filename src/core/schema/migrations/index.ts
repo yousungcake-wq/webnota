@@ -4,6 +4,7 @@ import { v3Toggle } from './003-toggle'
 import { v4Callout } from './004-callout'
 import { v5TextColor } from './005-text-color'
 import { v6Mention } from './006-mention'
+import { v7Scripts } from './007-scripts'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -25,4 +26,5 @@ export const MIGRATIONS: Migration[] = [
   v4Callout, // M2-04: callout node type (version stamp only)
   v5TextColor, // M2-07: textStyle mark + highlight color (version stamp only)
   v6Mention, // M2-08: mention node type (version stamp only)
+  v7Scripts, // M2-09: superscript / subscript marks (version stamp only)
 ]

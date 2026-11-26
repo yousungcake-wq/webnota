@@ -37,6 +37,9 @@ MARKS_AT_VERSION[5] = [...MARKS_AT_VERSION[4], 'textStyle'].sort()
 // v6 (M2-08): inline mention node.
 NODES_AT_VERSION[6] = [...NODES_AT_VERSION[5], 'mention'].sort()
 MARKS_AT_VERSION[6] = MARKS_AT_VERSION[5]
+// v7 (M2-09): superscript / subscript marks.
+NODES_AT_VERSION[7] = NODES_AT_VERSION[6]
+MARKS_AT_VERSION[7] = [...MARKS_AT_VERSION[6]!, 'subscript', 'superscript'].sort()
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

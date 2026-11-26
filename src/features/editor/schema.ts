@@ -3,6 +3,8 @@ import Blockquote from '@tiptap/extension-blockquote'
 import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 import StarterKit from '@tiptap/starter-kit'
+import Subscript from '@tiptap/extension-subscript'
+import Superscript from '@tiptap/extension-superscript'
 import { CodeBlockPlus } from './code/codeBlock'
 import { Callout } from './nodes/callout'
 import { HighlightColor, TextColor } from './marks/textColor'
@@ -38,6 +40,8 @@ export function schemaExtensions(): Extensions {
     HighlightColor,
     TextColor,
     Mention,
+    Superscript,
+    Subscript,
   ]
 }
 

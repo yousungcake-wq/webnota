@@ -26,6 +26,8 @@
     "@tiptap/extension-drag-handle-react": "^3.35.0",
     "@tiptap/extension-highlight": "^3.35.0",
     "@tiptap/extension-node-range": "^3.35.0",
+    "@tiptap/extension-subscript": "^3.35.0",
+    "@tiptap/extension-superscript": "^3.35.0",
     "@tiptap/extension-task-item": "^3.35.0",
     "@tiptap/extension-task-list": "^3.35.0",
     "@tiptap/extensions": "^3.35.0",

@@ -13,6 +13,7 @@ const LIST: [string, MessageKey][] = [
   [`${M}[ / ${M}]`, 'shortcuts.backForward'],
   ['F2', 'shortcuts.rename'],
   [`${ALT}${SHIFT}↑ ↓ ← →`, 'shortcuts.moveRow'],
+  [`${M}. / ${M},`, 'shortcuts.scripts'],
   [`${M}/`, 'shortcuts.help'],
 ]
 

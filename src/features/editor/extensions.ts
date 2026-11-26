@@ -6,6 +6,7 @@ import type * as Y from 'yjs'
 import { SlashCommand } from './slash'
 import { schemaExtensions } from './schema'
 import { MentionSuggest, MentionWithView } from './mentionSuggest'
+import { EmojiSuggest } from './emojiSuggest'
 import { t } from '@/core/i18n'
 
 declare module '@tiptap/core' {
@@ -90,6 +91,7 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
     }),
     SlashCommand,
     MentionSuggest,
+    EmojiSuggest,
     BlockMove,
   ]
 }

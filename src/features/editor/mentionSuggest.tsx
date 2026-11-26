@@ -1,7 +1,7 @@
 import { Extension, type Editor, type Range } from '@tiptap/core'
 import { PluginKey } from '@tiptap/pm/state'
-import { ReactNodeViewRenderer, ReactRenderer } from '@tiptap/react'
-import Suggestion, { type SuggestionKeyDownProps, type SuggestionProps } from '@tiptap/suggestion'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import Suggestion from '@tiptap/suggestion'
 import { CalendarDays } from 'lucide-react'
 import { forwardRef, Fragment, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { ws } from '@/core/docs/workspace'
@@ -9,21 +9,13 @@ import { t } from '@/core/i18n'
 import { getView, listViews } from '@/core/model/views'
 import { recentStore } from '@/core/store/prefs'
 import { ViewIcon } from '@/features/page'
-import { place } from './slash'
+import { hidingListRenderer, listKeys, type ListHandle, type ListProps } from './suggestRender'
 import { isoDate } from './mention/dates'
 import { mentionItems, type MentionItem } from './mention/items'
 import { Mention, setMentionLabeler, type MentionAttrs } from './mention/mention'
 import { dateLabel, MentionChip } from './MentionChip'
 
-interface ListHandle {
-  onKeyDown: (e: KeyboardEvent) => boolean
-}
-interface ListProps {
-  items: MentionItem[]
-  command: (item: MentionItem) => void
-}
-
-const MentionList = forwardRef<ListHandle, ListProps>(function MentionList({ items, command }, ref) {
+const MentionList = forwardRef<ListHandle, ListProps<MentionItem>>(function MentionList({ items, command }, ref) {
   const [selected, setSelected] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
   useEffect(() => setSelected(0), [items])
@@ -31,16 +23,7 @@ const MentionList = forwardRef<ListHandle, ListProps>(function MentionList({ ite
     listRef.current?.querySelector(`[data-index="${selected}"]`)?.scrollIntoView({ block: 'nearest' })
   }, [selected])
   useImperativeHandle(ref, () => ({
-    onKeyDown: (e) => {
-      if (!items.length) return false
-      if (e.key === 'ArrowDown') setSelected((s) => (s + 1) % items.length)
-      else if (e.key === 'ArrowUp') setSelected((s) => (s - 1 + items.length) % items.length)
-      else if (e.key === 'Enter' || e.key === 'Tab') {
-        const item = items[selected]
-        if (item) command(item)
-      } else return false
-      return true
-    },
+    onKeyDown: (e) => listKeys(e, items, selected, setSelected, command),
   }))
   if (!items.length) return null
   return (
@@ -112,39 +95,7 @@ function suggestion(char: string, key: string, dates: boolean) {
         ])
         .run()
     },
-    render: () => {
-      let renderer: ReactRenderer<ListHandle, ListProps> | null = null
-      let wrap: HTMLDivElement | null = null
-      const update = (props: SuggestionProps<MentionItem, MentionItem>) => {
-        renderer?.updateProps(props)
-        if (wrap) wrap.hidden = props.items.length === 0
-        requestAnimationFrame(() => wrap && place(wrap, props.clientRect?.()))
-      }
-      return {
-        onStart: (props: SuggestionProps<MentionItem, MentionItem>) => {
-          renderer = new ReactRenderer(MentionList, { props, editor: props.editor })
-          wrap = document.createElement('div')
-          wrap.className = 'slash-wrap'
-          wrap.appendChild(renderer.element)
-          document.body.appendChild(wrap)
-          update(props)
-        },
-        onUpdate: update,
-        onKeyDown: ({ event }: SuggestionKeyDownProps) => {
-          if (event.key === 'Escape') {
-            wrap?.remove()
-            return true
-          }
-          return wrap?.hidden ? false : (renderer?.ref?.onKeyDown(event) ?? false)
-        },
-        onExit: () => {
-          wrap?.remove()
-          renderer?.destroy()
-          wrap = null
-          renderer = null
-        },
-      }
-    },
+    render: hidingListRenderer(MentionList),
   }
 }
 

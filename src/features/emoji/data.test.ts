@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import rows from './emoji-data.json'
-import { filterEmoji, withSkin, type EmojiRow } from './data'
+import { filterEmoji, suggestEmoji, withSkin, type EmojiRow } from './data'
 
 const list = rows as unknown as EmojiRow[]
 
@@ -15,5 +15,18 @@ describe('emoji data', () => {
     expect(withSkin('👋', 3, 1)).toBe('👋🏽')
     expect(withSkin('🧑‍💻', 1, 1)).toBe('🧑🏻‍💻')
     expect(withSkin('💜', 3)).toBe('💜')
+  })
+})
+
+describe('suggestEmoji', () => {
+  const small: EmojiRow[] = [
+    ['😀', 0, 'grinning face|smile'],
+    ['😺', 0, 'grinning cat|cat smile'],
+    ['🐱', 1, 'cat face'],
+  ]
+  it('ranks word starts before substrings and needs a query', () => {
+    expect(suggestEmoji(small, 'cat').map((r) => r[0])).toEqual(['😺', '🐱'])
+    expect(suggestEmoji(small, 'mile').map((r) => r[0])).toEqual(['😀', '😺'])
+    expect(suggestEmoji(small, '')).toEqual([])
   })
 })

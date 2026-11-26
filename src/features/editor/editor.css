@@ -807,3 +807,9 @@
   display: flex;
   gap: var(--sp-2);
 }
+
+/* ED-I07 emoji suggestions */
+.emoji-suggest-glyph {
+  font-size: 20px;
+  line-height: 1;
+}

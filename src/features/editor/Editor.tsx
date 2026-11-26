@@ -12,6 +12,8 @@ import {
   Link,
   Plus,
   Strikethrough,
+  Subscript,
+  Superscript,
   Underline,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -210,6 +212,8 @@ function FormatBubble({ editor, onColor }: { editor: TEditor; onColor: () => voi
       highlight: e.isActive('highlight'),
       link: e.isActive('link'),
       color: e.isActive('textStyle'),
+      sup: e.isActive('superscript'),
+      sub: e.isActive('subscript'),
     }),
   })
   const btn = (active: boolean, label: string, onClick: () => void, icon: React.ReactNode) => (
@@ -253,6 +257,13 @@ function FormatBubble({ editor, onColor }: { editor: TEditor; onColor: () => voi
         <Highlighter size={16} />,
       )}
       {btn(s.color, t('color.title'), onColor, <Baseline size={16} />)}
+      {btn(
+        s.sup,
+        t('editor.superscript'),
+        () => editor.chain().focus().toggleSuperscript().run(),
+        <Superscript size={16} />,
+      )}
+      {btn(s.sub, t('editor.subscript'), () => editor.chain().focus().toggleSubscript().run(), <Subscript size={16} />)}
     </BubbleMenu>
   )
 }
