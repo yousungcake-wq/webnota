@@ -7,7 +7,7 @@
 - **마일스톤**: M1 워크스페이스와 탐색 (M0 완료, 실기기 확인은 사용자 선택)
 - **진행 상황**: M0 26개 모두 완료 (M0-01~26: 도구·품질 게이트, 구조 이전, useY/createStore, 토큰 CSS, i18n, ui 컴포넌트, useLayout, ErrorBoundary, 기능 플래그, 스키마 게이트, 마이그레이션 v2, 동기화 경로 v2, IndexedDB 이름 공간, 문서 LRU, 모르는 노드 보존, 동기화 스케줄, ETag, 탭 리더, 동기화 로그, PWA 아이콘, 회귀 e2e·성능 기준선)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M1-15 다중 워크스페이스 (WS-01, SY-05, ST-01, ST-02)
+- **다음 할 일**: M1-16 폰 홈 개편: 워크스페이스 전환, 스페이스 탭, 최근 항목 (MB-02). 초기 번들 여유 1.1KB
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -90,3 +90,4 @@
 | 2026-11-26 | M1-12: 사이드바 폭 조절·접기·호버 펼치기, 태블릿 드로어 | 1e03cb9 |
 | 2026-11-26 | M1-13: 이동 대화상자(검색, 자기·하위 제외, 스페이스 간 이동) | 00042ab |
 | 2026-11-26 | M1-14: EmojiPicker·IconPicker(전체 이모지·한/영 검색·최근·피부색, 아이콘+색) | 5c82c28 |
+| 2026-11-26 | M1-15: 다중 워크스페이스(전환·저장소 열기·제거, wsKey 분리) | 9d10f35 |
