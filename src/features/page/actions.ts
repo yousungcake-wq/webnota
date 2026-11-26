@@ -1,5 +1,5 @@
 import * as Y from 'yjs'
-import { destroyDoc, openDoc, pageDocName } from '@/core/docs/registry'
+import { destroyDoc, openDoc, pageDocName, retainDoc } from '@/core/docs/registry'
 import {
   createPage,
   deletePagePermanently,
@@ -57,7 +57,12 @@ export async function duplicatePage(id: string) {
     title: src.title ? t('page.copySuffix', { title: src.title }) : '',
     icon: src.icon,
   })
-  const [from, to] = await Promise.all([openDoc(pageDocName(id)), openDoc(pageDocName(copyId))])
-  Y.applyUpdate(to, Y.encodeStateAsUpdate(from))
+  const releases = [retainDoc(pageDocName(id)), retainDoc(pageDocName(copyId))]
+  try {
+    const [from, to] = await Promise.all([openDoc(pageDocName(id)), openDoc(pageDocName(copyId))])
+    Y.applyUpdate(to, Y.encodeStateAsUpdate(from))
+  } finally {
+    releases.forEach((r) => r())
+  }
   navigate({ name: 'page', id: copyId })
 }

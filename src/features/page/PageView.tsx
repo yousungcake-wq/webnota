@@ -2,7 +2,7 @@ import type { Editor as TEditor } from '@tiptap/react'
 import { ChevronLeft, MoreHorizontal, PanelLeft, SmilePlus, Star } from 'lucide-react'
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type * as Y from 'yjs'
-import { openDoc, pageDocName } from '@/core/docs/registry'
+import { openDoc, pageDocName, retainDoc } from '@/core/docs/registry'
 import { ws } from '@/core/docs/workspace'
 import { ancestorsOf, updatePage, type PageMeta } from '@/core/model/pages'
 import { displayTitle } from './titles'
@@ -46,9 +46,11 @@ export function PageView({
 
   useEffect(() => {
     let alive = true
+    const release = retainDoc(pageDocName(id)) // keep it loaded while visible (SY-01 LRU)
     void openDoc(pageDocName(id)).then((d) => alive && setLoaded({ id, doc: d }))
     return () => {
       alive = false
+      release()
     }
   }, [id])
 

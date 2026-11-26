@@ -1,7 +1,7 @@
 import { debugLog } from '../flags'
 import { t } from '../i18n'
 import { getToken, setToken } from '../auth/auth'
-import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc, pageDocName } from '../docs/registry'
+import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc, pageDocName, retainDoc } from '../docs/registry'
 import { listPages } from '../model/pages'
 import { createStore } from '../store/createStore'
 import { isReadOnly } from '../schema/gate'
@@ -55,9 +55,13 @@ function stateKey(a: Account) {
   return `webnota:sync-state:${a.owner}/${a.repo}@${a.branch}`
 }
 
-function localStore(a: Account): LocalStore {
+/** `releases` collects retains: docs the engine touches stay loaded until the sync ends (SY-01 LRU). */
+function localStore(a: Account, releases: (() => void)[]): LocalStore {
   return {
-    getDoc: openDoc,
+    getDoc: (name) => {
+      releases.push(retainDoc(name))
+      return openDoc(name)
+    },
     getDirty,
     clearDirty,
     loadState: () => {
@@ -159,11 +163,12 @@ async function runSync() {
     return
   }
   set({ status: 'syncing', error: null })
+  const releases: (() => void)[] = []
   try {
     const api = new GitHubGitApi(new GitHubClient(token), account.owner, account.repo, account.branch)
     const started = performance.now()
     debugLog('sync', 'start', `${account.owner}/${account.repo}@${account.branch}`, 'dirty:', Object.keys(getDirty()))
-    const result = await syncOnce(api, localStore(account), {
+    const result = await syncOnce(api, localStore(account, releases), {
       deviceName: deviceLabel(),
       canPush: () => !isReadOnly(),
     })
@@ -180,6 +185,8 @@ async function runSync() {
       status: navigator.onLine ? 'error' : 'offline',
       error: e instanceof ConflictRetryError ? t('sync.err.conflict') : e instanceof Error ? e.message : String(e),
     })
+  } finally {
+    releases.forEach((r) => r())
   }
 }
 

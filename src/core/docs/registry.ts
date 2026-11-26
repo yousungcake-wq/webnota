@@ -22,6 +22,7 @@ interface Entry {
   doc: Y.Doc
   ready: Promise<Y.Doc>
   persistence: IndexeddbPersistence
+  lastUsed: number
 }
 
 const registry = new Map<string, Entry>()
@@ -94,9 +95,71 @@ export function onDirtyChange(cb: () => void) {
   return () => dirtyListeners.delete(cb)
 }
 
+// ---- LRU (SY-01): at most `limit` docs in memory ----
+let limit = 30
+/** Docs used this recently are never unloaded (callers may still hold them across awaits). */
+const GRACE_MS = 10_000
+const refs = new Map<string, number>()
+let evictTimer: ReturnType<typeof setTimeout> | undefined
+
+/** Tests only. */
+export function setDocLimit(n: number) {
+  limit = n
+}
+
+export const loadedDocCount = () => registry.size
+
+/**
+ * Keeps `name` loaded until the returned release function is called (a visible page,
+ * a running sync). Can be called before `openDoc`. Releasing twice is a no-op.
+ */
+export function retainDoc(name: string): () => void {
+  refs.set(name, (refs.get(name) ?? 0) + 1)
+  let released = false
+  return () => {
+    if (released) return
+    released = true
+    const n = (refs.get(name) ?? 1) - 1
+    if (n > 0) refs.set(name, n)
+    else refs.delete(name)
+    scheduleEvict()
+  }
+}
+
+function scheduleEvict() {
+  if (evictTimer !== undefined) return
+  evictTimer = setTimeout(() => {
+    evictTimer = undefined
+    evictIdleDocs()
+  }, 1000)
+}
+
+/**
+ * Unloads least recently used docs beyond the limit that are not retained, not dirty,
+ * not the workspace and not used within the grace period. Their data is already in
+ * IndexedDB; reopening reads it back.
+ */
+export function evictIdleDocs() {
+  if (registry.size <= limit) return
+  const now = Date.now()
+  for (const [name, entry] of registry) {
+    if (registry.size <= limit) break
+    if (name === WORKSPACE || refs.has(name) || dirty[name] || now - entry.lastUsed < GRACE_MS) continue
+    registry.delete(name)
+    void entry.persistence.destroy()
+    entry.doc.destroy()
+  }
+}
+
 export function openDoc(name: string): Promise<Y.Doc> {
   const existing = registry.get(name)
-  if (existing) return existing.ready
+  if (existing) {
+    // Map order is the LRU order: move to the end.
+    registry.delete(name)
+    existing.lastUsed = Date.now()
+    registry.set(name, existing)
+    return existing.ready
+  }
   const doc = new Y.Doc({ guid: name, gc: true })
   const persistence = new IndexeddbPersistence(idbName(name), doc)
   doc.on('update', (_update: Uint8Array, origin: unknown) => {
@@ -107,7 +170,8 @@ export function openDoc(name: string): Promise<Y.Doc> {
     markDirty(name)
   })
   const ready = persistence.whenSynced.then(() => doc)
-  registry.set(name, { doc, ready, persistence })
+  registry.set(name, { doc, ready, persistence, lastUsed: Date.now() })
+  if (registry.size > limit) scheduleEvict()
   return ready
 }
 
