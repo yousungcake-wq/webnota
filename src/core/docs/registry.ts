@@ -164,6 +164,13 @@ export function evictIdleDocs() {
   }
 }
 
+// Any loaded doc changed (local edit, other tab, GitHub merge) — for the search index.
+const updateListeners = new Set<(name: string, doc: Y.Doc) => void>()
+export function onAnyDocUpdate(cb: (name: string, doc: Y.Doc) => void) {
+  updateListeners.add(cb)
+  return () => updateListeners.delete(cb)
+}
+
 export function openDoc(name: string): Promise<Y.Doc> {
   const existing = registry.get(name)
   if (existing) {
@@ -177,6 +184,7 @@ export function openDoc(name: string): Promise<Y.Doc> {
   const persistence = new IndexeddbPersistence(idbName(name), doc)
   tabs.attach(name, doc, [persistence])
   doc.on('update', (_update: Uint8Array, origin: unknown) => {
+    if (origin !== persistence && updateListeners.size) updateListeners.forEach((l) => l(name, doc))
     // TAB_ORIGIN: made in another tab, which marked it dirty itself.
     if (origin === REMOTE_ORIGIN || origin === persistence || origin === TAB_ORIGIN) return
     // Read-only (spec/02 §6): nothing local may be queued for upload. Backstop — the

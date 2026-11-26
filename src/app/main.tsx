@@ -13,6 +13,7 @@ import { navigate } from '@/core/store/router'
 import { connect, initUser, startAutoSync } from '@/core/sync/controller'
 import { loadSeed, preloadEditor } from '@/features/editor'
 import { addPage, autoEmptyTrash } from '@/features/page'
+import { startSearchIndexing } from '@/features/search'
 import { configureUi, ErrorBoundary, OverlayHost, toast } from '@/ui'
 import { App } from './App'
 import { installGlobalErrorToasts } from './errors'
@@ -83,7 +84,10 @@ async function boot() {
 
   // Warm the editor chunk once the shell is idle.
   const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1500))
-  idle(preloadEditor)
+  idle(() => {
+    preloadEditor()
+    startSearchIndexing() // WS-07: build/refresh the full-text index in the background
+  })
 
   // Ask the browser not to evict our IndexedDB data under storage pressure.
   void navigator.storage?.persist?.()
