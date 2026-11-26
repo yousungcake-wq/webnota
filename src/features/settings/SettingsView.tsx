@@ -1,12 +1,14 @@
 import { LogOut, Monitor, Moon, RefreshCw, Sun, Trash2 } from 'lucide-react'
 import { Fragment, useState, type ReactNode } from 'react'
 import { oauthAvailable, startLogin } from '@/core/auth/auth'
+import { FLAGS, setFlag, type FlagName } from '@/core/flags'
+import { useFlag } from '@/core/store/flags'
 import { getLang, getLangPref, LANG_NAMES, LANGS, setLangPref, t, tParts, type MessageKey } from '@/core/i18n'
 import { setTheme, useTheme } from '@/core/store/prefs'
 import { useSync } from '@/core/store/sync'
 import { connect, disconnect, syncNow } from '@/core/sync/controller'
 import { SyncBadge } from '@/features/sync'
-import { Button, confirmDialog, Input, LinkButton, Segmented, ViewHeader } from '@/ui'
+import { Button, confirmDialog, Input, LinkButton, Segmented, Switch, ViewHeader } from '@/ui'
 import './settings.css'
 
 function Github({ size = 18 }: { size?: number }) {
@@ -166,6 +168,8 @@ export function SettingsView() {
         />
       </section>
 
+      <AdvancedSection />
+
       <section className="card">
         <h2>{t('settings.about')}</h2>
         <p className="muted small">{t('settings.aboutText', { version: __APP_VERSION__ })}</p>
@@ -174,5 +178,41 @@ export function SettingsView() {
         </LinkButton>
       </section>
     </div>
+  )
+}
+
+const flagNames = Object.keys(FLAGS) as FlagName[]
+
+function FlagSwitch({ name }: { name: FlagName }) {
+  const on = useFlag(name)
+  const def: { label: MessageKey; description?: MessageKey } = FLAGS[name]
+  return (
+    <Switch
+      checked={on}
+      onChange={(v) => setFlag(name, v)}
+      label={t(def.label)}
+      description={def.description && t(def.description)}
+    />
+  )
+}
+
+/** ST-12: developer options and feature flags (per device). */
+function AdvancedSection() {
+  const dev = flagNames.filter((n) => FLAGS[n].kind === 'dev')
+  const features = flagNames.filter((n) => (FLAGS[n].kind as string) === 'feature')
+  return (
+    <section className="card">
+      <h2>{t('settings.advanced')}</h2>
+      <h3 className="card-sub">{t('settings.devOptions')}</h3>
+      {dev.map((n) => (
+        <FlagSwitch key={n} name={n} />
+      ))}
+      <h3 className="card-sub">{t('settings.experiments')}</h3>
+      {features.length ? (
+        features.map((n) => <FlagSwitch key={n} name={n} />)
+      ) : (
+        <p className="muted small">{t('settings.noExperiments')}</p>
+      )}
+    </section>
   )
 }

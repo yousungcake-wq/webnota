@@ -161,6 +161,12 @@ export const en: Record<MessageKey, string> = {
   'settings.theme.dark': 'Dark',
   'settings.language': 'Language',
   'settings.language.system': 'Auto',
+  'settings.advanced': 'Advanced',
+  'settings.devOptions': 'Developer options',
+  'settings.experiments': 'Experimental features',
+  'settings.noExperiments': 'No experimental features right now.',
+  'flag.debugLog': 'Debug logging',
+  'flag.debugLog.desc': 'Writes sync activity to the browser console',
   'settings.about': 'About',
   'settings.aboutText':
     'WebNota {version}. Notes are saved on this device (IndexedDB) first and sync automatically once GitHub is connected. Add it to your home screen to use it offline like an app.',

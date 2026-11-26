@@ -58,6 +58,7 @@ Worker는 `worker/`가 바뀌었을 때 typecheck + 단위 테스트만 실행�
 ## 6. 기능 플래그
 
 - `core/flags.ts`: 미완성 기능을 플래그 뒤에 숨기고 `main`에 병합합니다. 설정 → 고급에서 켤 수 있습니다.
+- 추가: `FLAGS`에 `{ kind: 'feature', default: false, label, description }` 항목(문구는 i18n 키) → 코드에서 `isEnabled('x')`, React에서는 `useFlag('x')`. 값은 기기별(localStorage `webnota:flags`). `kind: 'dev'`는 남는 개발자 옵션 (`debugLog` → `debugLog(scope, …)`로 콘솔 기록).
 - 플래그는 기능이 완성되면 제거합니다 (체크리스트 항목에 "플래그 제거" 포함).
 
 ## 7. 문서화

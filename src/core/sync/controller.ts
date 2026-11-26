@@ -1,3 +1,4 @@
+import { debugLog } from '../flags'
 import { t } from '../i18n'
 import { getToken, setToken } from '../auth/auth'
 import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc } from '../docs/registry'
@@ -159,7 +160,10 @@ async function runSync() {
   set({ status: 'syncing', error: null })
   try {
     const api = new GitHubGitApi(new GitHubClient(token), account.owner, account.repo, account.branch)
-    await syncOnce(api, localStore(account), { deviceName: deviceLabel() })
+    const started = performance.now()
+    debugLog('sync', 'start', `${account.owner}/${account.repo}@${account.branch}`, 'dirty:', Object.keys(getDirty()))
+    const result = await syncOnce(api, localStore(account), { deviceName: deviceLabel() })
+    debugLog('sync', 'done', result, `${Math.round(performance.now() - started)}ms`)
     set({ status: Object.keys(getDirty()).length ? 'pending' : 'idle', lastSyncedAt: Date.now() })
   } catch (e) {
     console.error('[webnota] sync failed', e)

@@ -173,6 +173,12 @@ export const ko = {
   'settings.theme.dark': '다크',
   'settings.language': '언어',
   'settings.language.system': '자동',
+  'settings.advanced': '고급',
+  'settings.devOptions': '개발자 옵션',
+  'settings.experiments': '실험 기능',
+  'settings.noExperiments': '지금은 실험 중인 기능이 없습니다.',
+  'flag.debugLog': '디버그 로그',
+  'flag.debugLog.desc': '동기화 과정을 브라우저 콘솔에 기록합니다',
   'settings.about': '정보',
   'settings.aboutText':
     'WebNota {version}. 노트는 이 기기(IndexedDB)에 먼저 저장되고, GitHub를 연결하면 자동으로 동기화됩니다. 홈 화면에 추가하면 오프라인에서도 앱처럼 쓸 수 있습니다.',
