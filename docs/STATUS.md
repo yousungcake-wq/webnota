@@ -5,8 +5,10 @@
 ## 현재 위치
 
 - **마일스톤**: M0 기반 정비
+- **진행 상황**: M0 26개 중 6개 완료 (M0-01~06: 린트, tsconfig, 번들 예산, verify, CI, Playwright Test)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M0-01부터 순서대로
+- **다음 할 일**: M0-07 구조 이전 (`src/core`, `src/features`, `src/ui`, `src/platform`, `src/app`). 큰 리팩터링이므로 파일 이동 → import 수정 → verify → e2e 순서로, 기능 변경 없이 진행
+- **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
 
@@ -20,7 +22,10 @@
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
 - 실기기 한글 IME 미검증 (에뮬레이션 CDP 테스트만 통과).
 - Tiptap DragHandle/EditorContent가 DOM을 직접 옮겨서 React 재조정이 어긋난 적이 있음 → `page-body`를 `key={id}`로 감싸서 해결. 에디터 주변 구조를 바꿀 때 주의.
-- 작업 환경에서는 `*.github.io`에 접속할 수 없어 배포본 e2e를 돌릴 수 없음. 로컬 `vite preview`로 테스트.
+- 작업 환경에서는 `*.github.io`에 접속할 수 없어 배포본 e2e를 돌릴 수 없음. 로컬 `npm run e2e` (vite preview)로 테스트.
+- 첫 실행 시 환영 페이지 시드가 에디터 청크를 기다려서 에디터 표시까지 약 1초 (재방문은 빠름). M0-25 성능 기준선에서 측정·개선 검토.
+- 번들 초기 진입 109.6KB / 예산 125KB. 여유가 15KB뿐이므로 M1 기능은 지연 로드를 기본으로.
+- React Compiler 린트 규칙(react-hooks 7)이 수동 메모이제이션을 엄격하게 검사함. 간단한 계산은 useMemo 없이 `core` 순수 함수로.
 - 작업 환경의 `gh`는 이 저장소 범위 API만 허용됨 (Pages 설정 API 등은 불가).
 
 ## 작업 기록
@@ -29,3 +34,4 @@
 |---|---|---|
 | 2026-11-26 | PoC 구현, 타당성 검증, 배포 | 9f8e405 |
 | 2026-11-26 | 기획서·로드맵·체크리스트·인계 체계 작성 | d301cee |
+| 2026-11-26 | M0-01~06: 린트·타입·번들 예산(에디터 지연 로드로 초기 269→110KB)·verify·CI·Playwright Test | 615ec5c, 3396cb1 |
