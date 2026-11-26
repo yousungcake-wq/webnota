@@ -1,6 +1,7 @@
 import { t } from '../i18n'
 import { base64ToBytes, bytesToBase64 } from './encoding'
 import type { GitApi, TreeEntry } from './engine'
+import { retryAfter } from './schedule'
 
 const API = 'https://api.github.com'
 
@@ -8,6 +9,8 @@ export class GitHubError extends Error {
   constructor(
     public status: number,
     message: string,
+    /** Set for rate-limit responses: how long to wait before the next request (SY-02c). */
+    public retryAfterMs: number | null = null,
   ) {
     super(message)
   }
@@ -35,7 +38,7 @@ export class GitHubClient {
       } catch {
         /* not JSON */
       }
-      throw new GitHubError(res.status, msg)
+      throw new GitHubError(res.status, msg, retryAfter(res.status, res.headers, Date.now()))
     }
     if (res.status === 204) return undefined as T
     return (await res.json()) as T

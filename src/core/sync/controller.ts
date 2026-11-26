@@ -7,6 +7,7 @@ import { createStore } from '../store/createStore'
 import { isReadOnly } from '../schema/gate'
 import { ConflictRetryError, syncOnce, type LocalStore, type SyncState } from './engine'
 import { GitHubClient, GitHubError, GitHubGitApi } from './github'
+import { createScheduler, PULL_INTERVAL_MS, type SyncOutcome } from './schedule'
 
 export type SyncStatus = 'disconnected' | 'idle' | 'pending' | 'syncing' | 'offline' | 'error'
 
@@ -27,8 +28,6 @@ export interface ControllerState {
 
 const ACCOUNT_KEY = 'webnota:account'
 const DEFAULT_REPO = 'webnota-data'
-const PUSH_DEBOUNCE_MS = 8_000
-const PULL_INTERVAL_MS = 60_000
 
 /** Read in React with `useSync()` (core/store/sync.ts). */
 export const syncStore = createStore<ControllerState>({
@@ -116,7 +115,7 @@ export async function connect(token: string, repoName = DEFAULT_REPO): Promise<A
   set({ account, status: 'idle', error: null })
   // Everything that exists locally must be uploaded at least once.
   await markAllDirtyForFirstSync()
-  void syncNow()
+  scheduler.request('manual')
   return account
 }
 
@@ -132,35 +131,23 @@ export function disconnect() {
   set({ account: null, status: 'disconnected', error: null, lastSyncedAt: null })
 }
 
-let running: Promise<void> | null = null
-let again = false
+const scheduler = createScheduler({ sync: runSync, hasDirty: () => Object.keys(getDirty()).length > 0 })
 
-export function syncNow(): Promise<void> {
-  if (running) {
-    again = true
-    return running
-  }
-  running = (async () => {
-    do {
-      again = false
-      await runSync()
-    } while (again)
-  })().finally(() => {
-    running = null
-  })
-  return running
+/** Manual sync (button). Respects a rate-limit wait, bypasses a normal backoff (SY-02c). */
+export function syncNow() {
+  scheduler.request('manual')
 }
 
-async function runSync() {
+async function runSync(): Promise<SyncOutcome> {
   const account = syncStore.get().account
   const token = getToken()
   if (!account || !token) {
     set({ status: 'disconnected' })
-    return
+    return { ok: true }
   }
   if (!navigator.onLine) {
     set({ status: 'offline' })
-    return
+    return { ok: true } // the 'online' event triggers the next attempt
   }
   set({ status: 'syncing', error: null })
   const releases: (() => void)[] = []
@@ -174,17 +161,19 @@ async function runSync() {
     })
     debugLog('sync', 'done', result, `${Math.round(performance.now() - started)}ms`)
     set({ status: Object.keys(getDirty()).length ? 'pending' : 'idle', lastSyncedAt: Date.now() })
+    return { ok: true }
   } catch (e) {
     console.error('[webnota] sync failed', e)
     if (e instanceof GitHubError && e.status === 401) {
       disconnect()
       set({ error: t('sync.err.expired') })
-      return
+      return { ok: false, error: e, final: true }
     }
     set({
       status: navigator.onLine ? 'error' : 'offline',
       error: e instanceof ConflictRetryError ? t('sync.err.conflict') : e instanceof Error ? e.message : String(e),
     })
+    return { ok: false, error: e, retryAfterMs: e instanceof GitHubError ? e.retryAfterMs : null }
   } finally {
     releases.forEach((r) => r())
   }
@@ -201,34 +190,32 @@ function deviceLabel() {
 
 let started = false
 
-/** Wires up automatic syncing: debounced push after edits, periodic pull, push when the app is hidden. */
+/** Wires up automatic syncing (SY-02b): pushes after edits, periodic pull, on hide/show and reconnect. */
 export function startAutoSync() {
   if (started) return
   started = true
-  let timer: ReturnType<typeof setTimeout> | null = null
 
   onDirtyChange(() => {
     if (!syncStore.get().account) return
     if (Object.keys(getDirty()).length === 0) return
     if (syncStore.get().status === 'idle') set({ status: 'pending' })
-    if (timer) clearTimeout(timer)
-    timer = setTimeout(() => void syncNow(), PUSH_DEBOUNCE_MS)
+    scheduler.edited()
   })
 
   setInterval(() => {
-    if (syncStore.get().account && document.visibilityState === 'visible') void syncNow()
+    if (syncStore.get().account && document.visibilityState === 'visible') scheduler.request('interval')
   }, PULL_INTERVAL_MS)
 
   document.addEventListener('visibilitychange', () => {
     if (!syncStore.get().account) return
     // hidden: flush pending edits before the OS may kill the tab; visible: pull fresh changes
-    void syncNow()
+    scheduler.request(document.visibilityState === 'hidden' ? 'hidden' : 'visible')
   })
-  window.addEventListener('online', () => void syncNow())
+  window.addEventListener('online', () => scheduler.request('online'))
   window.addEventListener('offline', () => syncStore.get().account && set({ status: 'offline' }))
 
   if (syncStore.get().account) {
     set({ status: 'idle' })
-    void syncNow()
+    scheduler.request('start')
   }
 }
