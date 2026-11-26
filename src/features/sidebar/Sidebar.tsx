@@ -2,6 +2,7 @@ import { PanelLeftClose, Plus, Search, Settings, Star, Trash2 } from 'lucide-rea
 import { useCurrentSpace } from '@/core/store/views'
 import { href, type Route } from '@/core/store/router'
 import { addPage } from '@/features/page'
+import { openPalette } from '@/features/search'
 import { SpaceSwitcher } from '@/features/spaces'
 import { SyncBadge } from '@/features/sync'
 import { FavoritesList, PageTree } from './PageTree'
@@ -26,9 +27,10 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
       </div>
 
       <nav className="side-nav">
-        <a className={`side-link${route.name === 'search' ? ' is-current' : ''}`} href={href({ name: 'search' })}>
+        <button type="button" className="side-link" onClick={openPalette} aria-keyshortcuts="Control+K Meta+K">
           <Search size={16} /> {t('common.search')}
-        </a>
+          <kbd className="side-kbd">{/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl K'}</kbd>
+        </button>
         <a className={`side-link${route.name === 'settings' ? ' is-current' : ''}`} href={href({ name: 'settings' })}>
           <Settings size={16} /> {t('common.settings')}
         </a>

@@ -28,7 +28,7 @@ test.describe('PoC regression (desktop)', () => {
 
   test('search finds pages by title', async ({ page }) => {
     await newPage(page, '검색용 회의록')
-    await page.getByRole('complementary').getByRole('link', { name: '검색', exact: true }).click()
+    await page.goto('/#/search')
     await page.getByPlaceholder('페이지 제목 검색').fill('회의')
     await page
       .getByRole('main')

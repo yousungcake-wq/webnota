@@ -59,3 +59,9 @@
   padding: 0 8px;
   font-size: 14px;
 }
+.side-kbd {
+  margin-left: auto;
+  font: inherit;
+  font-size: 11px;
+  color: var(--text-3);
+}

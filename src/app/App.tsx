@@ -6,7 +6,7 @@ import { href, navigate, useRoute, type Route } from '@/core/store/router'
 import { FavoritesView } from '@/features/favorites'
 import { HomeView } from '@/features/home'
 import { PageOverlays, PageView } from '@/features/page'
-import { SearchView } from '@/features/search'
+import { PaletteHost, SearchView } from '@/features/search'
 import { SettingsView } from '@/features/settings'
 import { Sidebar } from '@/features/sidebar'
 import { TrashView } from '@/features/trash'
@@ -58,6 +58,7 @@ export function App() {
         </ErrorBoundary>
       </main>
       <PageOverlays />
+      <PaletteHost />
     </div>
   )
 }
