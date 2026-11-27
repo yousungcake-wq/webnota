@@ -107,7 +107,11 @@ export function MoveDialog({ view, onClose }: { view: ViewMeta; onClose: () => v
               onClick={() => pick(x)}
             >
               <span className="tree-icon">
-                {x.view ? <ViewIcon icon={x.view.icon} layout={x.view.layout} /> : space && <SpaceBadge space={space} size={18} />}
+                {x.view ? (
+                  <ViewIcon icon={x.view.icon} layout={x.view.layout} />
+                ) : (
+                  space && <SpaceBadge space={space} size={18} />
+                )}
               </span>
               <span className="move-label">{x.label}</span>
             </button>
