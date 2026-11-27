@@ -1,9 +1,10 @@
 import MiniSearch from 'minisearch'
+import { matchRange, queryTokens, searchTokens } from '@/core/text/hangul'
 
 /**
- * Full-text search core (WS-07): MiniSearch with a tokenizer that splits on whitespace
- * and punctuation and adds Hangul bigrams (a 3-syllable word also yields its 2 bigrams) so Korean words
- * match inside compounds. Runs inside the search worker; pure, so it is unit-tested here.
+ * Full-text search core (WS-07): MiniSearch with Korean-aware tokens (core/text/hangul:
+ * jamo of every suffix + 초성), so `삭` finds `사과`, `ㅎㅇㄹ` finds `회의록`, and words match
+ * inside compounds. Runs inside the search worker; pure, so it is unit-tested here.
  */
 export interface SearchDoc {
   id: string
@@ -20,17 +21,10 @@ export interface SearchHit {
   snippet: string
 }
 
-const HANGUL = /\p{Script=Hangul}/u
+/** Bumped when the tokens change: an index saved in another format is rebuilt. */
+export const INDEX_FORMAT = 2
 
-export function tokenize(text: string): string[] {
-  const out: string[] = []
-  for (const raw of text.toLowerCase().split(/[\s\p{P}\p{S}]+/u)) {
-    if (!raw) continue
-    out.push(raw)
-    if (HANGUL.test(raw) && raw.length > 2) for (let i = 0; i < raw.length - 1; i++) out.push(raw.slice(i, i + 2))
-  }
-  return out
-}
+export const tokenize = searchTokens
 
 const OPTIONS = {
   fields: ['title', 'body'],
@@ -39,15 +33,15 @@ const OPTIONS = {
 }
 
 interface Saved {
+  format?: number
   index: unknown
   bodies: Record<string, string>
 }
 
-function snippetOf(body: string, terms: string[]): string {
-  const lower = body.toLowerCase()
+function snippetOf(body: string, words: string[]): string {
   let at = -1
-  for (const t of terms) {
-    const i = lower.indexOf(t)
+  for (const w of words) {
+    const i = matchRange(body, w)?.[0] ?? -1
     if (i >= 0 && (at < 0 || i < at)) at = i
   }
   if (at < 0) return ''
@@ -61,6 +55,7 @@ export function createSearch(saved?: string) {
   let bodies: Record<string, string> = {}
   if (saved) {
     const data = JSON.parse(saved) as Saved
+    if (data.format !== INDEX_FORMAT) throw new Error('search index format changed')
     mini = MiniSearch.loadJS(data.index as Parameters<typeof MiniSearch.loadJS>[0], OPTIONS)
     bodies = data.bodies
   } else mini = new MiniSearch<SearchDoc>(OPTIONS)
@@ -80,24 +75,22 @@ export function createSearch(saved?: string) {
     query(q: string, limit = 50): SearchHit[] {
       const words = q.trim()
       if (!words) return []
-      // Each typed word must match (as a whole token or a prefix); bigrams help inside Korean compounds.
+      // Each typed word must match as a prefix of some token (jamo / 초성 for Korean).
+      const typed = words
+        .toLowerCase()
+        .split(/[\s\p{P}\p{S}]+/u)
+        .filter(Boolean)
       return mini
-        .search(words, {
-          tokenize: (s) =>
-            s
-              .toLowerCase()
-              .split(/[\s\p{P}\p{S}]+/u)
-              .filter(Boolean),
-        })
+        .search(words, { tokenize: queryTokens })
         .slice(0, limit)
         .map((r) => ({
           id: String(r.id),
           score: r.score,
-          terms: r.queryTerms ?? r.terms,
-          snippet: snippetOf(bodies[String(r.id)] ?? '', r.queryTerms ?? r.terms),
+          terms: typed, // highlighted with the same Korean-aware matching
+          snippet: snippetOf(bodies[String(r.id)] ?? '', typed),
         }))
     },
-    toJSON: (): string => JSON.stringify({ index: mini.toJSON(), bodies } satisfies Saved),
+    toJSON: (): string => JSON.stringify({ format: INDEX_FORMAT, index: mini.toJSON(), bodies } satisfies Saved),
   }
 }
 

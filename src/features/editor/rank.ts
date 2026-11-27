@@ -1,3 +1,4 @@
+import { matchRange } from '@/core/text/hangul'
 /** Block lookup helpers shared by the slash menu, the phone block panel and "turn into" (ED-F01). */
 export type BlockCategory = 'basic' | 'list' | 'advanced'
 
@@ -45,6 +46,8 @@ export function rankBlocks<T extends Rankable>(blocks: T[], query: string, recen
     if (title.includes(q)) return 3
     if (b.keywords.some((k) => k.startsWith(q))) return 2
     if (b.keywords.some((k) => k.includes(q))) return 1
+    // Korean: 초성 or a syllable still being typed (ㅈㅁ → 제목, 젬 → 제목)
+    if (matchRange(title, q) || b.keywords.some((k) => matchRange(k, q))) return 0.5
     return 0
   }
   return blocks

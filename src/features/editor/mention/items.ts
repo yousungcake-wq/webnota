@@ -1,3 +1,4 @@
+import { matchRange } from '@/core/text/hangul'
 import { isAlive, type IconValue, type ViewMeta } from '@/core/model/views'
 import { addDays, parseDateQuery } from './dates'
 
@@ -32,7 +33,7 @@ export function mentionItems(q: MentionQuery): MentionItem[] {
   const recentRank = new Map(q.recent.map((id, i) => [id, i]))
   const pages = q.views
     .filter((v) => isAlive(byId, v.id))
-    .map((v) => ({ v, at: norm(v.title).indexOf(query) }))
+    .map((v) => ({ v, at: query ? (matchRange(v.title, query)?.[0] ?? -1) : 0 }))
     .filter((x) => x.at >= 0)
     .sort((a, b) => {
       const ra = recentRank.get(a.v.id) ?? Infinity

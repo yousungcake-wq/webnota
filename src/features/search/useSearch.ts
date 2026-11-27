@@ -1,3 +1,4 @@
+import { hangulIncludes } from '@/core/text/hangul'
 import { useEffect, useMemo, useState } from 'react'
 import { useRecent } from '@/core/store/prefs'
 import { useAliveViews } from '@/core/store/views'
@@ -39,10 +40,9 @@ export function useSearch(q: string) {
     }
     const out = (hits?.q === query ? hits.hits : []).filter((h) => aliveIds.has(h.id))
     const seen = new Set(out.map((h) => h.id))
-    const lower = query.toLowerCase()
     const titleHits = alive
-      .filter((p) => !seen.has(p.id) && displayTitle(p.title).toLowerCase().includes(lower))
-      .map((p) => ({ id: p.id, score: 0, terms: [lower], snippet: '' }))
+      .filter((p) => !seen.has(p.id) && hangulIncludes(displayTitle(p.title), query))
+      .map((p) => ({ id: p.id, score: 0, terms: query.split(/\s+/).filter(Boolean), snippet: '' }))
     return [...titleHits, ...out]
   }, [alive, hits, query, recent])
 

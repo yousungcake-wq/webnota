@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { createSearch, tokenize } from './engine'
 
 describe('tokenize (WS-07)', () => {
-  it('splits on spaces/punctuation and adds Hangul bigrams', () => {
-    expect(tokenize('회의록, Weekly notes!')).toEqual(['회의록', '회의', '의록', 'weekly', 'notes'])
-    expect(tokenize('회')).toEqual(['회'])
+  it('splits on spaces/punctuation; Korean words also get jamo suffixes and 초성', () => {
+    const t = tokenize('회의록, Weekly notes!')
+    expect(t).toEqual(expect.arrayContaining(['회의록', 'weekly', 'notes', 'ㅇㅡㅣㄹㅗㄱ', 'ㅎㅇㄹ']))
+    expect(t).not.toContain('')
   })
 })
 
@@ -40,6 +41,32 @@ describe('search engine', () => {
         .map((x) => x.id),
     ).toEqual(['c'])
     expect(make().query('jeju 우유')).toEqual([])
+  })
+
+  it('Korean: a syllable still being typed and 초성 find words (es-hangul)', () => {
+    expect(
+      make()
+        .query('회읠')
+        .map((x) => x.id),
+    ).toEqual(['a'])
+    expect(
+      make()
+        .query('ㅎㅇㄹ')
+        .map((x) => x.id),
+    ).toEqual(['a'])
+    expect(
+      make()
+        .query('ㅇㅅ')
+        .map((x) => x.id),
+    ).toEqual(expect.arrayContaining(['a']))
+    const [hit] = make().query('예사')
+    expect(hit?.id).toBe('a')
+    expect(hit?.snippet).toContain('예산')
+  })
+
+  it('an index saved in an older format is rejected (so it gets rebuilt)', () => {
+    const old = JSON.stringify({ index: JSON.parse(make().toJSON()).index, bodies: {} })
+    expect(() => createSearch(old)).toThrow()
   })
 
   it('updates and removes documents; survives a JSON round trip', () => {

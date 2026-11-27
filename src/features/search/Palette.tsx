@@ -1,3 +1,4 @@
+import { hangulIncludes } from '@/core/text/hangul'
 import { FilePlus, Moon, Search, Settings, Sun, Trash2, type LucideIcon } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { useId, useMemo, useRef, useState } from 'react'
@@ -44,8 +45,7 @@ export default function Palette({ onClose }: { onClose: () => void }) {
       { id: 'settings', label: t('palette.openSettings'), icon: Settings, run: () => navigate({ name: 'settings' }) },
       { id: 'trash', label: t('palette.openTrash'), icon: Trash2, run: () => navigate({ name: 'trash' }) },
     ]
-    const lower = query.toLowerCase()
-    return query ? all.filter((c) => c.label.toLowerCase().includes(lower)) : []
+    return query ? all.filter((c) => hangulIncludes(c.label, query)) : []
   }, [query])
 
   const items = [

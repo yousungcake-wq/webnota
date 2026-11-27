@@ -50,7 +50,10 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, { restore = tru
     el.addEventListener('keydown', onKey)
     return () => {
       el.removeEventListener('keydown', onKey)
-      if (restore && previous?.isConnected) previous.focus({ preventScroll: true })
+      // give focus back only if nothing else took it (a menu item may have focused the editor)
+      const active = document.activeElement
+      const free = !active || active === document.body || el.contains(active)
+      if (restore && free && previous?.isConnected) previous.focus({ preventScroll: true })
     }
   }, [ref, restore, autoFocus])
 }

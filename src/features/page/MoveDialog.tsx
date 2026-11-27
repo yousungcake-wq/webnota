@@ -1,3 +1,4 @@
+import { hangulIncludes } from '@/core/text/hangul'
 import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ws } from '@/core/docs/workspace'
@@ -65,8 +66,7 @@ export function MoveDialog({ view, onClose }: { view: ViewMeta; onClose: () => v
     return out
   }, [view.id])
   const spaces = listSpaces(ws())
-  const lower = q.trim().toLowerCase()
-  const shown = lower ? targets.filter((x) => x.label.toLowerCase().includes(lower)) : targets
+  const shown = q.trim() ? targets.filter((x) => hangulIncludes(x.label, q)) : targets
 
   const pick = (target: Target) => {
     const doc = ws()
@@ -103,7 +103,7 @@ export function MoveDialog({ view, onClose }: { view: ViewMeta; onClose: () => v
               aria-selected={false}
               disabled={x.disabled}
               className={`move-item${x.view ? '' : ' is-space'}`}
-              style={{ paddingLeft: 8 + (lower ? 0 : x.depth) * 16 }}
+              style={{ paddingLeft: 8 + (q.trim() ? 0 : x.depth) * 16 }}
               onClick={() => pick(x)}
             >
               <span className="tree-icon">

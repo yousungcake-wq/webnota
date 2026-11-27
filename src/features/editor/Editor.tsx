@@ -228,9 +228,14 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
       if (loaded || !hasTable(editor.state.doc)) return
       loaded = true
       void loadTableKit().then((kit) => {
-        if (editor.isDestroyed) return
-        // before the other plugins so Tab moves between cells
-        for (const p of kit.tablePlugins().reverse()) editor.registerPlugin(p, (pl, list) => [pl, ...list])
+        const register = () => {
+          if (editor.isDestroyed) return
+          // before the other plugins so Tab moves between cells
+          for (const p of kit.tablePlugins().reverse()) editor.registerPlugin(p, (pl, list) => [pl, ...list])
+        }
+        // reconfiguring the editor mid-composition would commit the IME's partial syllable (ㅎ한글)
+        if (editor.view.composing) editor.view.dom.addEventListener('compositionend', register, { once: true })
+        else register()
       })
     }
     check()

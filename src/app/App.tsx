@@ -6,7 +6,7 @@ import { wsKey } from '@/core/docs/slots'
 import { href, navigate, useRoute, type Route } from '@/core/store/router'
 import { HomeView } from '@/features/home'
 import { PageOverlays, PageView } from '@/features/page'
-import { PaletteHost, SearchView } from '@/features/search'
+import { loadSearchView, PaletteHost } from '@/features/search'
 import { useLayout } from '@/platform/layout'
 import { t } from '@/core/i18n'
 import { EmptyState, ErrorBoundary } from '@/ui'
@@ -19,6 +19,7 @@ const LAST_KEY = wsKey('last-page')
 // Screens that are never the first thing shown load on demand (spec/10 §2).
 const FavoritesView = lazy(() => import('@/features/favorites').then((m) => ({ default: m.FavoritesView })))
 const TrashView = lazy(() => import('@/features/trash').then((m) => ({ default: m.TrashView })))
+const SearchView = lazy(() => loadSearchView().then((m) => ({ default: m.SearchView })))
 const SettingsView = lazy(() => import('@/features/settings').then((m) => ({ default: m.SettingsView })))
 const Lazy = ({ children }: { children: ReactNode }) => <Suspense fallback={null}>{children}</Suspense>
 
@@ -98,7 +99,11 @@ function MainContent({
     case 'page':
       return <PageView id={route.id} sidebarOpen={sidebarOpen} onToggleSidebar={onToggleSidebar} />
     case 'search':
-      return <SearchView />
+      return (
+        <Lazy>
+          <SearchView />
+        </Lazy>
+      )
     case 'favorites':
       return (
         <Lazy>
@@ -150,7 +155,9 @@ function PhoneShell({ route }: { route: Route }) {
               <FavoritesView />
             </Lazy>
           ) : route.name === 'search' ? (
-            <SearchView autoFocus={false} />
+            <Lazy>
+              <SearchView autoFocus={false} />
+            </Lazy>
           ) : route.name === 'settings' ? (
             <Lazy>
               <SettingsView />

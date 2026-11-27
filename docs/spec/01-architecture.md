@@ -41,7 +41,7 @@
 | 로컬 저장 | y-indexeddb | Yjs 공식 |
 | 가상 스크롤 | @tanstack/react-virtual | Grid, 긴 목록, 큰 트리 |
 | 드래그 앤 드롭 | @dnd-kit/core (사이드바, 보드, 그리드 행) + ProseMirror 내장 (에디터 블록) | 터치 지원, 접근성 |
-| 검색 | MiniSearch (Web Worker) + 한국어 bigram 토크나이저 | 작고 빠름 |
+| 검색 | MiniSearch (Web Worker) + es-hangul(토스) 자모·초성 토큰 | 작고 빠름, 한글 입력 중·초성 검색 |
 | 수식 | KaTeX (지연 로드) | |
 | 코드 하이라이트 | lowlight (언어별 지연 로드) | |
 | 순서 키 | fractional-indexing | Yjs 배열 move 문제 회피 |
