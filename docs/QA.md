@@ -79,7 +79,7 @@
 
 ### M3 (미디어와 임베드)
 
-**먼저**: 링크 미리보기는 Worker의 새 `/unfurl`이 필요합니다. `cd worker && npx wrangler deploy` 후 `ALLOWED_ORIGINS`에 배포 주소(`https://yousungcake-wq.github.io`)가 있는지 확인하세요. Worker가 없으면 카드에 사이트 주소만 나옵니다(정상 동작).
+**먼저**: GitHub 로그인 버튼과 링크 미리보기는 Worker가 필요합니다. README "2. GitHub로 로그인 버튼 켜기"대로 설정하면 Actions가 Worker를 배포합니다. Worker가 없으면 카드에 사이트 주소만 나옵니다(정상 동작).
 
 **데스크탑**
 - [ ] 이미지: `/이미지` → 업로드, 스크린샷 붙여넣기(⌘V), 파일 끌어 놓기. 크기 손잡이 끌기, 정렬 3가지, 크기 메뉴, 캡션, 바꾸기, 내려받기, 원본 보기, 삭제. 새로 고침해도 그대로

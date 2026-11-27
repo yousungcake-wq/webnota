@@ -7,7 +7,7 @@
 - **마일스톤**: M4 데이터베이스 I (M3 완료 — 실기기 확인은 docs/QA.md "M3"(와 M2·M1), 사용자 확인 대기. 링크 미리보기는 Worker 재배포 필요)
 - **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 0/16 (체크리스트 세부화 완료)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M4-00 사전 정리(database 플래그·지연 청크·fast-check). 사용자 실기기 QA(docs/QA.md M3·M2) 대기, Worker 재배포(/unfurl)
+- **다음 할 일**: 사용자: README \"GitHub로 로그인 버튼 켜기\" 설정(OAuth App·Cloudflare 토큰·저장소 Secrets/Variables) → 로그인 실기기 확인. 그다음 M4-00. 실기기 QA(docs/QA.md M3·M2) 대기
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -144,3 +144,4 @@
 | 2026-11-27 | M3-10: 저장소 정리(참조 수집·한 커밋 삭제) + 메모리 GitHub e2e로 업로드·내려받기·정리 검증 | d591045 |
 | 2026-11-27 | M3-11: M3 e2e(194개)·성능 기록·QA 항목, M3 완료, M4 체크리스트 세부화 | 9521ac0 |
 | 2026-11-27 | CI e2e 안정화: 새로 고침 전 IndexedDB 쓰기 대기(`reload` 헬퍼, 29개 파일), 블록 메뉴 후 포커스 대기 — M3-08 이후 CI 실패로 배포가 멈췄던 문제 | fb9c0b8 |
+| 2026-11-27 | GitHub 로그인 준비: Actions가 Cloudflare Worker 자동 배포(Secrets 있을 때만, 허용 출처 자동), README를 브라우저만으로 하는 설정 안내로 교체 | (이 커밋) |

@@ -51,29 +51,29 @@ NODE_PATH=$(npm root -g) node tests/e2e.mjs http://localhost:4173/
 
 1. 이 저장소를 GitHub에 푸시합니다.
 2. Settings → Pages → Source를 **GitHub Actions**로 설정합니다.
-3. `main`에 푸시할 때마다 `.github/workflows/deploy.yml`이 테스트, 빌드, 배포를 실행합니다.
+3. `main`에 푸시할 때마다 `.github/workflows/ci.yml`이 테스트, 빌드, 배포를 실행합니다.
 
 여기까지만 해도 앱은 동작합니다. 사용자는 설정 화면에서 **개인 액세스 토큰**으로 GitHub를 연결할 수 있습니다.
 
-### 2. "GitHub로 로그인" 버튼 켜기 (선택)
+### 2. "GitHub로 로그인" 버튼 켜기 (선택, 브라우저만으로)
 
-1. **OAuth App 만들기**: GitHub → Settings → Developer settings → OAuth Apps → New
-   - Homepage URL: `https://<아이디>.github.io/<저장소>/`
-   - Authorization callback URL: `https://<아이디>.github.io/<저장소>/`
-2. **Worker 배포** (Cloudflare 무료 계정):
-   ```bash
-   cd worker
-   npm install
-   npx wrangler login
-   # wrangler.toml의 ALLOWED_ORIGINS를 "https://<아이디>.github.io"로 수정
-   npx wrangler secret put GITHUB_CLIENT_ID
-   npx wrangler secret put GITHUB_CLIENT_SECRET
-   npx wrangler deploy
-   ```
-3. **앱에 연결**: 저장소 Settings → Secrets and variables → Actions → **Variables**에 추가
-   - `WEBNOTA_GITHUB_CLIENT_ID` = OAuth App의 Client ID
-   - `WEBNOTA_AUTH_PROXY_URL` = Worker 주소 (예: `https://webnota-auth.<계정>.workers.dev`)
-4. Actions에서 배포를 다시 실행합니다.
+Worker(Cloudflare 무료)는 GitHub Actions가 자동으로 배포합니다. 터미널은 필요 없습니다.
+
+1. **GitHub OAuth App 만들기**: GitHub → Settings → Developer settings → OAuth Apps → New OAuth App
+   - Application name: `WebNota`
+   - Homepage URL과 Authorization callback URL: `https://<아이디>.github.io/<저장소>/` (끝의 `/` 포함)
+   - 만든 뒤 **Client ID**를 복사하고, **Generate a new client secret**으로 비밀 값을 만들어 복사합니다 (다시 볼 수 없음).
+2. **Cloudflare 준비**: dash.cloudflare.com
+   - 왼쪽 메뉴 **Workers & Pages**를 한 번 엽니다 (처음이면 `workers.dev` 하위 도메인을 정하라고 나오면 정합니다).
+   - **Account ID** 복사: Workers & Pages 화면 오른쪽, 또는 계정 홈의 계정 이름 옆 메뉴 → Copy account ID.
+   - **API 토큰**: 오른쪽 위 프로필 → My Profile → API Tokens → Create Token → **Edit Cloudflare Workers** 템플릿 → Continue → Create → 토큰 복사.
+3. **이 저장소에 넣기**: Settings → Secrets and variables → Actions
+   - **Secrets** 탭(New repository secret): `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `WEBNOTA_GITHUB_CLIENT_SECRET`
+   - **Variables** 탭(New repository variable): `WEBNOTA_GITHUB_CLIENT_ID`
+4. **Actions → CI & Deploy → Run workflow**(main). `worker` 작업이 Worker를 배포하고, 실행 요약(Summary)에 Worker 주소(`https://webnota-auth.<하위 도메인>.workers.dev`)를 보여줍니다.
+5. 그 주소를 **Variables**에 `WEBNOTA_AUTH_PROXY_URL`로 추가하고, **Run workflow**를 한 번 더 실행합니다. 이제 설정 화면에 "GitHub로 로그인" 버튼이 나옵니다.
+
+Worker 허용 출처(`ALLOWED_ORIGINS`)는 `https://<아이디>.github.io`와 `http://localhost:5173`로 자동 설정됩니다. 같은 Worker가 링크 미리보기(`/unfurl`)도 처리합니다.
 
 ## 알려진 제한 (PoC)
 
