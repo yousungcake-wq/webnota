@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 test('toggle: "> " creates it, Enter goes inside, collapse persists per device; quote is now " (ED-B06)', async ({
   page,
@@ -21,7 +21,7 @@ test('toggle: "> " creates it, Enter goes inside, collapse persists per device; 
   await toggle.locator('.toggle-arrow').click()
   await expect(toggle.locator('[data-type="toggleContent"]')).toBeHidden()
   await page.waitForTimeout(300)
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.wn-editor .toggle [data-type="toggleContent"]')).toBeHidden()
   await page.locator('.wn-editor .toggle-arrow').click()
   await expect(page.locator('.wn-editor .toggle [data-type="toggleContent"]')).toHaveText('hidden body')

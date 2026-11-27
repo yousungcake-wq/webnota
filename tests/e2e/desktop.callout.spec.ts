@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 test('callout: slash menu, change icon and color, persists (ED-B09)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
@@ -23,7 +23,7 @@ test('callout: slash menu, change icon and color, persists (ED-B09)', async ({ p
   await expect(callout.locator('.callout-icon')).toHaveText('🚀')
 
   await page.waitForTimeout(300)
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.wn-editor .callout')).toHaveAttribute('data-color', 'blue')
   await expect(page.locator('.wn-editor .callout-icon')).toHaveText('🚀')
   check()

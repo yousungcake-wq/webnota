@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 test('code block: language → highlighting (lazy), wrap, copy (ED-B10)', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
@@ -24,7 +24,7 @@ test('code block: language → highlighting (lazy), wrap, copy (ED-B10)', async 
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('const answer = 42')
 
   await page.waitForTimeout(300)
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.wn-editor .code-block .hljs-keyword').first()).toHaveText('const')
   check()
 })

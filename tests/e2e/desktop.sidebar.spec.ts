@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { openApp } from './helpers'
+import { openApp, reload } from './helpers'
 
 test('sidebar: resize (persisted), collapse with Ctrl+\\, hover to peek (WS-10)', async ({ page }) => {
   await openApp(page)
@@ -12,7 +12,7 @@ test('sidebar: resize (persisted), collapse with Ctrl+\\, hover to peek (WS-10)'
   await page.mouse.move(h.x + 103, h.y + 200, { steps: 5 })
   await page.mouse.up()
   await expect.poll(async () => Math.round((await sidebar.boundingBox())!.width)).toBe(Math.round(w0 + 100))
-  await page.reload()
+  await reload(page)
   await expect.poll(async () => Math.round((await sidebar.boundingBox())!.width)).toBe(Math.round(w0 + 100))
 
   await page.keyboard.press('Control+\\')

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { openApp, waitForNewPage } from './helpers'
+import { openApp, reload, waitForNewPage } from './helpers'
 
 async function newFavorite(page: Page, title: string) {
   await page.click('.sidebar-bottom >> text=새 페이지')
@@ -32,6 +32,6 @@ test('favorites keep their order and can be reordered by drag (WS-04)', async ({
   await expect(page.locator('.tree-drop-line')).toBeVisible()
   await page.mouse.up()
   await expect(favs).toHaveText(['Zulu', 'Xray', 'Yank'])
-  await page.reload()
+  await reload(page)
   await expect(favs).toHaveText(['Zulu', 'Xray', 'Yank'])
 })

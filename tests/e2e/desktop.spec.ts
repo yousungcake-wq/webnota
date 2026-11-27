@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 test.describe('desktop', () => {
   let assertNoErrors: () => void
@@ -46,7 +46,7 @@ test.describe('desktop', () => {
     await page.keyboard.press('Enter')
     await page.keyboard.type('사라지면 안 되는 내용')
     await page.waitForTimeout(400)
-    await page.reload()
+    await reload(page)
     await expect(page.locator('.wn-editor')).toContainText('사라지면 안 되는 내용')
     await expect(page.locator('.page-title')).toHaveValue('저장 테스트')
   })

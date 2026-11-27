@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test'
-import { openApp } from './helpers'
+import { openApp, reload } from './helpers'
 
 test('phone: read-only banner on the page editor and tab screens', async ({ page }) => {
   await openApp(page) // first run opens the seeded welcome page
   await page.evaluate(() => localStorage.setItem('webnota:debug', 'schema-newer'))
-  await page.reload()
+  await reload(page)
 
   const banner = page.getByRole('alert').filter({ hasText: '더 새로운 버전' })
   await expect(banner).toBeVisible()

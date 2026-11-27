@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 test.beforeEach(async ({ page }) => {
   await openApp(page)
@@ -33,7 +33,7 @@ test('columns: insert 3, type in each, drag to resize, persists (ED-B17)', async
   await expect.poll(async () => (await cols.nth(0).boundingBox())!.width).toBeGreaterThan(first!.width + 60)
 
   await page.waitForTimeout(300)
-  await page.reload()
+  await reload(page)
   await expect(cols).toHaveCount(3)
   await expect(cols.nth(0)).toHaveAttribute('style', /flex-grow: 1\.[3-9]|flex-grow: [2-9]/)
   check()

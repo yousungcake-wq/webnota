@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 async function newPage(page: Page, title: string) {
   await page.click('.sidebar-bottom >> text=새 페이지')
@@ -69,7 +69,7 @@ test('[[ links pages, @ inserts dates and the date chip can be changed (ED-I05)'
   await page.keyboard.press('Enter')
   await expect(ed.locator('p')).toHaveCount(2)
   await page.waitForTimeout(300)
-  await page.reload()
+  await reload(page)
   await expect(ed.locator('.mention[data-kind="date"]')).toHaveText('오늘')
   check()
 })

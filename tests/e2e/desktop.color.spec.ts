@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 test('text and background color from the format bubble, kept after reload (ED-I03)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
@@ -22,7 +22,7 @@ test('text and background color from the format bubble, kept after reload (ED-I0
   await expect(ed.locator('mark[data-bg-color="blue"]')).toHaveText('paint me')
 
   await page.waitForTimeout(300)
-  await page.reload()
+  await reload(page)
   await expect(ed.locator('span[data-text-color="red"]')).toHaveText('paint me')
   await expect(ed.locator('mark[data-bg-color="blue"]')).toHaveText('paint me')
 

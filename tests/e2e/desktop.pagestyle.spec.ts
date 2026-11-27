@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 // 1×1 PNG served for the cover image test
 const PNG = Buffer.from(
@@ -43,7 +43,7 @@ test('cover: add, pick a color, image link, reposition, remove (ED-F11)', async 
   await page.getByRole('button', { name: '위치 저장' }).click()
   await expect(cover.locator('img')).not.toHaveAttribute('style', /50% 50%/)
   await page.waitForTimeout(300) // IndexedDB write
-  await page.reload()
+  await reload(page)
   await expect(cover.locator('img')).not.toHaveAttribute('style', /50% 50%/)
 
   await cover.hover()
@@ -66,7 +66,7 @@ test('page style: font, size, line spacing, full width persist (ED-F10)', async 
   await expect(body).toHaveAttribute('data-line', 'relaxed')
   await expect(body).toHaveClass(/is-full/)
   await page.waitForTimeout(300)
-  await page.reload()
+  await reload(page)
   await expect(body).toHaveAttribute('data-font', 'serif')
   await expect(body).toHaveClass(/is-full/)
 })

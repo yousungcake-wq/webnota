@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 test('table: insert, Tab between cells, menu rows / colors / headers, persists (ED-B16)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
@@ -42,7 +42,7 @@ test('table: insert, Tab between cells, menu rows / colors / headers, persists (
   await expect(table.locator('tr').nth(1).locator('th')).toHaveCount(1)
 
   await page.waitForTimeout(300)
-  await page.reload()
+  await reload(page)
   await expect(table.locator('tr')).toHaveCount(4)
   await expect(table.locator('[data-bg-color="blue"]')).toHaveCount(1)
   await expect(table.locator('th').first()).toHaveText('이름')
@@ -86,7 +86,7 @@ test('table position: center, right, full width; persists', async ({ page }) => 
   expect(Math.abs(t.width - w.width)).toBeLessThan(3)
 
   await page.waitForTimeout(300)
-  await page.reload()
+  await reload(page)
   await expect(wrapper).toHaveAttribute('data-layout', 'full')
   await setPosition('왼쪽')
   await expect(wrapper).not.toHaveAttribute('data-layout', /.+/)

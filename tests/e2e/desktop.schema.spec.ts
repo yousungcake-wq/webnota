@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { openApp } from './helpers'
+import { openApp, reload } from './helpers'
 
 // spec/02 §6: data newer than the app → read-only + "update the app" banner.
 // `webnota:debug=schema-newer` makes the build pretend its schema version is 0.
@@ -7,7 +7,7 @@ test('newer data opens read-only with an update banner', async ({ page }) => {
   await openApp(page) // seeds the welcome page as a normal (writable) run
   const before = await page.locator('.wn-editor').textContent()
   await page.evaluate(() => localStorage.setItem('webnota:debug', 'schema-newer'))
-  await page.reload()
+  await reload(page)
 
   const banner = page.getByRole('alert').filter({ hasText: '더 새로운 버전' })
   await expect(banner).toBeVisible()
@@ -29,7 +29,7 @@ test('newer data opens read-only with an update banner', async ({ page }) => {
 
   // back to a current build: writable again
   await page.evaluate(() => localStorage.removeItem('webnota:debug'))
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.wn-editor')).toHaveAttribute('contenteditable', 'true')
   await expect(banner).toHaveCount(0)
 })

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { openApp } from './helpers'
+import { openApp, reload } from './helpers'
 
 async function selectFirstParagraph(page: Page) {
   await page.evaluate(() => {
@@ -35,7 +35,7 @@ test('phone: block menu from the toolbar and from a long press (MB-23)', async (
   await expect(ed.locator(':scope > p')).toHaveCount(count + 1)
 
   // long press while not typing
-  await page.reload()
+  await reload(page)
   await expect(ed.locator('h2').first()).toBeVisible()
   const box = (await ed.locator('h2').first().boundingBox())!
   await page.evaluate(

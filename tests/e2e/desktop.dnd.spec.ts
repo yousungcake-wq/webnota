@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 async function newPage(page: Page, title: string) {
   await page.click('.sidebar-bottom >> text=새 페이지')
@@ -48,7 +48,7 @@ test.describe('tree drag & drop (WS-03)', () => {
     await page.mouse.up()
     await expect(titles(page)).toHaveText(['WebNota 시작하기', 'Yank', 'Zulu', 'Xray'])
 
-    await page.reload()
+    await reload(page)
     await expect(titles(page)).toHaveText(['WebNota 시작하기', 'Yank', 'Zulu', 'Xray'])
     check()
   })

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 test.beforeEach(async ({ page }) => {
   await openApp(page)
@@ -31,7 +31,7 @@ test('file block: /file → upload, name/size/"waiting to upload", download, sur
   const d = await download
   expect(d.suggestedFilename()).toBe('Q3 report.pdf')
 
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.wn-editor .file-name')).toHaveText('Q3 report.pdf')
   check()
 })

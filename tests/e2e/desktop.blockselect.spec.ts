@@ -52,6 +52,8 @@ test('drag in the margin selects blocks; the block menu acts on all of them (ED-
   await expect(ed.locator('p[data-bg-color="yellow"]')).toHaveText(['하나', '둘', '셋'])
 
   // the change ends block mode but keeps the text selection: Esc selects its blocks again, Esc leaves
+  await expect(menu).toHaveCount(0)
+  await expect.poll(() => page.evaluate(() => !!document.activeElement?.closest('.wn-editor'))).toBe(true) // focus is back in the editor (the menu restores it after closing)
   await page.keyboard.press('Escape')
   await expect(ed.locator('.block-selected')).toHaveCount(3)
   await page.keyboard.press('Escape')

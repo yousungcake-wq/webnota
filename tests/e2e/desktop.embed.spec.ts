@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 import { blurBlock, editorJson } from './media'
 
 test.beforeEach(async ({ page }) => {
@@ -72,7 +72,7 @@ test('embed block: allowlisted services only, height menu (ED-B22)', async ({ pa
   await page.getByRole('toolbar', { name: '미디어 도구' }).getByRole('button', { name: '크기' }).click()
   await page.getByRole('menuitemcheckbox', { name: '크게' }).click()
   await expect(page.locator('.wn-editor .embed-block .media-frame')).toHaveAttribute('style', /height: 640px/)
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.wn-editor .embed-block .media-frame')).toHaveAttribute('style', /height: 640px/)
   check()
 })

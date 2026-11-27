@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 test('spaces: create, switch, edit, delete (WS-02)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
@@ -26,7 +26,7 @@ test('spaces: create, switch, edit, delete (WS-02)', async ({ page }) => {
   await expect(page.locator('.sidebar .tree-title')).toHaveText(['WebNota 시작하기'])
 
   // the choice is remembered per device
-  await page.reload()
+  await reload(page)
   await expect(switcher).toContainText('일반')
 
   await switcher.click()

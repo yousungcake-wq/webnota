@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 // M0-25: PoC features not covered elsewhere, on the schema v2 model.
 test.describe('PoC regression (desktop)', () => {
@@ -20,7 +20,7 @@ test.describe('PoC regression (desktop)', () => {
     await newPage(page, '즐겨찾기 테스트')
     await page.getByRole('button', { name: '즐겨찾기에 추가' }).click()
     await expect(page.locator('.fav-list')).toContainText('즐겨찾기 테스트')
-    await page.reload()
+    await reload(page)
     await expect(page.locator('.fav-list')).toContainText('즐겨찾기 테스트')
     await page.getByRole('button', { name: '즐겨찾기에서 제거' }).click()
     await expect(page.locator('.fav-list')).toHaveCount(0)
@@ -57,7 +57,7 @@ test.describe('PoC regression (desktop)', () => {
     await box.check()
     await expect(box).toBeChecked()
     await page.waitForTimeout(300)
-    await page.reload()
+    await reload(page)
     await expect(page.getByRole('checkbox', { name: /우유 사기/ })).toBeChecked()
   })
 
@@ -65,7 +65,7 @@ test.describe('PoC regression (desktop)', () => {
     for (const t of ['첫째', '둘째', '셋째']) await newPage(page, t)
     const titles = page.locator('.sidebar .tree .tree-title')
     await expect(titles).toHaveText(['WebNota 시작하기', '첫째', '둘째', '셋째'])
-    await page.reload()
+    await reload(page)
     await expect(titles).toHaveText(['WebNota 시작하기', '첫째', '둘째', '셋째'])
   })
 })

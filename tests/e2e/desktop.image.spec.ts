@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 import { imageAttrs, makeImage, pasteOrDropImage } from './media'
 
 test.beforeEach(async ({ page }) => {
@@ -29,7 +29,7 @@ test('image block: /image → upload, shows from the local cache after reload (E
   // queued for upload (not connected) and marked dirty
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('webnota:dirty') || '{}').files)).toBeGreaterThan(0)
 
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.wn-editor .image-frame img')).toHaveAttribute('src', /^blob:/)
   check()
 })
@@ -87,7 +87,7 @@ test('toolbar: align, size, caption persist; link images work; delete (ED-B12)',
     .poll(async () => (await imageAttrs(page))[0])
     .toMatchObject({ align: 'right', width: 50, caption: '바다 사진' })
 
-  await page.reload()
+  await reload(page)
   const again = page.locator('.wn-editor .image-block')
   await expect(again).toHaveAttribute('data-align', 'right')
   await expect(again.locator('.image-caption input')).toHaveValue('바다 사진')

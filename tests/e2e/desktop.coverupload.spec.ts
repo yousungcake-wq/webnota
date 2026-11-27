@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 import { makeImage } from './media'
 
 test.beforeEach(async ({ page }) => {
@@ -18,7 +18,7 @@ test('cover: upload an image, it shows from the local cache after reload (ED-F11
   await (await chooser).setFiles({ name: 'cover.png', mimeType: 'image/png', buffer: await makeImage(page, 1200, 400) })
   const img = page.locator('.page-cover img')
   await expect(img).toHaveAttribute('src', /^blob:/)
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.page-cover img')).toHaveAttribute('src', /^blob:/)
   // reposition still works on uploaded covers
   await expect(page.getByRole('button', { name: '위치 조정' })).toBeAttached()
@@ -37,7 +37,7 @@ test('page icon: upload an image, scaled to 256px, shown in the page and the sid
   await expect(head).toHaveAttribute('src', /^blob:/)
   expect(await head.evaluate((i: HTMLImageElement) => i.naturalWidth)).toBe(256)
   await expect(page.locator('.tree-row', { hasText: '업로드 페이지' }).locator('img.view-icon-file')).toBeVisible()
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.page-icon img.view-icon-file')).toHaveAttribute('src', /^blob:/)
   check()
 })

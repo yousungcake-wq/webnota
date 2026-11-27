@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 import { editorJson } from './media'
 
 const WORKER = 'https://worker.test'
@@ -51,7 +51,7 @@ test('URL on its own line → "preview card": metadata from the worker, cached i
 }) => {
   const check = failOnConsoleErrors(page)
   const calls = await fakeWorker(page)
-  await page.reload()
+  await reload(page)
   await page.locator('.wn-editor').click()
   await pasteText(page, 'https://blog.example.com/post/1')
   const menu = page.getByRole('menu', { name: '붙여넣은 링크' })
@@ -67,7 +67,7 @@ test('URL on its own line → "preview card": metadata from the worker, cached i
   expect(calls).toEqual(['https://blog.example.com/post/1'])
   expect((await nodesOf(page, 'linkPreview'))[0]).toMatchObject({ title: '예제 글 제목', siteName: 'Example Blog' })
 
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.wn-editor .link-card-title')).toHaveText('예제 글 제목')
   expect(calls).toHaveLength(1) // cached in the block: no second request
 

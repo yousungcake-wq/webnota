@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 import { editorJson } from './media'
 
 test.beforeEach(async ({ page }) => {
@@ -33,7 +33,7 @@ test('math block: /math opens the LaTeX editor with a live preview, renders with
   await expect(page.locator('.wn-editor .math-block .katex-display')).toBeVisible()
   expect(await mathNodes(page)).toEqual([{ type: 'mathBlock', latex: 'E = mc^2' }])
 
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.wn-editor .math-block .katex-display')).toBeVisible()
 
   // click to edit; clearing removes the block

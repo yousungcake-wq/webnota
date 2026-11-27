@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 
 // WS-07: full-text search in a worker, Hangul bigrams, persisted index.
 test('finds pages by body text and inside Korean words; index survives a reload', async ({ page }) => {
@@ -28,7 +28,7 @@ test('finds pages by body text and inside Korean words; index survives a reload'
   await expect(page.getByText('일치하는 페이지가 없습니다.')).toBeVisible()
 
   await page.waitForTimeout(2500) // index saved 2 s after the last change
-  await page.reload()
+  await reload(page)
   await page.getByPlaceholder('페이지 제목 검색').fill('예산')
   await expect(page.locator('.list-item', { hasText: '주간 정리' })).toBeVisible()
   check()

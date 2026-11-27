@@ -28,3 +28,37 @@ export function failOnConsoleErrors(page: Page) {
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
   return () => expect(errors, 'console errors').toEqual([])
 }
+
+/**
+ * Reloads after the app's IndexedDB writes are committed. y-indexeddb starts a write per
+ * update; a reload a few ms later can abort it (seen on slow CI machines). A read-only
+ * transaction on the same store starts only after earlier read-write ones finish.
+ */
+export async function reload(page: Page) {
+  await page.evaluate(async () => {
+    const dbs = ((await indexedDB.databases?.()) ?? []).filter((d) => d.name?.startsWith('wn:'))
+    await Promise.all(
+      dbs.map(
+        (d) =>
+          new Promise<void>((resolve) => {
+            const req = indexedDB.open(d.name!)
+            req.onerror = () => resolve()
+            req.onsuccess = () => {
+              const db = req.result
+              const done = () => {
+                db.close()
+                resolve()
+              }
+              if (!db.objectStoreNames.contains('updates')) return done()
+              const tx = db.transaction('updates', 'readonly')
+              tx.objectStore('updates').count()
+              tx.oncomplete = done
+              tx.onerror = done
+              tx.onabort = done
+            }
+          }),
+      ),
+    )
+  })
+  await page.reload()
+}

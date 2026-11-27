@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { openApp, waitForNewPage } from './helpers'
+import { openApp, reload, waitForNewPage } from './helpers'
 
 test('headings 4–6 by markdown; nested numbered lists cycle 1/a/i (ED-B02, ED-B05)', async ({ page }) => {
   await openApp(page)
@@ -21,6 +21,6 @@ test('headings 4–6 by markdown; nested numbered lists cycle 1/a/i (ED-B02, ED-
   await expect(ed.locator('ol ol li')).toHaveText('nested')
   const style = await ed.locator('ol ol').evaluate((el) => getComputedStyle(el).listStyleType)
   expect(style).toBe('lower-alpha')
-  await page.reload()
+  await reload(page)
   await expect(page.locator('.wn-editor h4')).toHaveText('Four')
 })
