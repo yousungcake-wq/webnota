@@ -42,9 +42,18 @@ AppFlowy `sidebar/import/import_type.dart` 기준입니다. 모든 파싱은 `im
 | IO-01 | Markdown (`.md`, 여러 파일) | 문서 (GFM: 표, 할 일, 코드, 이미지는 상대 경로면 함께 선택된 파일에서 업로드) | M8 |
 | IO-02 | 텍스트 (`.txt`) | 문서 (줄 → 문단) | M8 |
 | IO-03 | CSV | 데이터베이스 (DB-IO) | M6 |
-| IO-04 | Notion 내보내기 zip (Markdown & CSV) | 페이지 트리 + DB, 내부 링크를 멘션으로 변환 | M8 |
-| IO-05 | WebNota 백업 zip | 워크스페이스 복원 (SY-07) | M8 |
+| IO-04 | Notion 내보내기 zip (Markdown & CSV) | 페이지 트리 + DB, 내부 링크를 멘션으로 변환 | **완료** (피드백 11, 아래 §3.1) |
+| IO-05 | WebNota 백업 zip | 워크스페이스 복원 (SY-07) | 부분 완료: 내보내기 zip의 `webnota.json` 복원 (§3.1) |
 | IO-06 | HTML (붙여넣기·파일) | 문서 (DOMPurify로 정리) | M8 |
+
+### 3.1 Notion 왕복 (피드백 11, 구현됨)
+
+설정 → **가져오기·내보내기** (지연 청크 `features/io`, fflate).
+
+- **Notion 가져오기**: Notion "Markdown & CSV" zip(바깥 zip 안의 `Part-N.zip`도 풂). `Title <32hex>.md` 와 같은 이름 폴더로 트리를 만들고, DB는 `_all.csv`를 우선합니다. 첫 열이 기본(제목) 필드, 나머지 열은 형식 추론(숫자·체크박스·날짜·URL·선택·다중 선택·텍스트). DB 행 페이지(`.md`)는 속성 줄을 뺀 본문이 있을 때만 DB 아래 하위 페이지로 만듭니다(행 페이지는 M5). 내부 링크 → 페이지 멘션, 첨부 → 이미지/파일 블록, `<aside>` → 콜아웃.
+- **내보내기**: Notion이 읽는 형식(`Title <viewId>.md` + 같은 이름 폴더에 하위 페이지·첨부, DB는 `.csv`, 체크박스 Yes/No) + 루트 `webnota.json`(`format: "webnota-export"`, 뷰 트리, 페이지 ProseMirror JSON과 page 맵, DB 스냅샷, 행 문서, 파일 경로). Markdown이 담지 못하는 WebNota 전용 블록(열, 토글, 수식, 정렬·캡션 정렬, 표지, 아이콘, DB 뷰 설정)은 `webnota.json`으로 보존됩니다.
+- **WebNota zip 다시 가져오기**: `webnota.json`이 있으면 무손실 복원. 뷰·DB id는 새로 만들고(문서 안 멘션·하위 페이지·링크 id도 바꿈), 파일은 내용 해시 id라 같은 id로 돌아옵니다.
+- 가져오기는 **항상 새 스페이스**를 만들고 기존 데이터를 건드리지 않습니다.
 
 ## 4. 내보내기
 
@@ -54,7 +63,7 @@ AppFlowy `sidebar/import/import_type.dart` 기준입니다. 모든 파싱은 `im
 | IO-11 | HTML | 페이지 (단일 파일, 이미지 인라인) | M8 |
 | IO-12 | PDF | 페이지 (브라우저 인쇄 + 인쇄용 CSS) | M8 |
 | IO-13 | CSV | DB 뷰 | M6 |
-| IO-14 | 전체 백업 zip | 워크스페이스 | M8 |
+| IO-14 | 전체 백업 zip | 워크스페이스 | **완료** (피드백 11: 설정 → 가져오기·내보내기 → 모두 내보내기) |
 
 ## 5. 템플릿 (`IO-07`, M8)
 

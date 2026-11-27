@@ -80,3 +80,10 @@
     min-height: 44px;
   }
 }
+
+.settings-row-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: var(--sp-2) 0;
+}

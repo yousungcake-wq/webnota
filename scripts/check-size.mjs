@@ -35,6 +35,10 @@ const BUDGETS = {
   upload: { kb: 8, entry: 'src/core/files/ingest.ts' },
   // M4–M5 database (spec/05): views, field editors and the query engine, when a database opens
   database: { kb: 120, entry: 'src/features/database/DatabaseView.tsx' },
+  // feedback 11: import / export (fflate, Notion Markdown & CSV), from Settings only
+  ioSection: { kb: 8, entry: 'src/features/io/IoSection.tsx' },
+  importer: { kb: 40, entry: 'src/features/io/importer.ts' },
+  exporter: { kb: 40, entry: 'src/features/io/exporter.ts' },
 }
 
 const manifest = JSON.parse(readFileSync(join(DIST, '.vite/manifest.json'), 'utf8'))

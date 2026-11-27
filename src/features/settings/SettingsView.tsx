@@ -18,6 +18,7 @@ import { connect, disconnect, syncNow } from '@/core/sync/controller'
 import { SyncBadge } from '@/features/sync'
 import { Button, confirmDialog, Input, LinkButton, Segmented, Switch, toast, ViewHeader } from '@/ui'
 import { loadWorkspaceSettings } from '@/features/workspaces'
+import { loadIoSection } from '@/features/io'
 import './settings.css'
 
 const darkQuery = () => window.matchMedia('(prefers-color-scheme: dark)')
@@ -30,6 +31,7 @@ const subscribeScheme = (cb: () => void) => {
 const useSystemTheme = () => useSyncExternalStore(subscribeScheme, () => (darkQuery().matches ? 'dark' : 'light'))
 
 const WorkspaceSettings = lazy(loadWorkspaceSettings)
+const IoSection = lazy(loadIoSection)
 import { SyncLog } from './SyncLog'
 
 function Github({ size = 18 }: { size?: number }) {
@@ -228,6 +230,10 @@ export function SettingsView() {
           description={t('trash.autoEmpty.desc')}
         />
       </section>
+
+      <Suspense fallback={null}>
+        <IoSection />
+      </Suspense>
 
       <AdvancedSection />
 

@@ -4,3 +4,7 @@ export const loadEditor = () => import('./Editor')
 export const loadSeed = () => import('./seed')
 /** Warm the editor chunk during idle time so opening a page feels instant. */
 export const preloadEditor = () => void loadEditor()
+/** Page documents ↔ ProseMirror JSON / HTML (import & export, feedback 11). */
+export const loadDocIO = () => import('./docIO')
+/** Markdown → HTML in the editor's dialect (`marked`). */
+export const loadMarkdown = () => import('./paste/markdown')

@@ -1,0 +1,19 @@
+/** Import / export strings (`io.*`), loaded with the settings section (core/i18n `addMessages`). */
+export const ko = {
+  'io.title': '가져오기·내보내기',
+  'io.desc':
+    'Notion에서 "Markdown & CSV"로 내보낸 zip을 가져오거나, 이 워크스페이스를 Notion이 읽는 형식으로 내보냅니다. 내보낸 zip에는 WebNota 전용 정보(webnota.json)도 들어 있어 다시 가져오면 그대로 복원됩니다.',
+  'io.import': 'zip 가져오기',
+  'io.export': '모두 내보내기',
+  'io.working': '처리 중…',
+  'io.imported': '{pages}개 페이지, {databases}개 데이터베이스를 새 스페이스로 가져왔습니다',
+  'io.skipped': '첨부 파일 {count}개는 가져오지 못했습니다',
+  'io.exported': '{pages}개 페이지, {databases}개 데이터베이스를 내보냈습니다',
+  'io.failed': '가져오지 못했습니다: {error}',
+  'io.exportFailed': '내보내지 못했습니다: {error}',
+  'io.nothing': 'zip에서 Markdown이나 CSV 파일을 찾지 못했습니다',
+  'io.notionSpace': 'Notion',
+  'io.importedSpace': '가져온 페이지',
+  'io.hint': '가져오기는 항상 새 스페이스를 만들며 기존 페이지는 바뀌지 않습니다.',
+}
+export type IoKey = keyof typeof ko
