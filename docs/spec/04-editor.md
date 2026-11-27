@@ -26,7 +26,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-B11 | 구분선 | `horizontalRule` | `---` | P0 | ✅ |
 | ED-B12 | 이미지 | `image` (src=fileId/url, width, align, caption) | | P0 | ✅ M3-04 (schema v14). `src` = 파일 id(`<sha256>.<ext>`) 또는 http(s) URL, `width` = 글 폭 대비 %(10~100, null = 원래 크기), `align` left/center/right, `caption` 문자열, `naturalWidth/Height`(로드 전 비율 예약). `/이미지`·블록 패널 → 업로드(폰은 `accept=image/*`로 사진·카메라)/링크, 붙여넣기·끌어 놓기(처리 중 자리 표시가 편집을 따라 이동), 양쪽 손잡이로 크기 조절(데스크탑), 선택 시 도구 모음(정렬·크기 메뉴·캡션·바꾸기·내려받기·원본 보기(데스크탑)·삭제). UI는 `ImageView.tsx` 지연 청크, 업로드는 `core/files/ingest.ts` 지연 청크 |
 | ED-B13 | 동영상 임베드 | `video` (YouTube/Vimeo/직접 URL) | | P1 | M3 |
-| ED-B14 | 파일 | `file` (fileId, name, size) | | P0 | M3 |
+| ED-B14 | 파일 | `file` (fileId, name, size) | | P0 | ✅ M3-05 (schema v15, `mime` 속성 포함). `/파일`·블록 패널 → 파일 올리기(원본 그대로 저장, 25MB 제한), 이미지가 아닌 파일 붙여넣기·끌어 놓기도 파일 블록. 이름·크기·형식 아이콘, "업로드 대기" 표시(저장소에 올라갈 때까지, 동기화마다 다시 확인), 이름/내려받기 버튼 → 기기에 저장(없으면 캐시 → GitHub에서 받음). UI는 `FileView.tsx` 지연 청크 |
 | ED-B15 | 수식 블록 | `mathBlock` (LaTeX, KaTeX) | `$$` | P0 | M3 |
 | ED-B16 | 표 | `table`(simple table: 헤더 행/열, 열 너비, 셀 배경색, 정렬) | | P0 | ✅ M2-11 (schema v9). `/표`, Tab 이동, 표 메뉴(행·열 추가·삭제, 머리글 행·열, 셀 배경색, 셀 정렬, 표 위치 = 왼쪽·가운데·오른쪽·전체 채우기(schema v13), 표 삭제), 열 너비 드래그. 셀 병합은 보류 |
 | ED-B17 | 다단(컬럼) | `columns`/`column` (2~5단, 비율 조절) | | P1 | ✅ M2-12 (schema v10). `/2단`~`/4단`, 단 사이 드래그로 비율 조절, 폰(600px 이하)은 세로로 쌓음. 단 추가·삭제는 M2-13 블록 메뉴 |

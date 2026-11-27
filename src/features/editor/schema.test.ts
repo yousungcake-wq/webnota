@@ -61,6 +61,9 @@ MARKS_AT_VERSION[13] = MARKS_AT_VERSION[12]
 // v14 (M3-04): image block.
 NODES_AT_VERSION[14] = [...NODES_AT_VERSION[13]!, 'image'].sort()
 MARKS_AT_VERSION[14] = MARKS_AT_VERSION[13]
+// v15 (M3-05): file attachment block.
+NODES_AT_VERSION[15] = [...NODES_AT_VERSION[14]!, 'file'].sort()
+MARKS_AT_VERSION[15] = MARKS_AT_VERSION[14]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

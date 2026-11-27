@@ -79,3 +79,8 @@ export function filesUploaded(ids: string[]): Promise<void> {
 export async function pendingCount(): Promise<number> {
   return (await allFiles('pending')).length
 }
+
+/** Still waiting in the upload queue (not in the repository yet). */
+export async function isPending(id: string): Promise<boolean> {
+  return !!(await getFile('pending', id))
+}

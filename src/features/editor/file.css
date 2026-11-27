@@ -1,0 +1,65 @@
+/* ED-B14 file block (loaded with FileView) */
+.wn-editor .file-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-elev);
+}
+.wn-editor .file-block.is-selected .file-row {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.wn-editor .file-block.ProseMirror-selectednode {
+  outline: none;
+}
+.wn-editor .file-row.is-empty {
+  background: var(--bg-hover);
+  border-style: dashed;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.wn-editor .file-icon {
+  flex: none;
+  color: var(--text-2);
+}
+.wn-editor .file-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.wn-editor .file-name:hover {
+  text-decoration: underline;
+}
+.wn-editor .file-meta {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+.wn-editor .file-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--warn);
+}
+@media (pointer: coarse) {
+  .wn-editor .file-row .icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

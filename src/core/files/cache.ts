@@ -123,3 +123,16 @@ export async function trimCache(limit = CACHE_LIMIT_BYTES): Promise<string[]> {
   }
   return drop
 }
+
+/** Saves a workspace file to the device (download link click). Loads it first if needed. */
+export async function saveFile(id: string, name: string): Promise<FileStatus> {
+  const v = await loadFile(id)
+  if (!v.url) return v.status
+  const a = document.createElement('a')
+  a.href = v.url
+  a.download = name || id
+  document.body.append(a)
+  a.click()
+  a.remove()
+  return 'ready'
+}

@@ -10,6 +10,7 @@ import { EmojiSuggest } from './emojiSuggest'
 import { SubPageWithView } from './SubPageBlock'
 import { OutlineWithView } from './OutlineBlock'
 import { ImageWithView } from './ImageBlock'
+import { FileWithView } from './FileBlock'
 import { FileDrop } from './fileDrop'
 import { BlockFlash } from './blockFlash'
 import { BlockSelection } from './blockSelection'
@@ -97,7 +98,9 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
             ? OutlineWithView
             : e.name === 'image'
               ? ImageWithView
-              : e,
+              : e.name === 'file'
+                ? FileWithView
+                : e,
     ),
     Placeholder.configure({
       placeholder: ({ node }) => {

@@ -12,6 +12,7 @@ import { v11BlockAttrs } from './011-block-attrs'
 import { v12TextDirection } from './012-text-direction'
 import { v13TableLayout } from './013-table-layout'
 import { v14Image } from './014-image'
+import { v15File } from './015-file'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -41,4 +42,5 @@ export const MIGRATIONS: Migration[] = [
   v12TextDirection, // M2-17: dir attribute (version stamp only)
   v13TableLayout, // table layout attribute: left / center / right / full (version stamp only)
   v14Image, // M3-04: image block node type (version stamp only)
+  v15File, // M3-05: file attachment block node type (version stamp only)
 ]

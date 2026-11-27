@@ -419,6 +419,15 @@ export const ko = {
   'image.open': '원본 보기',
   'image.delete': '이미지 삭제',
 
+  'block.file': '파일',
+  'block.file.hint': '파일을 첨부하고 내려받기',
+  'block.file.kw': '파일 첨부 문서 pdf',
+  'file.upload': '파일 올리기',
+  'file.empty': '빈 파일',
+  'file.download': '내려받기',
+  'file.delete': '파일 삭제',
+  'file.pending': '업로드 대기',
+  'file.pendingHint': '다음 동기화 때 GitHub 저장소에 올라갑니다',
   // files (SY-04)
   'files.loading': '불러오는 중…',
   'files.notConnected': 'GitHub에 연결하면 이 파일을 볼 수 있습니다',

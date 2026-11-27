@@ -1201,3 +1201,14 @@
   border-radius: var(--r-sm);
   background: var(--bg-hover);
 }
+/* file block box while FileView loads */
+.wn-editor .file-block {
+  margin: var(--sp-1) 0;
+}
+.wn-editor .file-row.is-loading {
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--text-2);
+}

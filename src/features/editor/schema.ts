@@ -14,6 +14,7 @@ import { TABLE_NODES } from './nodes/table'
 import { Column, Columns } from './nodes/columns'
 import { Outline } from './nodes/outline'
 import { Image } from './nodes/image'
+import { FileAttachment } from './nodes/file'
 import { BlockAttrs } from './nodes/blockAttrs'
 import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
 
@@ -54,6 +55,7 @@ export function schemaExtensions(): Extensions {
     Column,
     Outline,
     Image,
+    FileAttachment,
     BlockAttrs,
   ]
 }

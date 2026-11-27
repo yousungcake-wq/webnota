@@ -5,7 +5,8 @@ import { t } from '@/core/i18n'
 import { toast } from '@/ui'
 
 /**
- * Files into the document (ED-F06, SY-04): pasted or dropped images become image blocks.
+ * Files into the document (ED-F06, SY-04): pasted or dropped images become image blocks,
+ * other files become file blocks (ED-B14).
  * While a file is processed and stored, a placeholder widget marks where it goes; the
  * placeholder moves with edits around it, and the block is inserted where it ends up.
  * The upload code (`core/files/ingest.ts`) loads on the first file.
@@ -32,7 +33,7 @@ function placeholder(name: string) {
 
 let seq = 0
 
-/** Stores `files` and inserts an image block for each at `pos` (default: the selection). */
+/** Stores `files` and inserts an image or file block for each at `pos` (default: the selection). */
 export function insertFiles(editor: Editor, files: File[], pos = editor.state.selection.from) {
   for (const file of files) {
     const id = `u${++seq}`
@@ -40,7 +41,10 @@ export function insertFiles(editor: Editor, files: File[], pos = editor.state.se
     void loadIngest()
       .then(async (m) => {
         try {
-          return await m.ingestFile(file)
+          // images are preprocessed (M3-03); other files are stored as they are
+          return file.type.startsWith('image/')
+            ? await m.ingestFile(file)
+            : ((await m.addFile(file, file.name)) as Awaited<ReturnType<typeof m.ingestFile>>)
         } catch (e) {
           toast(e instanceof m.FileTooLargeError ? t('files.tooLarge', { max: m.MAX_FILE_MB }) : t('files.error'), {
             tone: 'error',
@@ -55,16 +59,21 @@ export function insertFiles(editor: Editor, files: File[], pos = editor.state.se
         if (!ref || at === null || !editor.isEditable) return
         editor
           .chain()
-          .insertContentAt(at, {
-            type: 'image',
-            attrs: { src: ref.id, naturalWidth: ref.width ?? null, naturalHeight: ref.height ?? null },
-          })
+          .insertContentAt(
+            at,
+            file.type.startsWith('image/')
+              ? {
+                  type: 'image',
+                  attrs: { src: ref.id, naturalWidth: ref.width ?? null, naturalHeight: ref.height ?? null },
+                }
+              : { type: 'file', attrs: { fileId: ref.id, name: ref.name, size: ref.size, mime: ref.mime } },
+          )
           .run()
       })
   }
 }
 
-const imagesOf = (list: FileList | null | undefined) => [...(list ?? [])].filter((f) => f.type.startsWith('image/'))
+const filesOf = (list: FileList | null | undefined) => [...(list ?? [])]
 
 export const FileDrop = Extension.create({
   name: 'fileDrop',
@@ -92,7 +101,7 @@ export const FileDrop = Extension.create({
           decorations: (state) => uploadKey.getState(state),
           handlePaste: (_view, event) => {
             if (!editor.isEditable) return false
-            const files = imagesOf(event.clipboardData?.files)
+            const files = filesOf(event.clipboardData?.files)
             // an image copied from a web page also carries text/html; a file is still better
             if (!files.length || event.clipboardData?.getData('text/plain')) return false
             insertFiles(editor, files)
@@ -100,7 +109,7 @@ export const FileDrop = Extension.create({
           },
           handleDrop: (view, event) => {
             if (!editor.isEditable) return false
-            const files = imagesOf(event.dataTransfer?.files)
+            const files = filesOf(event.dataTransfer?.files)
             if (!files.length) return false
             const at = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos
             event.preventDefault()

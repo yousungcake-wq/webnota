@@ -22,6 +22,7 @@ const BUDGETS = {
   markdown: { kb: 15, entry: 'src/features/editor/paste/markdown.ts', after: 'editor' }, // marked, on Markdown paste
   // M3 media: image UI when a page has an image; file cache on first file shown; upload code on first upload
   imageView: { kb: 12, entry: 'src/features/editor/ImageView.tsx', after: 'editor' },
+  fileView: { kb: 6, entry: 'src/features/editor/FileView.tsx', after: 'editor' },
   fileCache: { kb: 6, entry: 'src/core/files/cache.ts' },
   upload: { kb: 8, entry: 'src/core/files/ingest.ts' },
   // Add as features land: database: { kb: 120, entry: 'src/features/database/index.ts' }, …

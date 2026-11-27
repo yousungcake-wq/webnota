@@ -412,6 +412,15 @@ export const en: Record<MessageKey, string> = {
   'image.open': 'View original',
   'image.delete': 'Delete image',
 
+  'block.file': 'File',
+  'block.file.hint': 'Attach a file to download later',
+  'block.file.kw': 'attachment pdf document',
+  'file.upload': 'Upload file',
+  'file.empty': 'Empty file',
+  'file.download': 'Download',
+  'file.delete': 'Delete file',
+  'file.pending': 'Waiting to upload',
+  'file.pendingHint': 'Uploaded to the GitHub repository on the next sync',
   // files (SY-04)
   'files.loading': 'Loading…',
   'files.notConnected': 'Connect GitHub to see this file',

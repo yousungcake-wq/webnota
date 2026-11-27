@@ -21,3 +21,5 @@ export async function ingestFile(file: Blob, name = (file as File).name ?? ''): 
   const ref = await addFile(img.blob, img.name)
   return { ...ref, width: img.width || undefined, height: img.height || undefined }
 }
+
+export { addFile, isPending } from './upload'
