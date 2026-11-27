@@ -11,7 +11,8 @@ import { gitBlobSha } from './encoding'
  *     never conflicts).
  *  3. Encode every dirty doc; skip files whose content is byte-identical to
  *     the remote blob; upload the rest as blobs.
- *  4. Delete files of pages that no longer exist in the workspace. Legacy PoC files
+ *  4. Delete files of pages that no longer exist in the workspace, and every file of a
+ *     database (`data/dbs/<id>/`) no workspace view points at any more (M4-02). Legacy PoC files
  *     (`data/pages/<id>.yjs`) are merged in step 2, re-written at `data/docs/<id>.yjs`
  *     and deleted in the same commit (SY-02a).
  *     Binary files waiting in the upload queue (`pendingFiles`, SY-04) are added as
@@ -116,6 +117,19 @@ export function docForPath(path: string): string | null {
 
 const isLegacyPath = (path: string) => LEGACY_DOC.test(path)
 
+/** Database id of a `db/`, `dbr/` or `row/` doc name, else null. */
+const dbOfDoc = (name: string) => (/^(db|dbr|row)\//.test(name) ? name.split('/')[1]! : null)
+
+/** Database ids referenced by any workspace view (trashed views keep their database). */
+function liveDatabases(ws: Y.Doc): Set<string> {
+  const out = new Set<string>()
+  ws.getMap<Y.Map<unknown>>('views').forEach((m) => {
+    const id = m instanceof Y.Map ? m.get('databaseId') : null
+    if (typeof id === 'string' && id) out.add(id)
+  })
+  return out
+}
+
 export class ConflictRetryError extends Error {}
 
 export async function syncOnce(
@@ -186,6 +200,13 @@ export async function syncOnce(
     // ---- decide what to push ----
     const ws = await store.getDoc('workspace')
     const livePages = new Set(ws.getMap('views').keys())
+    const liveDbs = liveDatabases(ws)
+    /** A doc whose page or database was permanently deleted: never uploaded, its file removed. */
+    const isDead = (name: string) => {
+      if (name.startsWith('doc/')) return !livePages.has(name.slice(4))
+      const db = dbOfDoc(name)
+      return db !== null && !liveDbs.has(db)
+    }
     const entries: { path: string; sha: string | null }[] = []
     const pushedGens: [string, number][] = []
     const newBlobs: Record<string, string | null> = {}
@@ -204,9 +225,9 @@ export async function syncOnce(
     for (const name of toPush) {
       const path = pathForDoc(name)!
       const gen = dirty[name] ?? 0
-      if (name.startsWith('doc/') && !livePages.has(name.slice(4))) {
+      if (isDead(name)) {
         pushedGens.push([name, gen])
-        continue // deleted page: handled below
+        continue // deleted page or database: its files are removed below
       }
       const doc = await store.getDoc(name)
       const bytes = Y.encodeStateAsUpdate(doc)
@@ -223,7 +244,7 @@ export async function syncOnce(
 
     for (const path of remote.keys()) {
       const name = docForPath(path)!
-      if (!isLegacyPath(path) && name.startsWith('doc/') && !livePages.has(name.slice(4))) {
+      if (!isLegacyPath(path) && isDead(name)) {
         entries.push({ path, sha: null })
         newBlobs[path] = null
       }

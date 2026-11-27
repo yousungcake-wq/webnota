@@ -2,7 +2,8 @@ import { debugLog } from '../flags'
 import { getToken, setToken } from '../auth/auth'
 import { getDirty, markDirty, onDirtyChange, openDoc, pageDocName, tabs } from '../docs/registry'
 import { currentWorkspaceId, wsKey } from '../docs/slots'
-import { adoptFavorites, listViews, setCurrentUser } from '../model/views'
+import { adoptFavorites, listViews, referencedDatabaseIds, setCurrentUser } from '../model/views'
+import { databaseDocNames } from '../model/database/shard'
 import { createStore } from '../store/createStore'
 import { isReadOnly } from '../schema/gate'
 import { electLeader } from './leader'
@@ -119,6 +120,8 @@ export async function saveAccount(token: string, account: Account) {
   const ws = await openDoc('workspace')
   markDirty('workspace')
   for (const p of listViews(ws)) markDirty(pageDocName(p.id))
+  // databases (M4-02): schema + every shard, even untouched ones (the engine skips identical blobs)
+  for (const dbId of referencedDatabaseIds(ws)) databaseDocNames(dbId).forEach(markDirty)
   requestSync('manual')
 }
 

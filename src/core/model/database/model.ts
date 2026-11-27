@@ -41,11 +41,6 @@ export const fieldsOf = (db: DbDocs) => db.schema.getMap<YMap>('fields')
 export const dbViewsOf = (db: DbDocs) => db.schema.getMap<YMap>('views')
 export const rowsOf = (shard: Y.Doc) => shard.getMap<YMap>('rows')
 
-export const dbDocName = (dbId: string) => `db/${dbId}`
-export const shardDocName = (dbId: string, n: number) => `dbr/${dbId}/${n}`
-export const shardDocNames = (dbId: string, count = SHARD_COUNT) =>
-  Array.from({ length: count }, (_, n) => shardDocName(dbId, n))
-
 const shardFor = (db: DbDocs, rowId: string) => db.shards[shardOf(rowId, db.shards.length)]!
 const rowMap = (db: DbDocs, rowId: string) => rowsOf(shardFor(db, rowId)).get(rowId)
 

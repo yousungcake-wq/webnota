@@ -118,6 +118,8 @@ rows: Y.Map<rowId, Y.Map>
 
 구현 (M4-01, `core/model/database`): 함수는 `DbDocs = { schema, shards[8] }`를 받습니다 (`core/docs/database.ts`의 `openDatabase(dbId)`가 9개 문서를 열고 retain). `meta.schemaVersion`은 DB 문서 형식 버전(`DB_FORMAT_VERSION = 1`)이고 앱 전체 읽기 전용 판단은 여전히 `workspace`가 합니다. 샤드 해시는 FNV-1a 32비트(바꾸면 행이 다른 샤드로 감 — 고정). 새 DB = primary text 필드 + 첫 뷰 설정(`frozenColumns: 1`) + 빈 행 3개. 필드 삭제는 뷰 설정·계산·정렬과 모든 행의 해당 셀도 지웁니다. 행 삭제는 즉시 삭제입니다(휴지통 없음, 실행 취소는 M4-07의 DB UndoManager). 행 `order`가 같은 키 사이에 넣을 때는 뒤따르는 같은 키 행들의 키를 다시 매깁니다 (§5). 다른 기기에서 추가되어 뷰 설정이 없는 필드는 그 뷰의 맨 끝에 보입니다(`orderedFields`).
 
+수명·동기화 (M4-02): DB를 연 동안 schema+샤드 8개를 retain합니다. 어떤 뷰(휴지통 포함)도 가리키지 않는 DB는 영구 삭제 시 로컬 데이터를 지우고(`destroyUnreferencedDatabases`), 동기화 엔진은 그 DB의 `db/`·`dbr/`·`row/` 문서를 올리지 않고 `data/dbs/<id>/` 파일을 같은 커밋에서 지웁니다. 첫 연결 시 모든 DB의 schema·샤드를 더티로 표시합니다.
+
 ### 4.3 필드 타입과 셀 값
 
 AppFlowy `type_option_editor`의 타입에서 AI 타입(summary, translate)만 뺀 목록입니다.

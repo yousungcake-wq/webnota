@@ -2,6 +2,7 @@ import * as Y from 'yjs'
 import { destroyDoc, openDoc, pageDocName, retainDoc } from '@/core/docs/registry'
 import {
   createView,
+  databaseIdOf,
   deleteViewPermanently,
   descendantsOf,
   duplicateViewMeta,
@@ -66,8 +67,7 @@ export function restore(id: string) {
 }
 
 export async function deleteForever(id: string) {
-  const removed = deleteViewPermanently(ws(), id)
-  await Promise.all(removed.map((pid) => destroyDoc(pageDocName(pid))))
+  await deleteManyForever([id])
 }
 
 /** Restores every trashed view (WS-06). */
@@ -80,8 +80,18 @@ export function restoreAll() {
 export async function deleteManyForever(ids: string[]) {
   const doc = ws()
   const removed: string[] = []
-  doc.transact(() => ids.forEach((id) => removed.push(...deleteViewPermanently(doc, id))))
+  const dbIds: string[] = []
+  doc.transact(() =>
+    ids.forEach((id) => {
+      for (const v of [id, ...descendantsOf(listViews(doc), id)]) {
+        const db = databaseIdOf(doc, v)
+        if (db) dbIds.push(db)
+      }
+      removed.push(...deleteViewPermanently(doc, id))
+    }),
+  )
   await Promise.all(removed.map((pid) => destroyDoc(pageDocName(pid))))
+  if (dbIds.length) await (await import('@/core/docs/database')).destroyUnreferencedDatabases(doc, dbIds)
 }
 
 /** Startup: empties trash items older than 30 days when the device option is on (WS-06). */

@@ -561,3 +561,19 @@ export function duplicateViewMeta(doc: Y.Doc, id: string, title: string): string
     after: id,
   })
 }
+
+/** Database id a (database) view points at, or null. */
+export function databaseIdOf(doc: Y.Doc, viewId: string): string | null {
+  const id = viewsOf(doc).get(viewId)?.get('databaseId')
+  return typeof id === 'string' && id ? id : null
+}
+
+/** Every database some view (trashed ones included) still points at. */
+export function referencedDatabaseIds(doc: Y.Doc): Set<string> {
+  const out = new Set<string>()
+  viewsOf(doc).forEach((m) => {
+    const id = m.get('databaseId')
+    if (typeof id === 'string' && id) out.add(id)
+  })
+  return out
+}

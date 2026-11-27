@@ -239,6 +239,53 @@ describe('sync engine', () => {
     expect(remote.files()).toEqual(['data/workspace.yjs'])
     expect(listViews(b.ws)).toEqual([])
   })
+  it('uploads database docs and removes data/dbs/<id>/ when the database is deleted (M4-02)', async () => {
+    const remote = new FakeRemote()
+    const a = new Device()
+    const b = new Device()
+    const view = createView(a.ws, { title: 'db', kind: 'database', layout: 'grid', databaseId: 'd1' })
+    a.doc('db/d1').getMap('meta').set('shardCount', 8)
+    a.doc('dbr/d1/3').getMap('rows').set('r', 1)
+    a.doc('row/d1/r').getText('t').insert(0, 'body')
+    await syncOnce(remote, a)
+    expect(remote.files()).toEqual([
+      'data/dbs/d1/rows-3.yjs',
+      'data/dbs/d1/rows/r.yjs',
+      'data/dbs/d1/schema.yjs',
+      'data/workspace.yjs',
+    ])
+    await syncOnce(remote, b)
+    expect(b.doc('dbr/d1/3').getMap('rows').get('r')).toBe(1)
+
+    // trashed: files stay
+    updateView(a.ws, view, { deletedAt: 1 })
+    await syncOnce(remote, a)
+    expect(remote.files()).toHaveLength(4)
+
+    deleteViewPermanently(a.ws, view)
+    const r = await syncOnce(remote, a)
+    expect(r.deleted).toBe(3)
+    expect(remote.files()).toEqual(['data/workspace.yjs'])
+
+    // a stale device editing a row of the deleted database must not bring its files back
+    b.doc('dbr/d1/3').getMap('rows').set('r', 2)
+    await syncOnce(remote, b)
+    expect(remote.files()).toEqual(['data/workspace.yjs'])
+    expect(b.dirty).toEqual({})
+  })
+
+  it('keeps a database while another view still points at it (linked views, M5)', async () => {
+    const remote = new FakeRemote()
+    const a = new Device()
+    const v1 = createView(a.ws, { kind: 'database', layout: 'grid', databaseId: 'd1' })
+    createView(a.ws, { kind: 'database', layout: 'board', databaseId: 'd1' })
+    a.doc('db/d1').getMap('meta').set('shardCount', 8)
+    await syncOnce(remote, a)
+    deleteViewPermanently(a.ws, v1)
+    await syncOnce(remote, a)
+    expect(remote.files()).toEqual(['data/dbs/d1/schema.yjs', 'data/workspace.yjs'])
+  })
+
   it('pulls but does not push while canPush() is false (schema read-only gate)', async () => {
     const remote = new FakeRemote()
     const a = new Device()
