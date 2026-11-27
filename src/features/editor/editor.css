@@ -891,7 +891,16 @@
   border-collapse: collapse;
   table-layout: fixed;
   width: max-content;
-  min-width: 100%;
+}
+/* table position (table menu → 표 위치) */
+.wn-editor .tableWrapper[data-layout='center'] table {
+  margin-inline: auto;
+}
+.wn-editor .tableWrapper[data-layout='right'] table {
+  margin-left: auto;
+}
+.wn-editor .tableWrapper[data-layout='full'] table {
+  width: 100% !important; /* over the column widths prosemirror-tables sets inline */
 }
 .wn-editor td,
 .wn-editor th {

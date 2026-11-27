@@ -6,6 +6,7 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  AlignHorizontalSpaceAround,
   ArrowDownToLine,
   ArrowLeftToLine,
   ArrowRightToLine,
@@ -18,6 +19,7 @@ import { useState } from 'react'
 import { t, type MessageKey } from '@/core/i18n'
 import { Menu, type MenuEntry } from '@/ui'
 import { PALETTE } from './nodes/colors'
+import { TABLE_LAYOUTS, type TableLayout } from './nodes/table'
 
 export const loadTableKit = () => import('./table/kit')
 
@@ -43,10 +45,22 @@ function tableInfo(state: EditorState) {
     node.firstChild?.forEach((c) => (row &&= isHeader(c)))
     let col = true
     node.forEach((r) => (col &&= isHeader(r.firstChild)))
-    return { headerRow: row, headerColumn: col }
+    return {
+      headerRow: row,
+      headerColumn: col,
+      pos: $from.before(d),
+      layout: (node.attrs.layout as TableLayout) ?? null,
+    }
   }
   return null
 }
+
+const LAYOUT_LABEL = {
+  left: 'table.posLeft',
+  center: 'table.posCenter',
+  right: 'table.posRight',
+  full: 'table.posFull',
+} as const
 
 const isCellSelection = (state: EditorState) => '$anchorCell' in state.selection
 
@@ -88,6 +102,19 @@ export function TableMenu({ editor }: { editor: TEditor }) {
         { label: t('table.alignCenter'), icon: AlignCenter, onSelect: cell('align', 'center') },
         { label: t('table.alignRight'), icon: AlignRight, onSelect: cell('align', 'right') },
       ],
+    },
+    {
+      label: t('table.position'),
+      icon: AlignHorizontalSpaceAround,
+      children: TABLE_LAYOUTS.map((layout) => ({
+        label: t(LAYOUT_LABEL[layout ?? 'left']),
+        checked: (info?.layout ?? null) === layout,
+        onSelect: () => {
+          if (!info) return
+          editor.view.dispatch(editor.state.tr.setNodeAttribute(info.pos, 'layout', layout))
+          editor.commands.focus()
+        },
+      })),
     },
     'separator',
     { label: t('table.deleteRow'), icon: Trash2, danger: true, onSelect: cmd('deleteRow') },

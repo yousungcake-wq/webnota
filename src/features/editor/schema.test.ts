@@ -55,6 +55,9 @@ MARKS_AT_VERSION[11] = MARKS_AT_VERSION[10]
 // v12 (M2-17): `dir` attribute only.
 NODES_AT_VERSION[12] = NODES_AT_VERSION[11]
 MARKS_AT_VERSION[12] = MARKS_AT_VERSION[11]
+// v13: table `layout` attribute only.
+NODES_AT_VERSION[13] = NODES_AT_VERSION[12]
+MARKS_AT_VERSION[13] = MARKS_AT_VERSION[12]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

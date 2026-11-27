@@ -107,12 +107,28 @@ export const TableRow = Node.create({
   },
 })
 
+/** Table position on the page: null = left (default), or centered, right-aligned, full width. */
+export const TABLE_LAYOUTS = [null, 'center', 'right', 'full'] as const
+export type TableLayout = (typeof TABLE_LAYOUTS)[number]
+
 export const Table = Node.create({
   name: 'table',
   group: 'block',
   content: 'tableRow+',
   tableRole: 'table',
   isolating: true,
+  addAttributes() {
+    return {
+      layout: {
+        default: null,
+        parseHTML: (el) => {
+          const v = (el.closest('.tableWrapper') ?? el).getAttribute('data-layout')
+          return v === 'center' || v === 'right' || v === 'full' ? v : null
+        },
+        renderHTML: () => ({}), // on the wrapper, below
+      },
+    }
+  },
   parseHTML() {
     return [{ tag: 'table' }]
   },
@@ -126,7 +142,9 @@ export const Table = Node.create({
     })
     return [
       'div',
-      { class: 'tableWrapper' },
+      node.attrs.layout
+        ? { class: 'tableWrapper', 'data-layout': node.attrs.layout as string }
+        : { class: 'tableWrapper' },
       ['table', mergeAttributes(HTMLAttributes), ['colgroup', ...cols], ['tbody', 0]],
     ]
   },
