@@ -15,6 +15,7 @@ import { Column, Columns } from './nodes/columns'
 import { Outline } from './nodes/outline'
 import { Image } from './nodes/image'
 import { FileAttachment } from './nodes/file'
+import { Embed, Video } from './nodes/video'
 import { BlockAttrs } from './nodes/blockAttrs'
 import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
 
@@ -56,6 +57,8 @@ export function schemaExtensions(): Extensions {
     Outline,
     Image,
     FileAttachment,
+    Video,
+    Embed,
     BlockAttrs,
   ]
 }

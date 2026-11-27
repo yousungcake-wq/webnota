@@ -25,7 +25,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-B10 | 코드 블록 | `codeBlock` (language, 줄 바꿈 옵션, 복사 버튼, 하이라이트) | ` ``` ` | P0 | ✅ M2-05: 언어 22개(`code/languages.ts`, id는 저장 데이터), `wrap` 속성(기본값 false), 하이라이트는 코드 블록이 있을 때 lowlight 코어 + 해당 문법만 지연 로드 |
 | ED-B11 | 구분선 | `horizontalRule` | `---` | P0 | ✅ |
 | ED-B12 | 이미지 | `image` (src=fileId/url, width, align, caption) | | P0 | ✅ M3-04 (schema v14). `src` = 파일 id(`<sha256>.<ext>`) 또는 http(s) URL, `width` = 글 폭 대비 %(10~100, null = 원래 크기), `align` left/center/right, `caption` 문자열, `naturalWidth/Height`(로드 전 비율 예약). `/이미지`·블록 패널 → 업로드(폰은 `accept=image/*`로 사진·카메라)/링크, 붙여넣기·끌어 놓기(처리 중 자리 표시가 편집을 따라 이동), 양쪽 손잡이로 크기 조절(데스크탑), 선택 시 도구 모음(정렬·크기 메뉴·캡션·바꾸기·내려받기·원본 보기(데스크탑)·삭제). UI는 `ImageView.tsx` 지연 청크, 업로드는 `core/files/ingest.ts` 지연 청크 |
-| ED-B13 | 동영상 임베드 | `video` (YouTube/Vimeo/직접 URL) | | P1 | M3 |
+| ED-B13 | 동영상 임베드 | `video` (YouTube/Vimeo/직접 URL) | | P1 | ✅ M3-06 (schema v16). `src` = 사용자가 준 주소 그대로(YouTube·Vimeo·동영상 파일 URL) 또는 올린 동영상 파일 id, `width` %. 재생 주소는 표시할 때 `nodes/embedUrls.ts`가 id만 뽑아 다시 만듦(YouTube는 `youtube-nocookie.com`, 시작 시간 `t` 유지). 파일은 `<video controls preload=metadata>` |
 | ED-B14 | 파일 | `file` (fileId, name, size) | | P0 | ✅ M3-05 (schema v15, `mime` 속성 포함). `/파일`·블록 패널 → 파일 올리기(원본 그대로 저장, 25MB 제한), 이미지가 아닌 파일 붙여넣기·끌어 놓기도 파일 블록. 이름·크기·형식 아이콘, "업로드 대기" 표시(저장소에 올라갈 때까지, 동기화마다 다시 확인), 이름/내려받기 버튼 → 기기에 저장(없으면 캐시 → GitHub에서 받음). UI는 `FileView.tsx` 지연 청크 |
 | ED-B15 | 수식 블록 | `mathBlock` (LaTeX, KaTeX) | `$$` | P0 | M3 |
 | ED-B16 | 표 | `table`(simple table: 헤더 행/열, 열 너비, 셀 배경색, 정렬) | | P0 | ✅ M2-11 (schema v9). `/표`, Tab 이동, 표 메뉴(행·열 추가·삭제, 머리글 행·열, 셀 배경색, 셀 정렬, 표 위치 = 왼쪽·가운데·오른쪽·전체 채우기(schema v13), 표 삭제), 열 너비 드래그. 셀 병합은 보류 |
@@ -34,7 +34,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-B19 | 하위 페이지 | `subPage` (viewId) — 생성 시 자식 뷰 생성, 블록 삭제 시 휴지통 이동 | | P0 | ✅ M2-10 (schema v8). `/페이지`로 생성 후 자식 페이지로 이동. 블록을 붙여넣으면 휴지통에서 자동 복원, 실행 취소·원격 변경으로 돌아온 블록은 "휴지통에서 복원" 버튼 표시 |
 | ED-B20 | 인라인 데이터베이스 | `database` (databaseId, viewId, layout) | | P0 | M5 |
 | ED-B21 | 링크 미리보기 (북마크) | `linkPreview` (url, title, desc, image 캐시) | URL 붙여넣기 → 선택 | P1 | M3 |
-| ED-B22 | 임베드 | `embed` (iframe 허용 목록: YouTube, Figma, Google Maps …) | | P2 | M3 |
+| ED-B22 | 임베드 | `embed` (iframe 허용 목록: YouTube, Figma, Google Maps …) | | P2 | ✅ M3-06 (schema v16, `height` px). 허용 목록: YouTube, Vimeo, Figma, Google 지도(`/maps/embed?pb=`), CodePen, Spotify, Loom — https만, 주소에서 id만 뽑아 iframe 주소를 다시 만듦(임의 iframe 불가, 단위 테스트). iframe은 `sandbox`(scripts·same-origin·popups·presentation·forms, 상위 이동 불가)·`loading=lazy`. 선택 전에는 투명 보호막이 클릭을 받아 블록을 선택. 크기: 작게 300 / 보통(서비스 기본) / 크게 640 |
 | ED-B23 | 지원되지 않는 블록 | 원본 보존 + 페이지 읽기 전용 (아래) | | P0 | M0 ✅ |
 
 **ED-B23 구현 (M0-20)**: y-tiptap은 기본적으로 스키마에 없는 노드·마크를 렌더링하면서 Y 문서에서 **삭제**합니다. 그래서 `ySyncOptions.onInvalidContent`를 항상 지정해, 모르는 내용이 있으면 삭제하지 않고 그 페이지의 바인딩이 쓰기를 멈추게 합니다(에디터 `editable=false`). 본문 위에 "표시할 수 없는 내용(타입 목록)이 있어 읽기 전용, 내용은 보존됨, 앱 업데이트" 안내를 띄웁니다. 모르는 블록 자체는 화면에 표시하지 않습니다. 모르는 타입마다 동적으로 자리 표시 노드를 만드는 방식은, 속성이 다시 써지면서 사라질 위험이 있어서 보류했습니다 (DECISIONS 017). QA: `webnota:debug=seed-unknown`.

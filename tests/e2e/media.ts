@@ -72,3 +72,13 @@ export async function pasteOrDropImage(page: Page, kind: 'paste' | 'drop', w = 6
     { kind, w, h },
   )
 }
+
+/** Moves the cursor to the start of the document (the inserted block is no longer selected). */
+export function blurBlock(page: Page) {
+  return page.evaluate(() => {
+    const dom = document.querySelector('.wn-editor') as unknown as {
+      editor: { commands: { focus: (p: string) => void } }
+    }
+    dom.editor.commands.focus('start')
+  })
+}

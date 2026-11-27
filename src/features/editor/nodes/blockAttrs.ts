@@ -28,6 +28,8 @@ export const LINKABLE = [
   'horizontalRule',
   'image',
   'file',
+  'video',
+  'embed',
 ]
 export const COLORABLE = ['paragraph', 'heading', 'blockquote', 'listItem', 'taskItem']
 export const ALIGNABLE = ['paragraph', 'heading']

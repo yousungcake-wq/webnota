@@ -1212,3 +1212,15 @@
   border-radius: var(--r);
   color: var(--text-2);
 }
+/* video / embed box while EmbedView loads */
+.wn-editor .media-block {
+  display: flex;
+  justify-content: center;
+  margin: var(--sp-2) 0;
+}
+.wn-editor .media-frame.is-loading {
+  width: 100%;
+  min-height: 120px;
+  border-radius: var(--r);
+  background: var(--bg-hover);
+}

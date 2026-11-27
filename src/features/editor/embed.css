@@ -1,0 +1,97 @@
+/* ED-B13 video, ED-B22 embed (loaded with EmbedView) */
+.wn-editor .media-block {
+  margin: var(--sp-2) 0;
+  display: flex;
+  justify-content: center;
+}
+.wn-editor .media-figure {
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.wn-editor .media-frame {
+  position: relative;
+  width: 100%;
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--bg-hover);
+}
+.wn-editor .media-frame.is-video {
+  aspect-ratio: 16 / 9;
+}
+.wn-editor .media-frame.is-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+.wn-editor .media-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.wn-editor .media-shield {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+}
+.wn-editor .media-video {
+  display: block;
+  width: 100%;
+  max-height: 80vh;
+  border-radius: var(--r);
+  background: var(--bg-code);
+}
+.wn-editor .media-block.is-selected .media-frame,
+.wn-editor .media-block.is-selected .media-video,
+.wn-editor .media-block.is-selected .media-empty {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.wn-editor .media-block.ProseMirror-selectednode {
+  outline: none;
+}
+.wn-editor .media-toolbar {
+  display: flex;
+  gap: 2px;
+  margin-top: var(--sp-1);
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-elev);
+  box-shadow: var(--shadow-sm);
+}
+.wn-editor .media-toolbar a.icon-btn {
+  color: inherit;
+}
+.wn-editor .media-empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r);
+  background: var(--bg-hover);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.wn-editor .media-hint {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+@media (pointer: coarse) {
+  .wn-editor .media-toolbar .icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .wn-editor .media-empty .btn {
+    min-height: 44px;
+  }
+}

@@ -11,6 +11,7 @@ import { SubPageWithView } from './SubPageBlock'
 import { OutlineWithView } from './OutlineBlock'
 import { ImageWithView } from './ImageBlock'
 import { FileWithView } from './FileBlock'
+import { EmbedWithView, VideoWithView } from './EmbedBlock'
 import { FileDrop } from './fileDrop'
 import { BlockFlash } from './blockFlash'
 import { BlockSelection } from './blockSelection'
@@ -87,21 +88,18 @@ export interface EditorOptions {
 }
 
 export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensions {
+  // nodes that get a React view here; schemaExtensions() stays React-free
+  const withViews: Record<string, Extensions[number]> = {
+    mention: MentionWithView,
+    subPage: SubPageWithView.configure({ pageId: opts.pageId ?? null }),
+    outline: OutlineWithView,
+    image: ImageWithView,
+    file: FileWithView,
+    video: VideoWithView,
+    embed: EmbedWithView,
+  }
   return [
-    // the mention node gets its React chip here; schemaExtensions() stays React-free
-    ...schemaExtensions().map((e) =>
-      e.name === 'mention'
-        ? MentionWithView
-        : e.name === 'subPage'
-          ? SubPageWithView.configure({ pageId: opts.pageId ?? null })
-          : e.name === 'outline'
-            ? OutlineWithView
-            : e.name === 'image'
-              ? ImageWithView
-              : e.name === 'file'
-                ? FileWithView
-                : e,
-    ),
+    ...schemaExtensions().map((e) => withViews[e.name] ?? e),
     Placeholder.configure({
       placeholder: ({ node }) => {
         if (node.type.name === 'heading') return t('editor.headingPlaceholder', { level: node.attrs.level as number })
