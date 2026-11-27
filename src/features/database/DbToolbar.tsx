@@ -1,4 +1,4 @@
-import { ArrowUpDown, Filter as FilterIcon, ListChecks, Search, X } from 'lucide-react'
+import { ArrowUpDown, Filter as FilterIcon, LayoutList, ListChecks, Search, Table2, X } from 'lucide-react'
 import { useState } from 'react'
 import type { FilterGroup } from '@/core/model/database'
 import { useLayout } from '@/platform/layout'
@@ -13,7 +13,20 @@ const countFilters = (g: FilterGroup | null): number =>
   g ? g.items.reduce((n, x) => n + ('items' in x ? countFilters(x) : 1), 0) : 0
 
 /** Settings bar (DB-G07): filter, sort, properties, row search. */
-export function DbToolbar({ session, state, readOnly }: { session: DbSession; state: DbState; readOnly: boolean }) {
+export function DbToolbar({
+  session,
+  state,
+  readOnly,
+  cards,
+  onToggleCards,
+}: {
+  session: DbSession
+  state: DbState
+  readOnly: boolean
+  /** Phones: card list on/off (MB-30); undefined hides the switch. */
+  cards?: boolean
+  onToggleCards?: () => void
+}) {
   const phone = useLayout().layout === 'phone'
   const [open, setOpen] = useState<{ panel: 'filter' | 'sort' | 'props'; anchor: HTMLElement } | null>(null)
   const [searching, setSearching] = useState(state.search !== '')
@@ -74,6 +87,17 @@ export function DbToolbar({ session, state, readOnly }: { session: DbSession; st
       {button('filter', FilterIcon, dt('db.bar.filter'), filters)}
       {button('sort', ArrowUpDown, dt('db.bar.sort'), sorts)}
       {button('props', ListChecks, dt('db.bar.props'), hidden)}
+      {cards !== undefined && (
+        <button
+          type="button"
+          className="db-barbtn"
+          aria-label={cards ? dt('db.view.table') : dt('db.view.cards')}
+          title={cards ? dt('db.view.table') : dt('db.view.cards')}
+          onClick={onToggleCards}
+        >
+          {cards ? <Table2 size={16} aria-hidden /> : <LayoutList size={16} aria-hidden />}
+        </button>
+      )}
       {open && (
         <Overlay anchor={open.anchor} title={titles[open.panel]} sheet={phone} onClose={() => setOpen(null)}>
           <div className="db-pop db-panel">

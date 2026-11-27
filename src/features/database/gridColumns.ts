@@ -2,6 +2,7 @@ import { orderedFields, type FieldMeta, type ViewSettings } from '@/core/model/d
 
 export const ROW_HEIGHT = 36
 export const HEADER_HEIGHT = 36
+export const TOUCH_ROW_HEIGHT = 44
 /** Left gutter with the row's "+" and drag/menu handle (DB-G02). */
 export const GUTTER = 44
 
@@ -14,14 +15,17 @@ export interface Column {
 }
 
 /** The view's visible columns with their offsets (frozen ones first, DB-F06). */
-export function columnsOf(fields: FieldMeta[], view: ViewSettings | null): Column[] {
+export function columnsOf(fields: FieldMeta[], view: ViewSettings | null, maxFrozenWidth = Infinity): Column[] {
   if (!view) return []
   let left = 0
   return orderedFields(fields, view)
     .filter((f) => view.fields[f.id]?.visible !== false)
     .map((field, i) => {
       const s = view.fields[field.id]
-      const col = { field, width: s?.width ?? 180, wrap: s?.wrap ?? false, left, frozen: i < view.frozenColumns }
+      const frozen = i < view.frozenColumns
+      // phones: a frozen column must leave room for the scrolling ones (MB-30)
+      const width = frozen ? Math.min(s?.width ?? 180, maxFrozenWidth) : (s?.width ?? 180)
+      const col = { field, width, wrap: s?.wrap ?? false, left, frozen }
       left += col.width
       return col
     })

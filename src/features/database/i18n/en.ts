@@ -195,4 +195,7 @@ export const en: Record<DbKey, string> = {
   'db.calc.days': '{count} days',
   'db.sort.dir': 'Sort direction',
   'db.bar.searchClose': 'Close search',
+  'db.view.cards': 'Card list',
+  'db.view.table': 'Table view',
+  'db.cards.label': '{title} cards',
 }

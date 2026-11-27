@@ -412,3 +412,16 @@ textarea.dbc-editor {
   color: var(--text);
   font-weight: 600;
 }
+@media (hover: none) {
+  .dbg-gbtn:not(.is-grip) {
+    display: none;
+  }
+  .dbg-gbtn.is-grip {
+    width: 40px;
+    height: 44px;
+    opacity: 0.7;
+  }
+  .dbg-open {
+    display: none !important;
+  }
+}

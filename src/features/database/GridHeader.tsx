@@ -31,7 +31,9 @@ export function GridHeader({
   view,
   primaryId,
   readOnly,
+  height = HEADER_HEIGHT,
 }: {
+  height?: number
   columns: Column[]
   colRange: { from: number; to: number }
   docs: DbDocs
@@ -162,7 +164,7 @@ export function GridHeader({
 
   const menuField = menu && fields.find((f) => f.id === menu.fieldId)
   return (
-    <div className="dbg-header" role="row" aria-rowindex={1} style={{ width: totalWidth, height: HEADER_HEIGHT }}>
+    <div className="dbg-header" role="row" aria-rowindex={1} style={{ width: totalWidth, height }}>
       <div className="dbg-gutter" style={{ width: GUTTER }} />
       {frozen.map(cell)}
       {before > 0 && <div className="dbg-spacer" style={{ width: before }} />}

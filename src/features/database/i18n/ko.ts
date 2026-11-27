@@ -194,6 +194,9 @@ export const ko = {
   'db.calc.days': '{count}일',
   'db.sort.dir': '정렬 방향',
   'db.bar.searchClose': '검색 닫기',
+  'db.view.cards': '카드 목록 보기',
+  'db.view.table': '표 보기',
+  'db.cards.label': '{title} 카드 목록',
 }
 
 export type DbKey = keyof typeof ko

@@ -14,7 +14,10 @@ import type { DbSession, DbState } from './session'
 import { dt } from './i18n'
 import { CellPopover, POPOVER_EDITED } from './CellPopover'
 import { editText, parseEdit, TEXT_EDITED } from './cellEdit'
-import { columnsOf, GUTTER, HEADER_HEIGHT, ROW_HEIGHT } from './gridColumns'
+import { columnsOf, GUTTER, HEADER_HEIGHT, ROW_HEIGHT, TOUCH_ROW_HEIGHT } from './gridColumns'
+import { useLayout } from '@/platform/layout'
+import { Sheet } from '@/ui'
+import { CellEditor } from './CellEditor'
 import { deleteRowsWithUndo, newRow } from './rowActions'
 import { clearRect, copyRect, pasteTSV, rectOf } from './gridClipboard'
 import { RowSheet } from './RowSheet'
@@ -27,6 +30,8 @@ import './grid.css'
 
 const READ_ONLY_TYPES = new Set(['createdTime', 'updatedTime', 'rollup'])
 const OVERSCAN_ROWS = 8
+/** Widest a frozen column may be on a phone. */
+const PHONE_FROZEN_MAX = 140
 
 /** Grid layout (DB-G01, DB-G08): virtual rows and columns, sticky header, frozen columns, auto row height. */
 export function Grid({
@@ -40,7 +45,15 @@ export function Grid({
   title: string
   readOnly: boolean
 }) {
-  const columns = useMemo(() => columnsOf(state.fields, state.view), [state.fields, state.view])
+  const { layout: screen, isTouch } = useLayout()
+  const phone = screen === 'phone'
+  // 44px touch targets on touch screens (spec/12), 36px rows with a mouse
+  const rowH = isTouch ? TOUCH_ROW_HEIGHT : ROW_HEIGHT
+  const headerH = isTouch ? TOUCH_ROW_HEIGHT : HEADER_HEIGHT
+  const columns = useMemo(
+    () => columnsOf(state.fields, state.view, phone ? PHONE_FROZEN_MAX : Infinity),
+    [state.fields, state.view, phone],
+  )
   const rowIds = state.result.rowIds
   const scrollRef = useRef<HTMLDivElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
@@ -62,10 +75,10 @@ export function Grid({
   const autoHeight = columns.some((c) => c.wrap)
   const [heights, setHeights] = useState<ReadonlyMap<string, number>>(new Map())
   const layout = useMemo(
-    () => (autoHeight ? measuredLayout(rowIds, heights, ROW_HEIGHT) : fixedLayout(rowIds.length, ROW_HEIGHT)),
-    [autoHeight, rowIds, heights],
+    () => (autoHeight ? measuredLayout(rowIds, heights, rowH) : fixedLayout(rowIds.length, rowH)),
+    [autoHeight, rowIds, heights, rowH],
   )
-  const viewTop = Math.max(0, box.top - HEADER_HEIGHT)
+  const viewTop = Math.max(0, box.top - headerH)
   const start = rowIds.length ? Math.max(0, layout.indexAt(viewTop) - OVERSCAN_ROWS) : 0
   const end = rowIds.length ? Math.min(rowIds.length, layout.indexAt(viewTop + box.height) + OVERSCAN_ROWS + 1) : 0
   const colRange = visibleColumns(columns, box.left, box.width - GUTTER)
@@ -108,9 +121,9 @@ export function Grid({
     const el = scrollRef.current
     if (!el) return
     const i = rowIds.indexOf(pos.rowId)
-    const top = HEADER_HEIGHT + layout.top(i)
+    const top = headerH + layout.top(i)
     const h = layout.height(i)
-    if (top < el.scrollTop + HEADER_HEIGHT) el.scrollTop = top - HEADER_HEIGHT
+    if (top < el.scrollTop + headerH) el.scrollTop = top - headerH
     else if (top + h > el.scrollTop + el.clientHeight) el.scrollTop = top + h - el.clientHeight
     const col = columns.find((c) => c.field.id === pos.fieldId)
     if (col && !col.frozen) {
@@ -221,6 +234,22 @@ export function Grid({
       setActive(pos)
       return
     }
+    if (e.pointerType !== 'mouse') {
+      // touch: act on a tap (no scroll in between); a tap edits right away on phones
+      const x0 = e.clientX
+      const y0 = e.clientY
+      const t0 = Date.now()
+      const again = active?.rowId === rowId && active.fieldId === fieldId
+      const up = (ev: PointerEvent) => {
+        window.removeEventListener('pointerup', up)
+        if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 8 || Date.now() - t0 > 600) return
+        setActive(pos)
+        setAnchor(null)
+        if (phone || again) startEdit(pos)
+      }
+      window.addEventListener('pointerup', up)
+      return
+    }
     if (active?.rowId === rowId && active.fieldId === fieldId && !editing && !popover && !anchor) {
       // keep the browser from moving focus back to the grid after the editor took it
       if (startEdit(pos)) e.preventDefault()
@@ -296,7 +325,7 @@ export function Grid({
       setDrag({ rowId, drop })
       const el = scrollRef.current!
       const r = el.getBoundingClientRect()
-      if (ev.clientY < r.top + HEADER_HEIGHT + 24) el.scrollTop -= 12
+      if (ev.clientY < r.top + headerH + 24) el.scrollTop -= 12
       else if (ev.clientY > r.bottom - 24) el.scrollTop += 12
     }
     const onUp = () => {
@@ -381,6 +410,7 @@ export function Grid({
           view={state.view}
           primaryId={primaryId}
           readOnly={readOnly}
+          height={headerH}
         />
         <div ref={bodyRef} className="dbg-body" style={{ width: totalWidth, height: layout.total }}>
           {rowIds.slice(start, end).map((id, k) => {
@@ -393,13 +423,13 @@ export function Grid({
                 row={row}
                 index={index}
                 top={layout.top(index)}
-                height={autoHeight ? null : ROW_HEIGHT}
+                height={autoHeight ? null : rowH}
                 columns={columns}
                 colRange={colRange}
                 readOnly={readOnly}
                 activeField={active?.rowId === id ? active.fieldId : null}
                 rangeCols={multi && rect && index >= rect.r0 && index <= rect.r1 ? rangeKey(rect) : null}
-                editing={editing?.rowId === id ? editing : null}
+                editing={!phone && editing?.rowId === id ? editing : null}
                 onCellPointer={onCellPointer}
                 onToggle={onToggle}
                 onFinishEdit={finishEdit}
@@ -432,6 +462,13 @@ export function Grid({
             results={state.result.calcs}
             readOnly={readOnly}
           />
+        )}
+        {phone && editing && fieldById(editing.fieldId) && (
+          <Sheet title={fieldById(editing.fieldId)!.name} onClose={() => finishEdit(null)}>
+            <div className="db-pop db-sheet-editor">
+              <CellEditor field={fieldById(editing.fieldId)!} initial={editing.initial} onDone={finishEdit} inSheet />
+            </div>
+          </Sheet>
         )}
         {popover && (
           <GridPopover

@@ -550,3 +550,64 @@
 .db-prop-row .switch-row {
   flex: 1;
 }
+
+/* phone (MB-30, MB-34) */
+.db-cards {
+  position: relative;
+  overflow: auto;
+  max-height: calc(100dvh - 220px);
+  overscroll-behavior: contain;
+}
+.db-card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-elev);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  overflow: hidden;
+}
+.db-card-title {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.db-card-prop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.db-card-name {
+  flex: 0 0 72px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sheet:has(.db-panel) {
+  min-height: 85dvh;
+}
+.db-sheet-editor .dbc-editor {
+  position: static;
+  min-height: 44px;
+  border-radius: var(--r-sm);
+  font-size: max(16px, var(--fs-md));
+}
+@media (hover: none) {
+  .db-barbtn {
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+  }
+}

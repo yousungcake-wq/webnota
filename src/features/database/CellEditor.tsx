@@ -10,7 +10,10 @@ export function CellEditor({
   field,
   initial,
   onDone,
+  inSheet = false,
 }: {
+  /** In a bottom sheet (phone): the sheet blurs on open, so no save-on-blur; focus after it. */
+  inSheet?: boolean
   field: FieldMeta
   initial: string
   /** `text` to save, or null to cancel; `move` is where the active cell goes next. */
@@ -27,9 +30,14 @@ export function CellEditor({
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    el.focus({ preventScroll: true })
-    el.setSelectionRange(el.value.length, el.value.length)
-  }, [])
+    const focus = () => {
+      el.focus({ preventScroll: true })
+      el.setSelectionRange(el.value.length, el.value.length)
+    }
+    if (!inSheet) return focus()
+    const t = setTimeout(focus, 50) // after the sheet's own focus handling
+    return () => clearTimeout(t)
+  }, [inSheet])
   useLayoutEffect(() => {
     const el = ref.current
     if (!el || el.tagName !== 'TEXTAREA') return
@@ -42,7 +50,7 @@ export function CellEditor({
     'aria-label': dt('db.cell.edit'),
     value: text,
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setText(e.target.value),
-    onBlur: () => finish(text),
+    onBlur: () => !inSheet && finish(text),
     onKeyDown: (e: React.KeyboardEvent) => {
       if (e.nativeEvent.isComposing) return
       e.stopPropagation()
