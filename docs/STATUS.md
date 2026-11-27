@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M3 미디어와 임베드 (M2 완료 — 실기기 확인은 docs/QA.md "M2"(와 "M1"), 사용자 확인 대기)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21 완료. M3 4/12
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21 완료. M3 5/12
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M3-04 이미지 블록. 사용자 실기기 QA(docs/QA.md M2) 대기
+- **다음 할 일**: M3-05 파일 블록. 사용자 실기기 QA(docs/QA.md M2) 대기
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -132,3 +132,4 @@
 | 2026-11-27 | M3-01: 파일 저장소 코어(SHA-256 주소·중복 제거·pendingFiles·같은 커밋 업로드·25MB 제한) | 6028f0a |
 | 2026-11-27 | M3-02: 파일 표시 캐시(raw 내려받기·LRU 200MB·useFile·자리 표시 상태) | f79077b |
 | 2026-11-27 | M3-03: 이미지 전처리(2560px·WebP·EXIF 회전·작은 이미지 원본 유지) + 원본 유지 설정 | 717ad59 |
+| 2026-11-27 | M3-04: 이미지 블록(업로드·붙여넣기·끌어 놓기·크기·정렬·캡션·폰 사진 선택), schema v14 | b904ab2 |
