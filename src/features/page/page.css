@@ -137,7 +137,8 @@
   background: var(--bg-hover);
 }
 .phone .page-body {
-  padding: 12px 18px 50vh;
+  /* room on the left for the block handle (feedback 1) */
+  padding: 12px 18px 50vh 40px;
 }
 .phone .page-title {
   font-size: 28px;

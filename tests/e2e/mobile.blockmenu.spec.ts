@@ -70,3 +70,18 @@ test('phone: the caret stays above the keyboard toolbar while typing (MB-24)', a
     .poll(async () => (await ed.locator('p', { hasText: '마지막 줄' }).boundingBox())!.y + 20)
     .toBeLessThan(toolbarTop)
 })
+
+test('phone: a handle beside the block with the caret, inside the page (feedback 1)', async ({ page }) => {
+  await openApp(page)
+  const para = page.locator('.wn-editor p').first()
+  await para.tap()
+  const grip = page.locator('.phone-grip')
+  await expect(grip).toBeVisible()
+  await expect(grip).toHaveAccessibleName('드래그해서 이동')
+  const gb = (await grip.boundingBox())!
+  expect(gb.x).toBeGreaterThanOrEqual(0) // fully on screen
+  expect(gb.width).toBeGreaterThanOrEqual(28)
+  await grip.tap()
+  await expect(page.getByRole('menuitem', { name: '복제' })).toBeVisible()
+  await expect(page.locator('.wn-editor .block-selected')).toHaveCount(1)
+})

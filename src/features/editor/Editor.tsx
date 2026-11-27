@@ -1,4 +1,5 @@
 import DragHandle from '@tiptap/extension-drag-handle-react'
+import { grabBlock, useBlockGrab, usePhoneHandle } from './blockGrab'
 import type { Node as PMNode } from '@tiptap/pm/model'
 import { NodeSelection } from '@tiptap/pm/state'
 import { EditorContent, useEditor, useEditorState, type Editor as TEditor } from '@tiptap/react'
@@ -205,6 +206,8 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
   // above the keyboard (MB-24).
   useLongPressBlock(editor, wrapRef, coarse && !readOnly, openBlockMenu)
   useCaretAutoScroll(editor, coarse)
+  useBlockGrab(editor, wrapRef)
+  const phoneHandle = usePhoneHandle(editor, wrapRef, coarse && !readOnly)
   const blockMenuAtCaret = (anchor: HTMLElement) => {
     if (!editor) return
     const { $from } = editor.state.selection
@@ -224,12 +227,17 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
     const onDown = (e: MouseEvent) => {
       const target = e.target as HTMLElement
       if (e.button !== 0 || !editor.isEditable) return
-      if (target.closest('.wn-editor, .page-head, button, input, a, .block-actions, [role="dialog"]')) return
-      const rect = editor.view.dom.getBoundingClientRect()
+      const dom = editor.view.dom
+      const rect = dom.getBoundingClientRect()
+      // the editor's own left padding (the handle area, feedback 2) counts as margin too
+      const inPadding = target === dom && e.clientX < rect.left + parseFloat(getComputedStyle(dom).paddingLeft)
+      if (!inPadding && target.closest('.wn-editor, .page-head, button, input, a, .block-actions, [role="dialog"]'))
+        return
       if (e.clientY < rect.top) return
       const anchor = indexAtY(e.clientY)
       if (anchor === null) return
       e.preventDefault()
+      e.stopPropagation() // ProseMirror would start its own text drag selection
       editor.view.focus()
       editor.commands.selectBlocks(anchor, anchor)
       const onMove = (ev: MouseEvent) => {
@@ -244,8 +252,9 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
       window.addEventListener('mousemove', onMove)
       window.addEventListener('mouseup', onUp)
     }
-    body.addEventListener('mousedown', onDown)
-    return () => body.removeEventListener('mousedown', onDown)
+    // capture: runs before ProseMirror's own mousedown on the editor's padding
+    body.addEventListener('mousedown', onDown, true)
+    return () => body.removeEventListener('mousedown', onDown, true)
   }, [editor, coarse])
 
   // Table editing (ED-B16) loads with the first table on the page, then stays registered.
@@ -338,13 +347,31 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
               aria-label={t('blockMenu.title')}
               onClick={(e) => {
                 const { pos } = hovered.current
-                if (pos >= 0) openBlockMenu(pos, e.currentTarget)
+                if (pos < 0) return
+                // the block shows as grabbed while its menu is open (feedback 13)
+                if (!selectedBlockPositions(editor.state).includes(pos)) grabBlock(editor, pos)
+                openBlockMenu(pos, e.currentTarget)
               }}
             >
               <GripVertical size={16} />
             </button>
           </div>
         </DragHandle>
+      )}
+      {phoneHandle && (
+        <button
+          type="button"
+          className="phone-grip"
+          style={{ top: phoneHandle.top }}
+          aria-label={t('editor.dragToMove')}
+          onPointerDown={(e) => e.preventDefault()}
+          onClick={(e) => {
+            grabBlock(editor, phoneHandle.pos)
+            openBlockMenu(phoneHandle.pos, e.currentTarget)
+          }}
+        >
+          <GripVertical size={18} />
+        </button>
       )}
       {!coarse && !readOnly && <FormatBubble editor={editor} onColor={() => setColorPick(true)} />}
       {!coarse && !readOnly && <LinkBubble editor={editor} />}

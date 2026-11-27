@@ -6,6 +6,7 @@ test.beforeEach(async ({ page }) => {
   await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
+  await page.mouse.move(0, 0) // keep the pointer off suggestion popups (hover moves their active item)
 })
 
 test(':name suggests emoji, times like 10:30 stay plain (ED-I07)', async ({ page }) => {

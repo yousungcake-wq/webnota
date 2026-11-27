@@ -36,7 +36,7 @@ test('drag in the margin selects blocks; the block menu acts on all of them (ED-
   const first = (await ed.locator('p').nth(0).boundingBox())!
   const third = (await ed.locator('p').nth(2).boundingBox())!
   const body = (await page.locator('.page-body').boundingBox())!
-  const x = body.x + 12 // left padding of the page, outside the text
+  const x = body.x - 8 // in the margin left of the block handles, outside the text
   await page.mouse.move(x, first.y + first.height / 2)
   await page.mouse.down()
   await page.mouse.move(x, third.y + third.height / 2, { steps: 6 })

@@ -148,9 +148,46 @@
 .ProseMirror-gapcursor:after {
   border-top-color: var(--text);
 }
-.wn-editor .ProseMirror-selectednode {
+/* a selected node shows only while the editor has focus: clicking elsewhere lets go (feedback 13) */
+.wn-editor.ProseMirror-focused .ProseMirror-selectednode {
   outline: 2px solid var(--accent-soft);
   border-radius: 4px;
+}
+/* feedback 2: the handle area left of the blocks belongs to the editor, so hovering there
+   (not only over the text) shows the handle — like Notion */
+@media (hover: hover) and (min-width: 700px) {
+  .page-body .wn-editor {
+    padding-left: 72px;
+    margin-left: -72px;
+  }
+}
+/* narrow windows with a mouse: the handle only (no "+"), inside the page padding (feedback 1) */
+.phone .block-actions .block-btn:not(.grip) {
+  display: none;
+}
+.phone .block-btn.grip {
+  width: 28px;
+  height: 28px;
+  color: var(--text-2);
+}
+/* touch screens: a handle beside the block with the caret (feedback 1) */
+.phone-grip {
+  position: absolute;
+  left: -34px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  touch-action: manipulation;
+}
+.phone-grip:active {
+  background: var(--bg-hover);
 }
 .block-actions {
   display: flex;
