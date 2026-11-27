@@ -30,7 +30,7 @@ const CASES: { name: string; setup: (page: Page) => Promise<void>; where: string
   { name: 'code block', setup: (p) => p.keyboard.type('``` '), where: 'pre' },
   { name: 'callout', setup: (p) => slash(p, '콜아웃'), where: '.callout' },
   { name: 'table cell', setup: (p) => slash(p, '표'), where: 'table th' },
-  { name: 'column', setup: (p) => slash(p, '2단'), where: '.column' },
+  { name: 'column', setup: (p) => slash(p, '2열'), where: '.column' },
   {
     name: 'after a mention',
     setup: async (p) => {

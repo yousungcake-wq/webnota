@@ -1014,17 +1014,33 @@
 .wn-editor .column-resize:hover {
   background: var(--accent);
 }
+/* phones keep columns side by side (stacked they looked like plain paragraphs, feedback 3);
+   narrow columns scroll sideways rather than squash */
 @media (max-width: 600px) {
   .wn-editor .columns {
-    flex-direction: column;
-    gap: 4px;
+    gap: 12px;
+    overflow-x: auto;
+    scrollbar-width: thin;
   }
   .wn-editor .column {
-    flex-grow: 1 !important;
+    min-width: 132px;
+  }
+  .wn-editor .column + .column {
+    padding-left: 12px;
+    border-left: 1px solid var(--border);
   }
   .wn-editor .column-resize {
     display: none;
   }
+}
+/* where a block dropped beside another goes (feedback 3) */
+.column-drop-indicator {
+  position: absolute;
+  z-index: var(--z-popover);
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+  pointer-events: none;
 }
 
 /* ED-B18 outline */

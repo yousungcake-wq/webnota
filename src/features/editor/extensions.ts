@@ -17,6 +17,7 @@ import { LinkPreviewWithView } from './LinkPreviewBlock'
 import { FileDrop } from './fileDrop'
 import { BlockFlash } from './blockFlash'
 import { BlockSelection } from './blockSelection'
+import { ColumnDrag } from './columnDrag'
 import { PasteRules } from './pasteRules'
 import { FindReplace } from './findReplace'
 import { UndoGroups } from './undoGroups'
@@ -128,6 +129,7 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
     EmojiSuggest,
     BlockMove,
     BlockSelection, // priority 50: menus (slash, mentions) handle Esc / arrows first
+    ColumnDrag, // feedback 3: drag blocks into / out of / beside columns
   ]
 }
 

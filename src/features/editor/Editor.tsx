@@ -58,6 +58,22 @@ interface Props {
   onReady?: (editor: TEditor) => void
 }
 
+/**
+ * Drag targets: top-level blocks and blocks directly inside a column (feedback 3) — not the
+ * column itself, not list items or other nested blocks (they move with their block).
+ */
+const NESTED = {
+  // near a column's left edge the whole columns block is the target (its menu: add / merge columns)
+  edgeDetection: { edges: ['left' as const], threshold: 14 },
+  rules: [
+    {
+      id: 'topLevelOrInColumn',
+      evaluate: ({ node, depth, parent }: { node: PMNode; depth: number; parent: PMNode | null }) =>
+        node.type.name === 'column' || (depth > 1 && parent?.type.name !== 'column') ? 1000 : 0,
+    },
+  ],
+}
+
 export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Props) {
   debugCrash('editor')
   const coarse = useLayout().isTouch
@@ -332,6 +348,8 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
       {!coarse && !readOnly && (
         <DragHandle
           editor={editor}
+          // blocks inside columns get their own handle (feedback 3); the column itself is no target
+          nested={NESTED}
           onNodeChange={({ node, pos }) => {
             hovered.current = { node, pos }
           }}

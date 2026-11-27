@@ -11,6 +11,11 @@ const blockIndex = (editor: TEditor, pos: number) =>
  * editor (selection moves), outside it, or presses Esc.
  */
 export function grabBlock(editor: TEditor, pos: number) {
+  // a block inside a column: select just that block (not the whole columns)
+  if (editor.state.doc.resolve(Math.min(pos, editor.state.doc.content.size)).depth > 0) {
+    editor.commands.setNodeSelection(pos)
+    return
+  }
   const i = blockIndex(editor, pos)
   editor.commands.selectBlocks(i, i)
 }
@@ -56,7 +61,11 @@ export function usePhoneHandle(editor: TEditor | null, wrapRef: RefObject<HTMLEl
         setAt(null)
         return
       }
-      const pos = $from.before(1)
+      // inside a column the handle is for the block in the column (feedback 3)
+      let depth = 1
+      for (let d = $from.depth; d > 0; d--) if ($from.node(d).type.name === 'column') depth = d + 1
+      if ($from.depth < depth) depth = 1
+      const pos = $from.before(depth)
       const node = editor.view.nodeDOM(pos) as HTMLElement | null
       if (!node?.getBoundingClientRect) return setAt(null)
       const top = node.getBoundingClientRect().top - wrap.getBoundingClientRect().top
