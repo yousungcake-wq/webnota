@@ -1,0 +1,163 @@
+/* Board (M5-03, spec/05 §5) */
+.dbk {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  overscroll-behavior-x: contain;
+}
+.dbk-col {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 264px;
+  max-height: calc(100dvh - 240px);
+  min-height: 120px;
+  padding: 6px;
+  border-radius: var(--r);
+  background: var(--bg-side);
+}
+.dbk-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 4px 4px;
+  font-size: var(--fs-sm);
+}
+.dbk-head .db-group-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.db-group-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+.db-group-none {
+  color: var(--text-3);
+}
+.dbk-count {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+.dbk-add-top {
+  margin-left: auto;
+}
+.dbk-cards {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.dbk-card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  contain: layout paint;
+}
+.dbk-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-elev);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+.dbk-card-body:hover {
+  border-color: var(--border-strong);
+}
+.dbk-card .db-card-title {
+  line-height: 20px;
+  min-height: 20px;
+}
+.dbk-card .db-card-title.is-empty {
+  color: var(--text-3);
+  font-weight: 400;
+}
+.dbk-card .db-card-prop {
+  height: 20px;
+}
+.dbk-cover {
+  display: block;
+  flex: 0 0 auto;
+  width: calc(100% + 24px);
+  height: 124px;
+  margin: -10px -12px 4px;
+  object-fit: cover;
+  border-radius: var(--r) var(--r) 0 0;
+  background: var(--bg-hover);
+}
+.dbk-title-input {
+  width: 100%;
+  min-height: 24px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+}
+.dbk-edit {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  opacity: 0;
+  background: var(--bg-elev);
+}
+.dbk-card:hover .dbk-edit,
+.dbk-edit:focus-visible {
+  opacity: 1;
+}
+.dbk-new {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  margin-top: 4px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.dbk-new:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+@media (pointer: coarse) {
+  .dbk-new {
+    min-height: 44px;
+  }
+  .dbk-edit {
+    opacity: 1;
+    top: 0;
+    right: 0;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+  }
+}
+@media (max-width: 479px) {
+  .dbk {
+    scroll-snap-type: x mandatory;
+  }
+  .dbk-col {
+    flex-basis: 82vw;
+    scroll-snap-align: start;
+  }
+}

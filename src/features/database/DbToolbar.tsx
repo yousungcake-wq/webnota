@@ -1,8 +1,18 @@
-import { ArrowUpDown, Filter as FilterIcon, LayoutList, ListChecks, Search, Table2, X } from 'lucide-react'
+import {
+  ArrowUpDown,
+  Filter as FilterIcon,
+  KanbanSquare,
+  LayoutList,
+  ListChecks,
+  Search,
+  Table2,
+  X,
+} from 'lucide-react'
 import { useState } from 'react'
 import type { FilterGroup } from '@/core/model/database'
 import { useLayout } from '@/platform/layout'
 import { Overlay } from '@/ui'
+import { BoardPanel } from './BoardPanel'
 import { FilterPanel } from './FilterPanel'
 import { dt } from './i18n'
 import { PropsPanel } from './PropsPanel'
@@ -28,14 +38,14 @@ export function DbToolbar({
   onToggleCards?: () => void
 }) {
   const phone = useLayout().layout === 'phone'
-  const [open, setOpen] = useState<{ panel: 'filter' | 'sort' | 'props'; anchor: HTMLElement } | null>(null)
+  const [open, setOpen] = useState<{ panel: 'filter' | 'sort' | 'props' | 'board'; anchor: HTMLElement } | null>(null)
   const [searching, setSearching] = useState(state.search !== '')
   const view = state.view
   if (!view) return null
   const filters = countFilters(view.filter)
   const sorts = view.sorts.length
   const hidden = state.fields.filter((f) => view.fields[f.id]?.visible === false).length
-  const button = (panel: 'filter' | 'sort' | 'props', Icon: typeof Search, label: string, count: number) => (
+  const button = (panel: 'filter' | 'sort' | 'props' | 'board', Icon: typeof Search, label: string, count: number) => (
     <button
       type="button"
       className={`db-barbtn${count ? ' is-on' : ''}`}
@@ -47,7 +57,12 @@ export function DbToolbar({
       <span>{count ? dt('db.bar.count', { label, count }) : label}</span>
     </button>
   )
-  const titles = { filter: dt('db.bar.filter'), sort: dt('db.bar.sort'), props: dt('db.bar.props') }
+  const titles = {
+    filter: dt('db.bar.filter'),
+    sort: dt('db.bar.sort'),
+    props: dt('db.bar.props'),
+    board: dt('db.board.settings'),
+  }
   return (
     <div className="db-bar" role="toolbar" aria-label={dt('db.bar.filter') + ' · ' + dt('db.bar.sort')}>
       {searching ? (
@@ -87,6 +102,7 @@ export function DbToolbar({
       {button('filter', FilterIcon, dt('db.bar.filter'), filters)}
       {button('sort', ArrowUpDown, dt('db.bar.sort'), sorts)}
       {button('props', ListChecks, dt('db.bar.props'), hidden)}
+      {view.layout === 'board' && button('board', KanbanSquare, dt('db.board.settings'), 0)}
       {cards !== undefined && (
         <button
           type="button"
@@ -103,6 +119,8 @@ export function DbToolbar({
           <div className="db-pop db-panel">
             {open.panel === 'filter' ? (
               <FilterPanel docs={state.docs} view={view} fields={state.fields} />
+            ) : open.panel === 'board' ? (
+              <BoardPanel docs={state.docs} view={view} fields={state.fields} />
             ) : open.panel === 'sort' ? (
               <SortPanel docs={state.docs} view={view} fields={state.fields} />
             ) : (

@@ -219,6 +219,16 @@ export const ko = {
   'db.board.checked': '체크됨',
   'db.board.unchecked': '체크 안 됨',
   'db.board.weekOf': '{date} 주',
+  'db.board.settings': '보드',
+  'db.board.groupBy': '그룹 기준',
+  'db.board.dateUnit': '날짜 묶음',
+  'db.board.unit.day': '일',
+  'db.board.unit.week': '주',
+  'db.board.unit.month': '월',
+  'db.board.unit.year': '연',
+  'db.board.hideEmpty': '값 없음 열 숨기기',
+  'db.board.cover': '카드 커버',
+  'db.board.noCover': '없음',
 }
 
 export type DbKey = keyof typeof ko

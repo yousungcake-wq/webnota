@@ -698,3 +698,21 @@
     justify-content: center;
   }
 }
+
+/* board settings panel (M5-03) */
+.db-board-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 260px;
+}
+.db-prow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--fs-sm);
+}
+.db-prow > select {
+  max-width: 60%;
+}

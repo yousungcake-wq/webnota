@@ -59,7 +59,14 @@ describe('database tabs (M5-01)', () => {
     setCalc(db, 'copy', fid, null)
     expect(readViewSettings(db, host)!.calcs).toEqual({ [fid]: 'count' })
     addDbView(db, 'b', 'board')
-    expect(readViewSettings(db, 'b')!.layout).toBe('board')
+    const b = readViewSettings(db, 'b')!
+    expect(b.layout).toBe('board')
+    // board cards start with the title only
+    expect(
+      Object.entries(b.fields)
+        .filter(([, f]) => f.visible)
+        .map(([id]) => id),
+    ).toEqual([fid])
   })
 })
 

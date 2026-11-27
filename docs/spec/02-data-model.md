@@ -114,7 +114,7 @@ db (Y.Doc)
     sorts: Sort[]                 // JSON
     group: { fieldId, hideEmpty: boolean, order: Record<groupKey, FracKey>, hidden: string[], dateUnit?: 'day'|'week'|'month'|'year' } | null
     calcs: Y.Map<fieldId, CalcType>
-    board: { cardFields?: string[], coverFieldId?: string | null }
+    board: { coverFieldId?: string | null }   // 카드에는 뷰에서 보이는 속성이 나옴 (M5-03)
     calendar: { dateFieldId, firstDayOfWeek: 0|1, showWeekends: boolean, showWeekNumbers: boolean }
     frozenColumns: number
 ```

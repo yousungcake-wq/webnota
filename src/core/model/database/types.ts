@@ -200,10 +200,8 @@ export interface GroupSettings {
   dateUnit?: 'day' | 'week' | 'month' | 'year'
 }
 
-/** Board options (DB-K06). */
+/** Board options (DB-K06). Cards show the view's visible properties. */
 export interface BoardSettings {
-  /** Properties shown on cards (default: none but the title). */
-  cardFields?: string[]
   /** Media field whose first image is the card cover (null: none). */
   coverFieldId?: string | null
 }

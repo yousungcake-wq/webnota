@@ -141,6 +141,8 @@ AppFlowy 팔레트 10색(Purple, Pink, Light Pink, Orange, Yellow, Lime, Green, 
 
 구현 (M5-02, `core/model/database/group.ts`): 뷰 설정 `group = { fieldId, hideEmpty, order, hidden, dateUnit? }`. 그룹 키: select·multi = 옵션 id(multi 행은 자기 옵션 열마다 나옴), checkbox = `'true'`/`'false'`(빈 열 없음), date = 기간 시작 `d:YYYY-MM-DD`·`w:…`(주 시작 요일)·`m:YYYY-MM`(기본)·`y:YYYY`(로컬 시각), url = 다듬은 주소, `''` = 값 없음. 열 순서: 저장된 `order`(FracKey)가 있는 키 먼저, 나머지는 기본 순서(값 없음 → 옵션 순서 / 체크 안 됨 → 체크됨 / 날짜 오래된 순 / 주소 가나다순). select 필드는 빈 옵션도 열이 있음. `runQuery`·증분 쿼리 결과의 `groups`는 필터·정렬된 행을 열로 나눈 것(열 안은 쿼리 순서), 숨긴 열도 포함(UI가 숨김 패널에 표시). 증분 결과 = 전체 재계산(속성 테스트). 열 순서 바꾸기는 모든 열 키를 다시 매김(`moveGroup`), 그룹 필드를 바꾸면 순서·숨김 초기화(`updateGroup`). 카드 값: 새 카드 `groupCellValue`, 다른 열로 옮기기 `movedCellValue`(multi는 옮긴 열의 옵션만 교체, 날짜는 시각·기간 길이 유지).
 
+구현 (M5-03, `BoardView.tsx`, 지연 청크 `dbBoard`): 그룹 필드가 없거나 그룹할 수 없는 타입이면 첫 select → multi → checkbox로 자동 설정, 그런 필드가 아예 없으면 "상태 필드 만들기"(할 일·진행 중·완료 select — 새 Board DB도 이것으로 시작). 열은 가로 스크롤(폰은 82vw 열 + 스크롤 스냅), 열 안 카드는 세로 가상 스크롤(카드 높이는 줄 높이 고정으로 계산: 제목 + 비어 있지 않은 속성 줄 + 커버). 카드에는 **뷰에서 보이는 속성**(속성 패널, 값이 빈 것은 생략)이 나오고, Board·Calendar 탭은 제목만 보이게 시작합니다(`addDbView`). 커버는 설정의 media 필드 첫 이미지. 카드 누르기 → 행 속성(M5-09 전까지 `RowSheet`), 연필 → 제목 인라인 편집(Enter·바깥 클릭 저장, Esc 취소), 열 머리 `+`·아래 "새로 만들기" → 그 열 값(+ 필터 값)으로 새 행을 만들고 제목 편집(보이게 스크롤). 설정 바 "보드": 그룹 기준·날짜 묶음(일/주/월/연)·값 없음 열 숨기기·카드 커버.
+
 ## 6. Calendar (`DB-C`, M5)
 
 | ID | 기능 |

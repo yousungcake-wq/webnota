@@ -81,4 +81,57 @@ test.describe('database views (M5)', () => {
     await expect.poll(rowCount).toBe(0)
     noErrors()
   })
+
+  test('board: columns by Status, cards, open, inline title, add to a column, group by (M5-03)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.getByRole('button', { name: '보기 추가' }).click()
+    await page.getByRole('menuitem', { name: '보드' }).click()
+    const col = (name: string) => page.locator('.dbk-col', { has: page.locator('.dbk-head', { hasText: name }) })
+    await expect(page.locator('.dbk-col')).toHaveCount(5) // no value, Todo, Doing, Done, Blocked
+    await expect(page.locator('.dbk-col').first().locator('.dbk-head')).toContainText('Status 없음')
+    const counts = await page.locator('.dbk-count').allInnerTexts()
+    expect(counts.map(Number).reduce((a, b) => a + b, 0)).toBe(50)
+
+    // open a card → its properties
+    const doing = col('Doing')
+    const first = doing.locator('.dbk-card').first()
+    const name = (await first.locator('.db-card-title').innerText()).trim()
+    await first.locator('.dbk-card-body').click()
+    await expect(page.getByRole('dialog', { name })).toBeVisible()
+    await page.keyboard.press('Escape')
+
+    // inline title
+    await first.hover()
+    await first.getByRole('button', { name: '제목 편집' }).click()
+    await first.getByLabel('카드 제목').fill('보드에서 바꿈')
+    await first.getByLabel('카드 제목').press('Enter')
+    await expect(doing.locator('.db-card-title', { hasText: '보드에서 바꿈' })).toBeVisible()
+
+    // add a card to "Done": it gets Done and a title
+    const done = col('Done')
+    const before = Number(await done.locator('.dbk-count').innerText())
+    await done.getByRole('button', { name: '새로 만들기' }).click()
+    await page.getByLabel('카드 제목').fill('새 카드')
+    await page.getByLabel('카드 제목').press('Enter')
+    await expect(done.locator('.dbk-count')).toHaveText(String(before + 1))
+    await expect(done.locator('.db-card-title', { hasText: '새 카드' })).toBeVisible()
+
+    // show Amount on cards (properties), then group by the Done checkbox
+    await page.getByRole('button', { name: /^속성/ }).click()
+    await page.getByRole('switch', { name: 'Amount' }).click()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.dbk-card .db-card-prop[data-type="number"]').first()).toBeVisible()
+    await page.getByRole('button', { name: '보드', exact: true }).click()
+    await page.getByRole('dialog', { name: '보드' }).getByLabel('그룹 기준').selectOption({ label: 'Done' })
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.dbk-col')).toHaveCount(2)
+    await expect(page.locator('.dbk-head').nth(0)).toContainText('체크 안 됨')
+    await expect(page.locator('.dbk-head').nth(1)).toContainText('체크됨')
+
+    await reload(page)
+    await dbLive(page)
+    await expect(page.locator('.dbk-col')).toHaveCount(2)
+    noErrors()
+  })
 })

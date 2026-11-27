@@ -2,6 +2,7 @@
 export * from './types'
 export * from './shard'
 export * from './model'
+export * from './viewOps'
 export * from './cells'
 export * from './query'
 export * from './live'

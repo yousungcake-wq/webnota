@@ -86,4 +86,18 @@ test.describe('database on phones (M4-13)', () => {
     await expect(page.locator('.sheet').getByRole('menuitem', { name: '보기 복제' })).toBeVisible()
     noErrors()
   })
+
+  test('board on phones: columns snap, tap a card for its sheet, 44px add (M5-03)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.getByRole('button', { name: '보기 추가' }).tap()
+    await page.getByRole('menuitem', { name: '보드' }).tap()
+    await expect(page.locator('.dbk-col')).toHaveCount(5)
+    const col = page.locator('.dbk-col').first()
+    expect((await col.boundingBox())!.width).toBeLessThan(page.viewportSize()!.width)
+    expect((await col.locator('.dbk-new').boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    await col.locator('.dbk-card-body').first().tap()
+    await expect(page.locator('.sheet')).toBeVisible()
+    noErrors()
+  })
 })
