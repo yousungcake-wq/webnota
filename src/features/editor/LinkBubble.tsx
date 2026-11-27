@@ -2,10 +2,40 @@ import type { Editor as TEditor } from '@tiptap/react'
 import { useEditorState } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import { Check, Copy, ExternalLink, Pencil, Unlink } from 'lucide-react'
+import { TextSelection } from '@tiptap/pm/state'
 import { useState } from 'react'
 import { t } from '@/core/i18n'
 import { Menu, promptDialog, toast } from '@/ui'
 import { normalizeUrl, openHref as open } from './link'
+
+/**
+ * Sets (or with an empty address removes) the link on the selection or the link under
+ * the caret, then puts the caret right after the link with the selection collapsed —
+ * so typing continues after it instead of replacing the linked text, and doesn't extend
+ * the link. With nothing selected and no link under the caret, the address itself is
+ * inserted as linked text.
+ */
+export function applyLink(editor: TEditor, value: string) {
+  const url = normalizeUrl(value)
+  const { empty } = editor.state.selection
+  const chain = editor.chain().focus()
+  if (!url) {
+    chain.extendMarkRange('link').unsetLink().run()
+    return
+  }
+  if (empty && !editor.isActive('link')) {
+    chain.insertContent({ type: 'text', text: url, marks: [{ type: 'link', attrs: { href: url } }] })
+  } else {
+    chain.extendMarkRange('link').setLink({ href: url })
+  }
+  chain
+    .command(({ tr, state }) => {
+      tr.setSelection(TextSelection.create(tr.doc, tr.selection.to))
+      tr.removeStoredMark(state.schema.marks.link!)
+      return true
+    })
+    .run()
+}
 
 const linkHref = (e: TEditor) => (e.getAttributes('link').href as string | undefined) ?? ''
 const copy = (href: string) =>
@@ -19,10 +49,7 @@ export function LinkBubble({ editor }: { editor: TEditor }) {
   const href = useEditorState({ editor, selector: ({ editor: e }) => (e.isActive('link') ? linkHref(e) : '') })
   const [editing, setEditing] = useState<string | null>(null)
   const apply = (value: string) => {
-    const url = normalizeUrl(value)
-    const chain = editor.chain().focus().extendMarkRange('link')
-    if (url) chain.setLink({ href: url }).run()
-    else chain.unsetLink().run()
+    applyLink(editor, value)
     setEditing(null)
   }
   return (
@@ -118,11 +145,7 @@ export function LinkBubble({ editor }: { editor: TEditor }) {
 export async function promptLink(editor: TEditor) {
   const current = editor.isActive('link') ? linkHref(editor) : ''
   const value = await promptDialog({ title: t('link.add'), label: t('link.url'), value: current })
-  if (value === null) return
-  const url = normalizeUrl(value)
-  const chain = editor.chain().focus().extendMarkRange('link')
-  if (url) chain.setLink({ href: url }).run()
-  else chain.unsetLink().run()
+  if (value !== null) applyLink(editor, value)
 }
 
 /** Phone: tapping a link while editing opens this sheet (MB-25). */
