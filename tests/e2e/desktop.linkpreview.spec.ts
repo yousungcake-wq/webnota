@@ -56,7 +56,7 @@ test('URL on its own line → "preview card": metadata from the worker, cached i
   await pasteText(page, 'https://blog.example.com/post/1')
   const menu = page.getByRole('menu', { name: '붙여넣은 링크' })
   await expect(menu).toBeVisible()
-  await expect(menu.getByRole('menuitem')).toHaveText(['링크로 두기', '미리보기 카드'])
+  await expect(menu.getByRole('menuitem')).toHaveText(['링크로 두기', '미리보기 카드', '임베드']) // any page can be embedded (feedback 2-2)
   await menu.getByRole('menuitem', { name: '미리보기 카드' }).click()
 
   const card = page.locator('.wn-editor .link-card')

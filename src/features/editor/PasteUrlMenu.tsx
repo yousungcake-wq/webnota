@@ -37,7 +37,9 @@ export default function PasteUrlMenu({
       .run()
   }
 
-  const video = videoSource(url)
+  // a real player is offered as a video; any other page as an embed (feedback 2-2)
+  const found = videoSource(url)
+  const video = found && !(found.kind === 'iframe' && found.generic) ? found : null
   const embed = embedSource(url)
   const items: MenuItem[] = [
     { label: t('pasteUrl.link'), icon: Link2, onSelect: onClose },
@@ -45,7 +47,7 @@ export default function PasteUrlMenu({
   ]
   if (video)
     items.push({ label: t('pasteUrl.video'), icon: Film, onSelect: replace({ type: 'video', attrs: { src: url } }) })
-  else if (embed)
+  else if (embed && !IMAGE_URL.test(new URL(url).pathname))
     items.push({
       label: t('pasteUrl.embed'),
       icon: MonitorPlay,

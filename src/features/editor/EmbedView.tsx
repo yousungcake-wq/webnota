@@ -124,6 +124,18 @@ export default function EmbedView({
         {editable && !selected && <div className="media-shield" />}
       </div>
     )
+    // any other page may refuse to be framed: always offer to open it (feedback 2-2)
+    const generic = video?.kind === 'iframe' ? video.generic : embed?.generic
+    if (generic)
+      body = (
+        <>
+          {body}
+          <a className="media-open" href={frameSrc} target="_blank" rel="noreferrer noopener">
+            <ExternalLink size={14} aria-hidden />
+            <span>{t('embed.openSite', { host: new URL(frameSrc).hostname })}</span>
+          </a>
+        </>
+      )
   } else body = <div className="media-empty">{t(isVideo ? 'video.unsupported' : 'embed.unsupported')}</div>
 
   if (isVideo) {

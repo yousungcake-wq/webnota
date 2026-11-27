@@ -76,23 +76,41 @@ test('video block: an uploaded file plays from the local cache (ED-B13, SY-04)',
   expect((await attrsOf(page, 'video'))[0]!.src).toMatch(/^[0-9a-f]{64}\.mp4$/)
 })
 
-test('embed block: allowlisted services only, height menu (ED-B22)', async ({ page }) => {
+test('embed block: any page (with "open in a new tab"), known services rebuilt, height menu (ED-B22, feedback 2-2)', async ({
+  page,
+}) => {
+  await page.route(/example\.org/, (r) =>
+    r.fulfill({ contentType: 'text/html', body: '<html><body>page</body></html>' }),
+  )
   const check = failOnConsoleErrors(page)
-  await insert(page, '임베드', 'https://evil.example/page')
-  await expect(page.getByText('넣을 수 없는 주소입니다')).toBeVisible()
-  await expect(page.locator('.wn-editor .embed-block iframe')).toHaveCount(0)
+  await insert(page, '임베드', 'https://example.org/some/page')
+  await expect(page.locator('.wn-editor .embed-block iframe')).toHaveAttribute('src', 'https://example.org/some/page')
+  await expect(page.locator('.wn-editor .embed-block .media-open')).toHaveAttribute(
+    'href',
+    'https://example.org/some/page',
+  )
+  await expect(page.locator('.wn-editor .embed-block .media-open')).toContainText('example.org')
+  // a text that is not an address is still refused
+  await page.locator('.wn-editor').press('ControlOrMeta+End')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('/임베드')
+  await page.keyboard.press('Enter')
+  await page.locator('.media-empty').getByRole('button').first().click()
+  await page.getByRole('dialog').getByRole('textbox').fill('not a link')
+  await page.getByRole('dialog').getByRole('button', { name: '확인' }).click()
+  await expect(page.getByText('주소를 읽을 수 없습니다')).toBeVisible()
 
   await page.locator('.media-empty').getByRole('button', { name: '링크 넣기' }).click()
   await page.getByRole('dialog').getByRole('textbox').fill('https://codepen.io/someone/pen/abcDEF')
   await page.getByRole('dialog').getByRole('button', { name: '확인' }).click()
-  const frame = page.locator('.wn-editor .embed-block iframe')
+  const frame = page.locator('.wn-editor .embed-block iframe').last()
   await expect(frame).toHaveAttribute('src', 'https://codepen.io/someone/embed/abcDEF?default-tab=result')
   await blurBlock(page)
-  await page.locator('.wn-editor .embed-block .media-shield').click()
+  await page.locator('.wn-editor .embed-block .media-shield').last().click()
   await page.getByRole('toolbar', { name: '미디어 도구' }).getByRole('button', { name: '크기' }).click()
   await page.getByRole('menuitemcheckbox', { name: '크게' }).click()
-  await expect(page.locator('.wn-editor .embed-block .media-frame')).toHaveAttribute('style', /height: 640px/)
+  await expect(page.locator('.wn-editor .embed-block .media-frame').last()).toHaveAttribute('style', /height: 640px/)
   await reload(page)
-  await expect(page.locator('.wn-editor .embed-block .media-frame')).toHaveAttribute('style', /height: 640px/)
+  await expect(page.locator('.wn-editor .embed-block .media-frame').last()).toHaveAttribute('style', /height: 640px/)
   check()
 })

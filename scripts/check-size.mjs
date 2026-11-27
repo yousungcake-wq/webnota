@@ -25,7 +25,7 @@ const BUDGETS = {
   // M3 media: image UI when a page has an image; file cache on first file shown; upload code on first upload
   imageView: { kb: 12, entry: 'src/features/editor/ImageView.tsx', after: 'editor' },
   fileView: { kb: 6, entry: 'src/features/editor/FileView.tsx', after: 'editor' },
-  embedView: { kb: 8, entry: 'src/features/editor/EmbedView.tsx', after: 'editor' }, // + video resize handles (feedback 2-5)
+  embedView: { kb: 10, entry: 'src/features/editor/EmbedView.tsx', after: 'editor' }, // + resize handles, ~30 embed services (feedback 2-2, 2-5)
   // KaTeX + its CSS (spec/10: ≤120KB), when a page shows or edits math
   math: { kb: 120, entry: 'node_modules/katex/dist/katex.mjs', after: 'editor' },
   mathEditor: { kb: 4, entry: 'src/features/editor/MathEditor.tsx', after: 'editor' },
