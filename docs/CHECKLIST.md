@@ -109,7 +109,7 @@
 - [x] M3-08 Worker `/unfurl`(OG 메타, 허용 출처, 캐시) + 링크 미리보기 블록 `linkPreview` + URL 붙여넣기 시 링크/미리보기/임베드 선택 (ED-B21, ED-F06) — schema 증가 — 84d5e11
 - [x] M3-09 커버·페이지 아이콘 이미지 업로드 (ED-F11, ED-F12) — 2208956
 - [x] M3-10 저장소 정리: 참조되지 않는 `files/` 스캔·삭제(설정에서 수동 실행) (SY-04) — d591045
-- [ ] M3-11 e2e(데스크탑·폰) + 성능 기록 + 실기기 QA
+- [x] M3-11 e2e(데스크탑·폰) + 성능 기록 + 실기기 QA — 9521ac0
 
 ## M4 데이터베이스 I: 엔진 + Grid
 > 규칙: 스키마는 spec/02 §4. DB 코드는 전부 지연 청크 `features/database`(예산 120KB, `check-size.mjs` 등록), 초기 번들 122.9/125KB·에디터 204.9/210KB라 정적 import 금지. 미완성 UI는 기능 플래그 `database` 뒤에. 쿼리 엔진은 React 없는 `core/model/database`. **파일을 참조하는 새 위치(media 필드, 행 커버)는 `core/files/refs.ts`에 추가** (빠지면 저장소 정리가 지움, M3-10).

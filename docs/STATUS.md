@@ -7,7 +7,7 @@
 - **마일스톤**: M4 데이터베이스 I (M3 완료 — 실기기 확인은 docs/QA.md "M3"(와 M2·M1), 사용자 확인 대기. 링크 미리보기는 Worker 재배포 필요)
 - **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 0/16 (체크리스트 세부화 완료)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M3-11 e2e·성능 기록·QA. 사용자 실기기 QA(docs/QA.md M2) 대기
+- **다음 할 일**: M4-00 사전 정리(database 플래그·지연 청크·fast-check). 사용자 실기기 QA(docs/QA.md M3·M2) 대기, Worker 재배포(/unfurl)
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -141,3 +141,4 @@
 | 2026-11-27 | M3-08: 링크 미리보기(Worker /unfurl·SSRF 차단·블록에 캐시) + URL 붙여넣기 선택 메뉴, schema v18 | 84d5e11 |
 | 2026-11-27 | M3-09: 커버·페이지 아이콘 이미지 업로드(아이콘 256px, 파일 캐시 표시) | 2208956 |
 | 2026-11-27 | M3-10: 저장소 정리(참조 수집·한 커밋 삭제) + 메모리 GitHub e2e로 업로드·내려받기·정리 검증 | d591045 |
+| 2026-11-27 | M3-11: M3 e2e(194개)·성능 기록·QA 항목, M3 완료, M4 체크리스트 세부화 | 9521ac0 |
