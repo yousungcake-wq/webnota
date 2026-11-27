@@ -155,4 +155,4 @@
 | 2026-11-27 | M4-00: database 플래그·features/database 지연 청크·DB 지연 문자열 사전(dt)·fast-check, 새 뷰 메뉴 Grid(플래그) | aa8712d |
 | 2026-11-27 | M4-01: DB 데이터 모델(db/dbr 샤드 8개·FNV-1a·필드/행/셀 CRUD·뷰 설정), openDatabase, schema v19 | 97ebd2c |
 | 2026-11-27 | M4-02: DB 문서 retain·영구 삭제 시 로컬 DB 정리, 엔진이 참조 없는 data/dbs/<id>/ 삭제, 첫 연결 시 DB 더티 | a4535c9 |
-| 2026-11-27 | M4-03: 쿼리 엔진 runQuery/compileQuery(필터 전 조건·AND/OR·상대 날짜, 다중 정렬·ko 콜레이터·빈 값 마지막, 계산 14종) + 전수·fast-check 속성 테스트 | HASH |
+| 2026-11-27 | M4-03: 쿼리 엔진 runQuery/compileQuery(필터 전 조건·AND/OR·상대 날짜, 다중 정렬·ko 콜레이터·빈 값 마지막, 계산 14종) + 전수·fast-check 속성 테스트 | 5c73b31 |
