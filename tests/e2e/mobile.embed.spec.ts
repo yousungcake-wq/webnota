@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { openApp } from './helpers'
 import { blurBlock } from './media'
 
-test('phone: video from the block panel, 44px toolbar (ED-B13)', async ({ page }) => {
+test('phone: video from the block panel, large toolbar targets (ED-B13)', async ({ page }) => {
   await page.route(/youtube-nocookie\.com/, (r) => r.fulfill({ contentType: 'text/html', body: '<html></html>' }))
   await openApp(page)
   await page.locator('.wn-editor p').first().tap()
@@ -16,7 +16,10 @@ test('phone: video from the block panel, 44px toolbar (ED-B13)', async ({ page }
   await expect(page.locator('.wn-editor .video-block iframe')).toBeVisible()
   await blurBlock(page)
   await page.locator('.wn-editor .video-block .media-shield').tap()
-  const del = page.getByRole('toolbar', { name: '미디어 도구' }).getByRole('button', { name: '블록 삭제' })
+  const del = page
+    .locator('.video-block')
+    .getByRole('toolbar', { name: '미디어 도구' })
+    .getByRole('button', { name: '삭제', exact: true })
   expect((await del.boundingBox())!.height).toBeGreaterThanOrEqual(44)
   await del.tap()
   await expect(page.locator('.wn-editor .video-block')).toHaveCount(0)

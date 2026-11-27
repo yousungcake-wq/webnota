@@ -68,29 +68,44 @@ test('paste and drop an image file insert image blocks (ED-F06)', async ({ page 
   check()
 })
 
-test('toolbar: align, size, caption persist; link images work; delete (ED-B12)', async ({ page }) => {
+test('toolbar at the top-left: align (+size), caption, caption align, duplicate, clear, delete (ED-B12, feedback 4)', async ({
+  page,
+}) => {
   const check = failOnConsoleErrors(page)
   await pasteOrDropImage(page, 'paste', 400, 200)
   const block = page.locator('.wn-editor .image-block')
   await expect(block.locator('img')).toBeVisible()
   await block.locator('img').click()
-  const bar = page.getByRole('toolbar', { name: '이미지 도구' })
-  await bar.getByRole('button', { name: '오른쪽 정렬' }).click()
+  const bar = block.getByRole('toolbar', { name: '미디어 도구' })
+  await expect(bar).toBeVisible()
+  // the toolbar sits on the image's top-left corner, not under it
+  const ib = (await block.locator('.image-frame').boundingBox())!
+  const tb = (await bar.boundingBox())!
+  expect(tb.x - ib.x).toBeLessThan(16)
+  expect(tb.y - ib.y).toBeLessThan(16)
+  await bar.getByRole('button', { name: '이미지 정렬' }).click()
+  await page.getByRole('menuitemcheckbox', { name: '오른쪽' }).click()
   await expect(block).toHaveAttribute('data-align', 'right')
-  await bar.getByRole('button', { name: '크기' }).click()
-  await page.getByRole('menuitemcheckbox', { name: '50%' }).click()
-  await expect(block.locator('.image-frame')).toHaveAttribute('style', /width: 50%/)
-  await bar.getByRole('button', { name: '캡션' }).click()
+  await bar.getByRole('button', { name: '이미지 정렬' }).click()
+  await page.getByRole('menuitemcheckbox', { name: '크기 50%' }).click()
+  await expect(block.locator('.media-box')).toHaveAttribute('style', /width: 50%/)
+  await bar.getByRole('button', { name: '캡션', exact: true }).click()
   await page.getByRole('textbox', { name: '캡션' }).fill('바다 사진')
   await page.keyboard.press('Enter')
+  // the caption keeps its own alignment (left) while the image is on the right
+  await expect(block.locator('.media-caption')).toHaveCSS('text-align', 'left')
+  await block.locator('img').click()
+  await bar.getByRole('button', { name: '캡션 정렬' }).click()
+  await page.getByRole('menuitemcheckbox', { name: '가운데' }).click()
+  await expect(block.locator('.media-caption')).toHaveCSS('text-align', 'center')
   await expect
     .poll(async () => (await imageAttrs(page))[0])
-    .toMatchObject({ align: 'right', width: 50, caption: '바다 사진' })
+    .toMatchObject({ align: 'right', width: 50, caption: '바다 사진', captionAlign: 'center' })
 
   await reload(page)
   const again = page.locator('.wn-editor .image-block')
   await expect(again).toHaveAttribute('data-align', 'right')
-  await expect(again.locator('.image-caption input')).toHaveValue('바다 사진')
+  await expect(again.locator('.media-caption input')).toHaveValue('바다 사진')
 
   // drag the left handle (right-aligned image grows to the left)
   await again.locator('img').hover()
@@ -113,9 +128,20 @@ test('toolbar: align, size, caption persist; link images work; delete (ED-B12)',
   await expect(page.locator('.wn-editor img[src$="icon-192.png"]')).toBeVisible()
   await expect.poll(async () => (await imageAttrs(page))[1]).toMatchObject({ naturalWidth: 192 })
 
-  // delete from the toolbar
+  // duplicate, clear (the block stays, empty), delete
+  const link = page.locator('.wn-editor .image-block', { has: page.locator('img[src$="icon-192.png"]') })
+  await link.locator('img').click()
+  await link.getByRole('button', { name: '복제' }).click()
+  await expect(page.locator('.wn-editor img[src$="icon-192.png"]')).toHaveCount(2)
+  await link.first().locator('img').click()
+  await link.first().getByRole('button', { name: '비우기' }).click()
+  await expect(page.locator('.wn-editor .image-block')).toHaveCount(3)
+  await expect(page.locator('.wn-editor .image-empty')).toHaveCount(1)
   await page.locator('.wn-editor img[src$="icon-192.png"]').click()
-  await page.getByRole('toolbar', { name: '이미지 도구' }).getByRole('button', { name: '이미지 삭제' }).click()
-  await expect(page.locator('.wn-editor .image-block')).toHaveCount(1)
+  await page
+    .locator('.wn-editor .image-block', { has: page.locator('img[src$="icon-192.png"]') })
+    .getByRole('button', { name: '삭제', exact: true })
+    .click()
+  await expect(page.locator('.wn-editor .image-block')).toHaveCount(2)
   check()
 })

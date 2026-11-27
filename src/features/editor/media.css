@@ -1,0 +1,66 @@
+/* feedback 4–5: image and video share a box with the toolbar at its top-left corner, and a
+   caption that spans the column with its own alignment */
+.wn-editor .media-box {
+  position: relative;
+  max-width: 100%;
+}
+.wn-editor .media-tools {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+  max-width: calc(100% - 16px);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-elev);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.wn-editor .media-box:hover .media-tools,
+.wn-editor .media-box:focus-within .media-tools,
+.wn-editor .is-selected .media-tools {
+  opacity: 1;
+  pointer-events: auto;
+}
+.wn-editor .media-tools .icon-btn,
+.wn-editor .media-tools a.icon-btn {
+  flex: none;
+  color: inherit;
+}
+.wn-editor .media-caption {
+  align-self: stretch;
+  width: 100%;
+  margin-top: var(--sp-1);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.wn-editor .media-caption input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  outline: none;
+  padding: 2px 0;
+}
+.wn-editor .video-block[data-align='left'] .media-figure {
+  align-items: flex-start;
+}
+.wn-editor .video-block[data-align='right'] .media-figure {
+  align-items: flex-end;
+}
+@media (pointer: coarse) {
+  .wn-editor .media-tools .icon-btn,
+  .wn-editor .media-tools a.icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

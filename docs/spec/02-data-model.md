@@ -211,6 +211,7 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 | 17 | 노드 타입 `mathBlock`(블록)·`inlineMath`(인라인), 속성 `latex` 추가 (버전만) | M3-07 |
 | 18 | 블록 노드 타입 `linkPreview`(url, title, description, image, siteName — 메타데이터 캐시) 추가 (버전만) | M3-08 |
 | 19 | 데이터베이스 뷰(`kind: 'database'`, `databaseId`) + `db/<id>`·`dbr/<id>/<n>` 문서 (버전만 — 구버전은 DB 뷰를 문서로 열어 엉뚱한 `doc/` 파일을 만들 수 있음) | M4-01 |
+| 20 | `image.captionAlign`(left·center·right, 기본 left — 이미지 정렬과 별개), `video.align`·`caption`·`captionAlign` 추가 (버전만) | 피드백 4·5 |
 
 v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다 (M0-17).
 

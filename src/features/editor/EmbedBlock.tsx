@@ -19,7 +19,11 @@ const EmbedView = lazy(() => import('./EmbedView'))
 function MediaNodeView(props: ReactNodeViewProps) {
   const kind = props.node.type.name
   return (
-    <NodeViewWrapper className={`${kind}-block media-block${props.selected ? ' is-selected' : ''}`} data-drag-handle="">
+    <NodeViewWrapper
+      className={`${kind}-block media-block${props.selected ? ' is-selected' : ''}`}
+      data-align={kind === 'video' ? (props.node.attrs.align as string) : undefined}
+      data-drag-handle=""
+    >
       <Suspense fallback={<div className="media-frame is-loading" />}>
         <EmbedView {...props} />
       </Suspense>

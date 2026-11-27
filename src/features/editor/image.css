@@ -50,6 +50,10 @@
   align-items: center;
   justify-content: center;
 }
+.wn-editor .image-frame {
+  width: 100%;
+  height: 100%;
+}
 .wn-editor .image-block.is-selected .image-frame {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -113,20 +117,6 @@
   border-radius: var(--r);
   background: var(--bg-elev);
   box-shadow: var(--shadow-sm);
-}
-.wn-editor .image-caption {
-  width: 100%;
-  max-width: 100%;
-  margin-top: var(--sp-1);
-  color: var(--text-2);
-  font-size: var(--fs-sm);
-  text-align: center;
-}
-.wn-editor .image-block[data-align='left'] .image-caption {
-  text-align: left;
-}
-.wn-editor .image-block[data-align='right'] .image-caption {
-  text-align: right;
 }
 .wn-editor .image-caption input {
   width: 100%;

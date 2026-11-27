@@ -2,6 +2,17 @@ import { mergeAttributes, Node } from '@tiptap/core'
 
 export type ImageAlign = 'left' | 'center' | 'right'
 
+/** Caption alignment (schema v20): left (default), center or right — independent of the media. */
+export const captionAlignAttr = () => ({
+  default: 'left',
+  parseHTML: (el: HTMLElement) => {
+    const v = el.getAttribute('data-caption-align')
+    return v === 'center' || v === 'right' ? v : 'left'
+  },
+  renderHTML: (a: Record<string, unknown>) =>
+    a.captionAlign && a.captionAlign !== 'left' ? { 'data-caption-align': a.captionAlign as string } : {},
+})
+
 /** Accepted `src` values: a workspace file id (`<sha256>.<ext>`) or an http(s) URL. */
 export const isImageSrc = (src: unknown): src is string =>
   typeof src === 'string' && (/^[0-9a-f]{64}\.[a-z0-9]{1,10}$/.test(src) || /^https?:\/\/\S+$/i.test(src))
@@ -51,6 +62,8 @@ export const Image = Node.create({
         parseHTML: (el) => el.querySelector('figcaption')?.textContent ?? el.getAttribute('alt') ?? '',
         renderHTML: () => ({}),
       },
+      // v20 (feedback 4): the caption aligns on its own, not with the image
+      captionAlign: captionAlignAttr(),
       naturalWidth: {
         default: null,
         parseHTML: (el) => Number(el.getAttribute('data-nw')) || null,

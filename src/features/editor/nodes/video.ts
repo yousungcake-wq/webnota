@@ -1,4 +1,5 @@
 import { mergeAttributes, Node } from '@tiptap/core'
+import { captionAlignAttr } from './image'
 
 /** Pasted HTML: keep http(s) addresses and video file ids; the view re-checks them (`embedUrls.ts`). */
 const isMediaSrc = (s: string | null | undefined): s is string =>
@@ -9,7 +10,7 @@ const isMediaSrc = (s: string | null | undefined): s is string =>
  * (`src`); the player/iframe address is derived when rendering (`embedUrls.ts`), so a
  * block can never point an iframe outside the allowlist (the view only renders what
  * `embedUrls.ts` accepts). Schema only; UI is `EmbedBlock.tsx`.
- * - video `width`: percent of the text column (null = 100)
+ * - video `width`: percent of the text column (null = 100); `align`, `caption`, `captionAlign` (v20)
  * - embed `height`: iframe height in px (null = the service default)
  */
 export const Video = Node.create({
@@ -37,6 +38,21 @@ export const Video = Node.create({
         },
         renderHTML: (a) => (a.width ? { 'data-width': String(a.width) } : {}),
       },
+      // v20 (feedback 5): the same layout tools as images
+      align: {
+        default: 'center',
+        parseHTML: (el) => {
+          const v = el.getAttribute('data-align')
+          return v === 'left' || v === 'right' ? v : 'center'
+        },
+        renderHTML: (a) => (a.align !== 'center' ? { 'data-align': a.align as string } : {}),
+      },
+      caption: {
+        default: '',
+        parseHTML: (el) => el.getAttribute('data-caption') ?? '',
+        renderHTML: (a) => (a.caption ? { 'data-caption': a.caption as string } : {}),
+      },
+      captionAlign: captionAlignAttr(),
     }
   },
   parseHTML() {

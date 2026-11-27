@@ -5,6 +5,7 @@ import { t } from '@/core/i18n'
 import { fileStatusKey, useFile } from '@/features/files'
 import { Button, IconButton, Menu, promptDialog, toast } from '@/ui'
 import { embedSource, videoSource } from './nodes/embedUrls'
+import { MediaCaption, MediaToolbar } from './MediaToolbar'
 import './embed.css'
 
 /** iframe permissions: players need scripts + their own origin; no top navigation. */
@@ -12,13 +13,21 @@ const SANDBOX =
   'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation allow-forms'
 const ALLOW = 'fullscreen; picture-in-picture; encrypted-media; clipboard-write; autoplay'
 
-export default function EmbedView({ node, updateAttributes, deleteNode, editor, selected }: ReactNodeViewProps) {
+export default function EmbedView({
+  node,
+  updateAttributes,
+  deleteNode,
+  editor,
+  selected,
+  getPos,
+}: ReactNodeViewProps) {
   const isVideo = node.type.name === 'video'
   const src = node.attrs.src as string | null
   const editable = editor.isEditable
   const [menu, setMenu] = useState<HTMLElement | null>(null)
   const input = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
+  const [editingCaption, setEditingCaption] = useState(false)
 
   const askLink = async () => {
     const url = await promptDialog({
@@ -118,12 +127,54 @@ export default function EmbedView({ node, updateAttributes, deleteNode, editor, 
     )
   } else body = <div className="media-empty">{t(isVideo ? 'video.unsupported' : 'embed.unsupported')}</div>
 
+  if (isVideo) {
+    const caption = (node.attrs.caption as string) ?? ''
+    const showCaption = editingCaption || !!caption
+    const fileSrc = video?.kind === 'file' && !/^https?:/i.test(src) ? src : null
+    return (
+      <figure className="media-figure" contentEditable={false}>
+        <div className="media-box" style={{ width: width ? `${width}%` : '100%' }}>
+          {body}
+          {editable && (
+            <MediaToolbar
+              kind="video"
+              attrs={node.attrs}
+              update={updateAttributes}
+              sizes={[50, 75, null]}
+              download={fileSrc ? { href: '', name: '' } : null}
+              fileId={fileSrc}
+              onCaption={() => setEditingCaption(true)}
+              onClear={() => updateAttributes({ src: null })}
+              onDuplicate={() => {
+                const pos = getPos()
+                if (typeof pos === 'number')
+                  editor
+                    .chain()
+                    .insertContentAt(pos + node.nodeSize, node.toJSON())
+                    .run()
+              }}
+              onDelete={deleteNode}
+            />
+          )}
+        </div>
+        {showCaption && (
+          <MediaCaption
+            value={caption}
+            align={node.attrs.captionAlign as string}
+            editable={editable}
+            autoFocus={editingCaption}
+            onCommit={(v) => {
+              setEditingCaption(false)
+              if (v !== caption) updateAttributes({ caption: v })
+            }}
+          />
+        )}
+      </figure>
+    )
+  }
+
   return (
-    <figure
-      className="media-figure"
-      contentEditable={false}
-      style={isVideo && width ? { width: `${width}%` } : undefined}
-    >
+    <figure className="media-figure" contentEditable={false}>
       {body}
       {selected && editable && (
         <div className="media-toolbar" role="toolbar" aria-label={t('media.toolbar')}>

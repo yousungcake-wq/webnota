@@ -1,24 +1,12 @@
 import type { ReactNodeViewProps } from '@tiptap/react'
-import {
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
-  Captions,
-  Download,
-  ExternalLink,
-  ImagePlus,
-  Link2,
-  Maximize2,
-  RefreshCw,
-  Trash2,
-  Upload,
-} from 'lucide-react'
+import { ImagePlus, Link2, RefreshCw, Upload } from 'lucide-react'
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { t } from '@/core/i18n'
 import { fileStatusKey, useFile } from '@/features/files'
 import { useLayout } from '@/platform/layout'
-import { Button, IconButton, Menu, promptDialog, toast } from '@/ui'
+import { Button, promptDialog, toast } from '@/ui'
 import { imageBoxStyle } from './ImageBlock'
+import { MediaCaption, MediaToolbar } from './MediaToolbar'
 import { isImageSrc, type ImageAlign } from './nodes/image'
 import './image.css'
 
@@ -54,7 +42,7 @@ async function askUrl(current = '') {
   return v
 }
 
-export default function ImageView({ node, updateAttributes, deleteNode, editor, selected }: ReactNodeViewProps) {
+export default function ImageView({ node, updateAttributes, deleteNode, editor, getPos }: ReactNodeViewProps) {
   const src = node.attrs.src as string | null
   const editable = editor.isEditable
   const input = useRef<HTMLInputElement>(null)
@@ -117,9 +105,16 @@ export default function ImageView({ node, updateAttributes, deleteNode, editor, 
         src={src}
         attrs={node.attrs}
         editable={editable}
-        selected={selected}
         updateAttributes={updateAttributes}
-        onReplace={() => pickImage(input.current)}
+        onClear={() => updateAttributes({ src: null, width: null, naturalWidth: null, naturalHeight: null })}
+        onDuplicate={() => {
+          const pos = getPos()
+          if (typeof pos === 'number')
+            editor
+              .chain()
+              .insertContentAt(pos + node.nodeSize, node.toJSON())
+              .run()
+        }}
         onDelete={deleteNode}
       />
     </>
@@ -130,17 +125,17 @@ function Figure({
   src,
   attrs,
   editable,
-  selected,
   updateAttributes,
-  onReplace,
+  onClear,
+  onDuplicate,
   onDelete,
 }: {
   src: string
   attrs: Record<string, unknown>
   editable: boolean
-  selected: boolean
   updateAttributes: (a: Record<string, unknown>) => void
-  onReplace: () => void
+  onClear: () => void
+  onDuplicate: () => void
   onDelete: () => void
 }) {
   const file = useFile(isFile(src) ? src : null)
@@ -151,7 +146,6 @@ function Figure({
   const [drag, setDrag] = useState<number | null>(null)
   const frame = useRef<HTMLDivElement>(null)
   const phone = useLayout().layout === 'phone'
-  const [sizeMenu, setSizeMenu] = useState<HTMLElement | null>(null)
   const [failed, setFailed] = useState(false)
 
   const box = imageBoxStyle(attrs)
@@ -188,122 +182,67 @@ function Figure({
   const showCaption = editingCaption || !!caption
   return (
     <figure className="image-figure" contentEditable={false}>
-      <div ref={frame} className={`image-frame${url && !failed ? '' : ' is-placeholder'}`} style={style}>
-        {url && !failed ? (
-          <img
-            src={url}
-            alt={caption}
-            loading="lazy"
-            decoding="async"
-            draggable={false}
-            referrerPolicy="no-referrer"
-            onError={() => setFailed(true)}
-            onLoad={(e) => {
-              const img = e.currentTarget
-              if (editable && !attrs.naturalWidth && img.naturalWidth)
-                updateAttributes({ naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight })
-            }}
-          />
-        ) : (
-          <div className="image-status" role="status">
-            <span>{failed ? t('files.error') : t(fileStatusKey(status))}</span>
-            {(failed || status === 'error' || status === 'missing') && (
-              <Button
-                size="sm"
-                variant="ghost"
-                icon={RefreshCw}
-                onClick={() => {
-                  setFailed(false)
-                  file.retry()
-                }}
-              >
-                {t('files.retry')}
-              </Button>
-            )}
-          </div>
-        )}
-        {editable && !phone && url && (
-          <>
-            <span className="image-handle is-left" onPointerDown={(e) => startResize(e, -1)} aria-hidden />
-            <span className="image-handle is-right" onPointerDown={(e) => startResize(e, 1)} aria-hidden />
-          </>
-        )}
-        {drag !== null && <span className="image-size-badge">{drag}%</span>}
-      </div>
-      {selected && editable && (
-        <div className="image-toolbar" role="toolbar" aria-label={t('image.toolbar')}>
-          {(['left', 'center', 'right'] as const).map((a) => (
-            <IconButton
-              key={a}
-              size="sm"
-              icon={a === 'left' ? AlignLeft : a === 'center' ? AlignCenter : AlignRight}
-              label={t(`image.align.${a}`)}
-              active={(attrs.align as string) === a}
-              onClick={() => updateAttributes({ align: a })}
+      <div className="media-box" style={style}>
+        <div ref={frame} className={`image-frame${url && !failed ? '' : ' is-placeholder'}`}>
+          {url && !failed ? (
+            <img
+              src={url}
+              alt={caption}
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+              referrerPolicy="no-referrer"
+              onError={() => setFailed(true)}
+              onLoad={(e) => {
+                const img = e.currentTarget
+                if (editable && !attrs.naturalWidth && img.naturalWidth)
+                  updateAttributes({ naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight })
+              }}
             />
-          ))}
-          <IconButton
-            size="sm"
-            icon={Maximize2}
-            label={t('image.size')}
-            onClick={(e) => setSizeMenu(e.currentTarget)}
-          />
-          <IconButton
-            size="sm"
-            icon={Captions}
-            label={t('image.caption')}
-            active={showCaption}
-            onClick={() => setEditingCaption(true)}
-          />
-          <IconButton size="sm" icon={RefreshCw} label={t('image.replace')} onClick={onReplace} />
-          {url && (
-            <a
-              className="icon-btn sm"
-              href={url}
-              download={downloadName(src, caption)}
-              aria-label={t('image.download')}
-              data-tooltip={t('image.download')}
-            >
-              <Download size={16} />
-            </a>
+          ) : (
+            <div className="image-status" role="status">
+              <span>{failed ? t('files.error') : t(fileStatusKey(status))}</span>
+              {(failed || status === 'error' || status === 'missing') && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  icon={RefreshCw}
+                  onClick={() => {
+                    setFailed(false)
+                    file.retry()
+                  }}
+                >
+                  {t('files.retry')}
+                </Button>
+              )}
+            </div>
           )}
-          {url && !phone && (
-            <a
-              className="icon-btn sm"
-              href={url}
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label={t('image.open')}
-              data-tooltip={t('image.open')}
-            >
-              <ExternalLink size={16} />
-            </a>
+          {editable && !phone && url && (
+            <>
+              <span className="image-handle is-left" onPointerDown={(e) => startResize(e, -1)} aria-hidden />
+              <span className="image-handle is-right" onPointerDown={(e) => startResize(e, 1)} aria-hidden />
+            </>
           )}
-          <IconButton size="sm" icon={Trash2} tone="danger" label={t('image.delete')} onClick={onDelete} />
-          {sizeMenu && (
-            <Menu
-              anchor={sizeMenu}
-              title={t('image.size')}
-              onClose={() => setSizeMenu(null)}
-              items={[
-                ...[25, 50, 75, 100].map((w) => ({
-                  label: `${w}%`,
-                  checked: attrs.width === w,
-                  onSelect: () => updateAttributes({ width: w }),
-                })),
-                {
-                  label: t('image.sizeOriginal'),
-                  checked: !attrs.width,
-                  onSelect: () => updateAttributes({ width: null }),
-                },
-              ]}
-            />
-          )}
+          {drag !== null && <span className="image-size-badge">{drag}%</span>}
         </div>
-      )}
+        {editable && (
+          <MediaToolbar
+            kind="image"
+            attrs={attrs}
+            update={updateAttributes}
+            sizes={[25, 50, 75, 100, null]}
+            download={url ? { href: url, name: downloadName(src, caption) } : null}
+            onCaption={() => setEditingCaption(true)}
+            onClear={onClear}
+            onDuplicate={onDuplicate}
+            onDelete={onDelete}
+          />
+        )}
+      </div>
       {showCaption && (
-        <Caption
+        <MediaCaption
           value={caption}
+          align={attrs.captionAlign as string}
           editable={editable}
           autoFocus={editingCaption}
           onCommit={(v) => {
@@ -313,43 +252,6 @@ function Figure({
         />
       )}
     </figure>
-  )
-}
-
-function Caption({
-  value,
-  editable,
-  autoFocus,
-  onCommit,
-}: {
-  value: string
-  editable: boolean
-  autoFocus: boolean
-  onCommit: (v: string) => void
-}) {
-  const [text, setText] = useState(value)
-  if (!editable) return <figcaption className="image-caption">{value}</figcaption>
-  return (
-    <figcaption className="image-caption">
-      <input
-        value={text}
-        placeholder={t('image.captionPlaceholder')}
-        aria-label={t('image.caption')}
-        autoFocus={autoFocus}
-        onChange={(e) => setText(e.target.value)}
-        onBlur={() => onCommit(text.trim())}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-            e.preventDefault()
-            e.currentTarget.blur()
-          }
-          if (e.key === 'Escape') {
-            setText(value)
-            e.currentTarget.blur()
-          }
-        }}
-      />
-    </figcaption>
   )
 }
 

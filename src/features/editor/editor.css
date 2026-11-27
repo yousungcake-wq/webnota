@@ -149,7 +149,7 @@
   border-top-color: var(--text);
 }
 /* a selected node shows only while the editor has focus: clicking elsewhere lets go (feedback 13) */
-.wn-editor.ProseMirror-focused .ProseMirror-selectednode {
+.wn-editor.ProseMirror-focused .ProseMirror-selectednode:not(.image-block):not(.media-block) {
   outline: 2px solid var(--accent-soft);
   border-radius: 4px;
 }

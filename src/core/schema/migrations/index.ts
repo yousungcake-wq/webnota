@@ -17,6 +17,7 @@ import { v16VideoEmbed } from './016-video-embed'
 import { v17Math } from './017-math'
 import { v18LinkPreview } from './018-link-preview'
 import { v19Database } from './019-database'
+import { v20MediaLayout } from './020-media-layout'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -51,4 +52,5 @@ export const MIGRATIONS: Migration[] = [
   v17Math, // M3-07: mathBlock / inlineMath node types (version stamp only)
   v18LinkPreview, // M3-08: linkPreview block node type (version stamp only)
   v19Database, // M4-01: database views + db/dbr docs (version stamp only)
+  v20MediaLayout, // feedback: image captionAlign, video align/caption/captionAlign (version stamp only)
 ]
