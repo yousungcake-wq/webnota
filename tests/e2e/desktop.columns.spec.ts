@@ -111,3 +111,46 @@ test('blocks move between columns, out of them, and beside other blocks (feedbac
   await expect(ed.locator('.columns .column').nth(1)).toHaveText('위')
   check()
 })
+
+test('the handle of a block in the right column can be reached, clicked and dragged out (feedback 2-3)', async ({
+  page,
+}) => {
+  const check = failOnConsoleErrors(page)
+  const ed = page.locator('.wn-editor')
+  await page.keyboard.type('/2열')
+  await page.keyboard.press('Enter')
+  const cols = ed.locator('.columns .column')
+  await cols.nth(0).locator('p').click()
+  await page.keyboard.type('왼')
+  await cols.nth(1).locator('p').click()
+  await page.keyboard.type('오른')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.type('아래')
+
+  // move slowly from the text to its handle, the way a person does: it must not jump away
+  const right = cols.nth(1).locator('p')
+  await right.hover()
+  const grip = page.locator('.block-actions .grip')
+  const g = (await grip.boundingBox())!
+  const r = (await right.boundingBox())!
+  expect(g.x).toBeGreaterThan((await cols.nth(0).boundingBox())!.x + 100) // beside the right column
+  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2, { steps: 20 })
+  await expect.poll(async () => (await grip.boundingBox())!.x).toBeCloseTo(g.x, 0)
+  await grip.click()
+  await expect(page.getByRole('menuitem', { name: '열 추가' })).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  // drag it out below the last paragraph
+  await right.hover()
+  await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2, { steps: 20 })
+  await page.mouse.down()
+  await page.mouse.move(g.x + 20, g.y + 20, { steps: 4 })
+  const below = (await ed.locator('> p', { hasText: '아래' }).boundingBox())!
+  await page.mouse.move(below.x + below.width / 2, below.y + below.height - 2, { steps: 10 })
+  await page.mouse.up()
+  await expect(ed.locator('.columns')).toHaveCount(0)
+  await expect(ed.locator('> p')).toHaveText(['왼', '아래', '오른'])
+  expect(r.width).toBeGreaterThan(0)
+  check()
+})

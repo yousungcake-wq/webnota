@@ -63,8 +63,11 @@ interface Props {
  * column itself, not list items or other nested blocks (they move with their block).
  */
 const NESTED = {
-  // near a column's left edge the whole columns block is the target (its menu: add / merge columns)
-  edgeDetection: { edges: ['left' as const], threshold: 14 },
+  // no edge detection: near a column's left edge the target used to become the whole columns
+  // block, so the handle jumped away on the way to it (feedback 2-3). The columns block is
+  // the target in the gap between columns; its add / merge items are also in the block menu
+  // of every block inside a column.
+  edgeDetection: 'none' as const,
   rules: [
     {
       id: 'topLevelOrInColumn',
@@ -349,8 +352,29 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
       .run()
   }
 
+  /**
+   * On the way from a block to its handle the pointer crosses other blocks — for a block in
+   * the right column, the left column — and the handle would jump to them before it can be
+   * clicked (feedback 2-3). While the pointer is between the handle and its block, at that
+   * block's height, the drag handle plugin does not see the move.
+   */
+  const keepHandleOnTheWay = (e: React.MouseEvent) => {
+    const { pos } = hovered.current
+    const grip = wrapRef.current?.querySelector<HTMLElement>('.block-actions')
+    const dom = pos >= 0 ? (editor.view.nodeDOM(pos) as HTMLElement | null) : null
+    if (!grip || !dom?.getBoundingClientRect) return
+    const g = grip.getBoundingClientRect()
+    const b = dom.getBoundingClientRect()
+    const onTheWay =
+      e.clientX >= g.left - 6 &&
+      e.clientX <= b.left + 4 &&
+      e.clientY >= Math.min(g.top, b.top) - 4 &&
+      e.clientY <= Math.max(g.bottom, b.bottom) + 4
+    if (onTheWay) e.stopPropagation()
+  }
+
   return (
-    <div className="editor-wrap" ref={wrapRef}>
+    <div className="editor-wrap" ref={wrapRef} onMouseMoveCapture={keepHandleOnTheWay}>
       {!coarse && !readOnly && (
         <DragHandle
           editor={editor}

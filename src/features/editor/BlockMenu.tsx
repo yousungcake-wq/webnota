@@ -177,20 +177,29 @@ export function BlockMenu({
       },
     },
   ]
-  if (node.type.name === 'columns') {
+  // the columns block itself, or the columns around a block in a column
+  const $pos = editor.state.doc.resolve(pos)
+  const columnsPos =
+    node.type.name === 'columns'
+      ? pos
+      : $pos.parent.type.name === 'column' && $pos.depth >= 2
+        ? $pos.before($pos.depth - 1)
+        : null
+  const columns = columnsPos === null ? null : editor.state.doc.nodeAt(columnsPos)
+  if (columns && columnsPos !== null) {
     items.push(
       'separator',
       {
         label: t('blockMenu.addColumn'),
         icon: Columns2,
-        disabled: node.childCount >= MAX_COLUMNS,
-        onSelect: () => apply(addColumn(editor.state, pos)),
+        disabled: columns.childCount >= MAX_COLUMNS,
+        onSelect: () => apply(addColumn(editor.state, columnsPos)),
       },
       {
         label: t('blockMenu.mergeColumn'),
         icon: Merge,
-        disabled: node.childCount <= MIN_COLUMNS,
-        onSelect: () => apply(mergeLastColumn(editor.state, pos)),
+        disabled: columns.childCount <= MIN_COLUMNS,
+        onSelect: () => apply(mergeLastColumn(editor.state, columnsPos)),
       },
     )
   }
