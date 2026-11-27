@@ -153,4 +153,4 @@
 | 2026-11-27 | GitHub 로그인 설정 완료: OAuth 앱·Cloudflare 토큰·저장소 값 입력(사용자), Worker 배포·동작 확인, 로그인 버튼이 들어간 빌드 배포 | f3540b9 |
 | 2026-11-27 | 동기화 주기 단축(사용자 요청): 입력 후 4초 푸시(자동 동기화 최소 8초 간격), 20초 주기 풀 | 8859453 |
 | 2026-11-27 | M4-00: database 플래그·features/database 지연 청크·DB 지연 문자열 사전(dt)·fast-check, 새 뷰 메뉴 Grid(플래그) | aa8712d |
-| 2026-11-27 | M4-01: DB 데이터 모델(db/dbr 샤드 8개·FNV-1a·필드/행/셀 CRUD·뷰 설정), openDatabase, schema v19 | HASH |
+| 2026-11-27 | M4-01: DB 데이터 모델(db/dbr 샤드 8개·FNV-1a·필드/행/셀 CRUD·뷰 설정), openDatabase, schema v19 | 97ebd2c |
