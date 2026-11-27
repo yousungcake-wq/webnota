@@ -120,7 +120,7 @@
 - [x] M4-04 증분 갱신 + 워커: 행 변경 키만 다시 평가(이진 탐색 삽입), 설정 변경 시 전체 재계산, 5,000행 이상은 `query.worker.ts`(변경분만 전송) — 증분 결과 = 전체 재계산 결과 속성 테스트 (spec/05 §2) — `openDbSession`/`useDbSession` — ddf9ef0
 - [x] M4-05 필드 타입 1: text(줄 바꿈), number(서식·소수점·통화 KRW/USD/EUR/JPY, `inputmode=decimal`), checkbox, url(열기·복사), createdTime/updatedTime(읽기 전용), time(`1h 30m`) — 셀 표시·편집 (spec/05 §3.2) — 기본 Grid(행 가상 스크롤·고정 헤더·첫 열 고정)·QA 시드 `seed-db`/`seed-db-10k` 포함 — 11320c5
 - [x] M4-06 필드 타입 2: select/multiSelect(옵션 팝오버: 검색·새 옵션·이름·색·삭제·순서, 10색 토큰 라이트·다크), date(달력 팝오버: 시간·종료일·형식·지우기), checklist(진행률, 항목 편집) — 폰은 하단 시트 (spec/05 §3.2~3.3) — 10a45d2
-- [x] M4-07 필드 타입 3 + 변환: media(files/ 업로드·썸네일·순서·삭제, `refs.ts`에 추가), 타입 변환 규칙 §3.4 전수 테스트, 값이 사라지면 확인 대화상자("N개 셀"), 변환 30초 실행 취소(DB 범위 UndoManager) (spec/05 §3.4) — 타입 변경 메뉴 연결은 M4-11 (`changeFieldType`) — HASH00
+- [x] M4-07 필드 타입 3 + 변환: media(files/ 업로드·썸네일·순서·삭제, `refs.ts`에 추가), 타입 변환 규칙 §3.4 전수 테스트, 값이 사라지면 확인 대화상자("N개 셀"), 변환 30초 실행 취소(DB 범위 UndoManager) (spec/05 §3.4) — 타입 변경 메뉴 연결은 M4-11 (`changeFieldType`) — 9a04567
 - [ ] M4-08 Grid 렌더링: 행·열 가상 스크롤, 고정 헤더, 첫 열 고정(frozenColumns), 줄 바꿈 필드 자동 행 높이(측정) (DB-G01, DB-G08, DB-F06)
 - [ ] M4-09 Grid 행 조작: 하단 `+ 새 행`, 행 호버 `+`(아래 삽입), 위/아래 삽입·복제·삭제, 다중 선택 삭제, 드래그 순서 변경(정렬 중이면 안내), 필터가 있으면 새 행에 조건 값 채우기, 행 열기 버튼(M5-04 전까지 속성 시트) (DB-G02, DB-G03, DB-G05)
 - [ ] M4-10 셀 키보드·클립보드: 방향키·Tab·Enter 편집·Esc 취소, 범위 선택, TSV 복사/붙여넣기(엑셀·구글 시트 호환, 행 자동 추가, 타입별 파싱) (DB-G04)
