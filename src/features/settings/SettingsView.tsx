@@ -1,5 +1,5 @@
 import { LogOut, Monitor, Moon, RefreshCw, Sun, Trash2 } from 'lucide-react'
-import { Fragment, lazy, Suspense, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { Fragment, lazy, Suspense, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { oauthAvailable, startLogin } from '@/core/auth/auth'
 import { FLAGS, setFlag, type FlagName } from '@/core/flags'
 import { useFlag } from '@/core/store/flags'
@@ -16,7 +16,7 @@ import { useStore } from '@/core/store/useStore'
 import { useSync } from '@/core/store/sync'
 import { connect, disconnect, syncNow } from '@/core/sync/controller'
 import { SyncBadge } from '@/features/sync'
-import { Button, confirmDialog, Input, LinkButton, Segmented, Switch, ViewHeader } from '@/ui'
+import { Button, confirmDialog, Input, LinkButton, Segmented, Switch, toast, ViewHeader } from '@/ui'
 import { loadWorkspaceSettings } from '@/features/workspaces'
 import './settings.css'
 
@@ -216,6 +216,7 @@ export function SettingsView() {
           label={t('settings.imageOriginal')}
           description={t('settings.imageOriginal.desc')}
         />
+        <FileStorage connected={!!sync.account} />
       </section>
 
       <section className="card">
@@ -274,5 +275,66 @@ function AdvancedSection() {
         <p className="muted small">{t('settings.noExperiments')}</p>
       )}
     </section>
+  )
+}
+
+const loadCleanup = () => import('@/core/files/cleanup')
+const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(bytes < 10 * 1024 * 1024 ? 1 : 0)} MB`
+
+/** Device file cache size and "clean up storage" (SY-04, M3-10). */
+function FileStorage({ connected }: { connected: boolean }) {
+  const [bytes, setBytes] = useState<number | null>(null)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    let alive = true
+    void loadCleanup()
+      .then((m) => m.cacheBytes())
+      .then(
+        (n) => alive && setBytes(n),
+        () => alive && setBytes(0),
+      )
+    return () => {
+      alive = false
+    }
+  }, [busy])
+
+  const run = async () => {
+    const ok = await confirmDialog({
+      title: t('cleanup.title'),
+      message: t('cleanup.confirm'),
+      confirmLabel: t('cleanup.run'),
+      danger: true,
+    })
+    if (!ok) return
+    setBusy(true)
+    const m = await loadCleanup()
+    try {
+      const r = await m.cleanupRepository()
+      toast(r.removed ? t('cleanup.done', { removed: r.removed, kept: r.kept }) : t('cleanup.nothing'))
+    } catch (e) {
+      const reason = e instanceof m.CleanupError ? e.reason : null
+      toast(
+        reason === 'offline'
+          ? t('files.offline')
+          : reason === 'sync-failed'
+            ? t('cleanup.syncFailed')
+            : e instanceof Error
+              ? e.message
+              : String(e),
+        { tone: 'error' },
+      )
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="settings-files">
+      <p className="muted small">{t('cleanup.cache', { size: bytes === null ? '…' : mb(bytes) })}</p>
+      <Button size="sm" disabled={!connected || busy} onClick={() => void run()}>
+        {busy ? t('cleanup.running') : t('cleanup.title')}
+      </Button>
+      <p className="muted small">{connected ? t('cleanup.hint') : t('cleanup.needsGithub')}</p>
+    </div>
   )
 }

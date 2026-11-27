@@ -10,6 +10,8 @@ import { disconnect, saveAccount, setSyncState, type Account } from './controlle
 import { ConflictRetryError, syncOnce, type LocalStore, type SyncState } from './engine'
 import { GitHubClient, GitHubError, GitHubGitApi } from './github'
 import { recordSync } from './log'
+import { removeFiles } from './cleanup'
+import { orphanFiles } from '../files/refs'
 import type { SyncOutcome } from './schedule'
 
 function stateKey(a: Account) {
@@ -139,4 +141,10 @@ function deviceLabel() {
 /** Downloads `files/<id>` from the connected repository (SY-04 display cache). */
 export function downloadRepoFile(account: Account, token: string, id: string): Promise<Uint8Array | null> {
   return new GitHubClient(token).getRaw(account.owner, account.repo, `files/${id}`, account.branch)
+}
+
+/** Removes repository files no document references (SY-04 cleanup, M3-10). */
+export function cleanRepository(account: Account, token: string, referenced: Set<string>) {
+  const api = new GitHubGitApi(new GitHubClient(token), account.owner, account.repo, account.branch)
+  return removeFiles(api, (paths) => orphanFiles(paths, referenced), { deviceName: deviceLabel() })
 }

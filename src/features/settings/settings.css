@@ -66,3 +66,17 @@
   font-size: var(--fs-sm);
   color: var(--text-2);
 }
+
+/* SY-04 file storage (M3-10) */
+.settings-files {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+@media (pointer: coarse) {
+  .settings-files .btn {
+    min-height: 44px;
+  }
+}

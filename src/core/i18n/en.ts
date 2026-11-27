@@ -478,6 +478,17 @@ export const en: Record<MessageKey, string> = {
   'cover.upload': 'Upload image',
   'icon.upload': 'Upload image',
   'files.notImage': 'Choose an image file',
+  'cleanup.title': 'Clean up storage',
+  'cleanup.run': 'Clean up',
+  'cleanup.running': 'Cleaning up…',
+  'cleanup.confirm':
+    'Removes images and files no page uses from the GitHub repository. Files of pages in the trash are kept. Syncs first; removed files cannot be restored.',
+  'cleanup.done': 'Removed {removed} unused file(s) ({kept} remaining)',
+  'cleanup.nothing': 'No unused files',
+  'cleanup.syncFailed': 'Sync failed, so nothing was cleaned up. Please try again later.',
+  'cleanup.cache': 'Files stored on this device: {size}',
+  'cleanup.hint': 'Removes files of permanently deleted pages and removed blocks from the repository.',
+  'cleanup.needsGithub': 'Connect GitHub to clean up the repository.',
   // files (SY-04)
   'files.loading': 'Loading…',
   'files.notConnected': 'Connect GitHub to see this file',

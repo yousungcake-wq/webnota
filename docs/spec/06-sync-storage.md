@@ -53,6 +53,8 @@
   - ✅ M3-03 구현 (`core/files/image.ts`의 `prepareImage`, 업로드 코드와 함께 지연 로드): PNG·JPEG·WebP·AVIF·HEIC(디코딩 가능한 브라우저)만 처리하고 GIF(애니메이션)·SVG는 그대로. `createImageBitmap(…, { imageOrientation: 'from-image' })`로 EXIF 회전을 반영해 그립니다. 축소가 필요 없고 1MB 이하이며 회전 정보가 없으면 원본 그대로(화질 손실 없음), 다시 인코딩한 결과가 더 크면 원본을 씁니다. WebP 인코딩이 안 되면(구형 Safari) PNG는 PNG, 나머지는 JPEG(품질 0.85). 설정 → 파일과 이미지 → "이미지 원본 그대로 올리기"(기기별 `webnota:image-original`)를 켜면 처리하지 않습니다.
 - 크기 제한: 파일당 25MB (Git Data API 블롭 업로드는 base64라 실제 요청은 약 33MB).
 - 참조되지 않는 파일 정리: "저장소 정리" 작업에서 모든 문서를 스캔해 고아 파일을 삭제합니다 (수동 실행).
+  - ✅ M3-10 구현: 설정 → 파일과 이미지 → "저장소 정리"(GitHub 연결 시, 확인 대화상자). 순서: 동기화 1회(실패하면 중단) → `core/files/refs.ts`로 참조 수집(모든 뷰의 문서 — 휴지통 포함 — 의 `src`/`fileId` 속성 중 파일 id, 페이지 커버, 뷰·스페이스 아이콘, 업로드 대기 파일) → `core/sync/cleanup.ts`의 `removeFiles`가 `files/` 아래 참조 없는 WebNota 파일(id 형식)만 한 커밋으로 삭제(다른 기기가 그사이 푸시하면 새 헤드에서 다시 판단). 형식이 다른 이름은 건드리지 않습니다. 지운 파일은 이 기기 캐시에서도 지웁니다. 같은 카드에 이 기기 파일 캐시 크기를 표시합니다. **M4 이후 파일을 참조하는 새 위치(DB `media` 필드, 행 커버 등)는 `refs.ts`에 추가해야 합니다** — 빠지면 정리가 그 파일을 지웁니다.
+  - e2e는 `tests/e2e/fakeGithub.ts`(메모리 GitHub)로 업로드 → 다른 기기 내려받기 → 정리 전체를 검증합니다.
 
 ## SY-05 다중 워크스페이스 (M1)
 

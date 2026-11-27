@@ -26,6 +26,7 @@
 - **초기 번들 122.0/125KB (M3-00).** 동기화 연결·실행은 `core/sync/session.ts`(지연 sync 청크, `remote.ts`가 내보냄) — 컨트롤러에는 상태·스케줄만. 남은 앱 코드는 대부분 작아서(react-dom·yjs가 대부분) 더 줄이기 어려움 → **M3 기능은 전부 지연 청크**로 (업로드·이미지 처리·파일 캐시는 쓸 때 import). 초기 청크 코드를 늘릴 때는 클릭해야 보이는 UI를 지연 로드할 것 (예: `PageCover`·`pageStyleViews`).
 - 파일 (M3-01~04): 바이너리는 `core/files`(`addFile`/`ingestFile`/`loadFile`), 표시 훅은 `@/features/files`의 `useFile`. 업로드 코드(`core/files/ingest.ts`)·캐시(`cache.ts`)·이미지 UI(`ImageView.tsx`)는 각각 지연 청크(`check-size.mjs` 등록) — 에디터·초기 청크에서 정적 import 금지. 붙여넣기·끌어 놓기는 `fileDrop.ts`의 `insertFiles(editor, files, pos)`(자리 표시 데코레이션). 노드 선택일 때 글자 서식 버블은 숨김.
 - **에디터 청크 204.3/210KB (M3-07 후).** 찾기 바·블록 메뉴는 지연 청크. 폰 키보드 도구 모음(`KeyboardToolbar`)을 지연 로드하면 폰 선택 도구 e2e(MB-22, 링크)가 깨짐(원인 미확인) → 정적 import 유지. 남은 M3 노드는 정의만 에디터 청크에, UI는 별도 청크.
+- 저장소 정리 (M3-10): 파일을 참조하는 새 위치를 만들면 **`core/files/refs.ts`에 반드시 추가** (빠지면 정리가 파일을 지움). 동기화·파일 e2e는 `tests/e2e/fakeGithub.ts`(메모리 GitHub, `connectFake`).
 - 데코레이션 (M3-00): 에디터 데코레이션 플러그인은 바뀐 부분만 다시 계산 — `code/changed.ts`의 `changedRanges`/`blocksInRanges` 사용 (spec/10 §2).
 - 표 (M2-11): 노드 정의는 `nodes/table.ts`(prosemirror-tables 없이), 편집 플러그인·명령은 `table/kit.ts` 지연 로드 후 `registerPlugin`. 단, `@tiptap/extension-bubble-menu`가 prosemirror-tables를 정적으로 import해서 라이브러리 코드 자체는 에디터 청크에 들어감(+8KB, 에디터 187.8/210KB). 에디터 예산 여유가 줄었으니 다음 무거운 확장은 별도 청크로.
 - 동기화 스케줄 (M0-21): 동기화는 `core/sync/controller.ts`의 `scheduler`를 통해서만 시작 (`syncNow()`=수동 요청). 타이밍 규칙은 `core/sync/schedule.ts` (순수, 테스트 있음).

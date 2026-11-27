@@ -485,6 +485,17 @@ export const ko = {
   'cover.upload': '이미지 올리기',
   'icon.upload': '이미지 올리기',
   'files.notImage': '이미지 파일을 고르세요',
+  'cleanup.title': '저장소 정리',
+  'cleanup.run': '정리',
+  'cleanup.running': '정리 중…',
+  'cleanup.confirm':
+    '어떤 페이지에서도 쓰지 않는 이미지·파일을 GitHub 저장소에서 지웁니다. 휴지통에 있는 페이지의 파일은 남깁니다. 먼저 동기화하며, 지운 파일은 되돌릴 수 없습니다.',
+  'cleanup.done': '쓰지 않는 파일 {removed}개를 지웠습니다 (남은 파일 {kept}개)',
+  'cleanup.nothing': '지울 파일이 없습니다',
+  'cleanup.syncFailed': '동기화에 실패해 정리하지 않았습니다. 잠시 후 다시 시도하세요.',
+  'cleanup.cache': '이 기기에 저장된 파일: {size}',
+  'cleanup.hint': '영구 삭제한 페이지나 지운 블록의 파일을 저장소에서 지웁니다.',
+  'cleanup.needsGithub': 'GitHub를 연결하면 저장소를 정리할 수 있습니다.',
   // files (SY-04)
   'files.loading': '불러오는 중…',
   'files.notConnected': 'GitHub에 연결하면 이 파일을 볼 수 있습니다',
