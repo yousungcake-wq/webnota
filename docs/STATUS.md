@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M4 데이터베이스 I (M3 완료 — 실기기 확인은 docs/QA.md "M3"(와 M2·M1), 사용자 확인 대기. 링크 미리보기는 Worker 재배포 필요)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 3/16
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 4/16
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M4-03 쿼리 엔진 runQuery. 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
+- **다음 할 일**: M4-04 증분 갱신 + 워커. 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -155,3 +155,4 @@
 | 2026-11-27 | M4-00: database 플래그·features/database 지연 청크·DB 지연 문자열 사전(dt)·fast-check, 새 뷰 메뉴 Grid(플래그) | aa8712d |
 | 2026-11-27 | M4-01: DB 데이터 모델(db/dbr 샤드 8개·FNV-1a·필드/행/셀 CRUD·뷰 설정), openDatabase, schema v19 | 97ebd2c |
 | 2026-11-27 | M4-02: DB 문서 retain·영구 삭제 시 로컬 DB 정리, 엔진이 참조 없는 data/dbs/<id>/ 삭제, 첫 연결 시 DB 더티 | a4535c9 |
+| 2026-11-27 | M4-03: 쿼리 엔진 runQuery/compileQuery(필터 전 조건·AND/OR·상대 날짜, 다중 정렬·ko 콜레이터·빈 값 마지막, 계산 14종) + 전수·fast-check 속성 테스트 | HASH |

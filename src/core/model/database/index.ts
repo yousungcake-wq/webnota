@@ -2,3 +2,5 @@
 export * from './types'
 export * from './shard'
 export * from './model'
+export * from './cells'
+export * from './query'
