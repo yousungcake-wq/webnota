@@ -1,11 +1,14 @@
 import { Pencil, Plus } from 'lucide-react'
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   asMedia,
   cellOf,
   defaultGroupField,
   groupCellValue,
   groupFieldOf,
+  moveGroup,
+  moveRow,
+  movedCellValue,
   isEmptyCell,
   NO_VALUE,
   orderedFields,
@@ -16,16 +19,18 @@ import {
   type RowSnapshot,
 } from '@/core/model/database'
 import { useImageSrc } from '@/features/files'
-import { Button, EmptyState } from '@/ui'
+import { Button, EmptyState, toast } from '@/ui'
 import { CardBody } from './CardBody'
 import { addStatusField } from './create'
-import { GroupLabel } from './GroupLabel'
+import { blockTouchScroll, useCardDrag, type CardDrag } from './boardDrag'
+import { GroupLabel, groupName } from './GroupLabel'
 import { dt } from './i18n'
 import type { LayoutProps } from './layoutProps'
 import { RowSheet } from './RowSheet'
 import { measuredLayout } from './rowLayout'
 import { newRow } from './rowActions'
 import type { DbSession } from './session'
+import { useReorder } from './useReorder'
 import { useScrollBox } from './useScrollBox'
 import './board.css'
 
@@ -57,6 +62,48 @@ export default function BoardView({ session, state, title, readOnly }: LayoutPro
   const coverField = state.fields.find((f) => f.id === view?.board.coverFieldId && f.type === 'media') ?? null
   const [open, setOpen] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
+  const boardRef = useRef<HTMLDivElement>(null)
+  const attachBoard = useCallback((el: HTMLDivElement | null) => {
+    boardRef.current = el
+    return el ? blockTouchScroll(el) : undefined
+  }, [])
+  const groups = state.result.groups ?? []
+  const group = view?.group
+  const columns = groups.filter((g) => !group?.hidden.includes(g.key) && !(g.key === NO_VALUE && group?.hideEmpty))
+  const cardDrag = useCardDrag({
+    board: () => boardRef.current,
+    ids: (key) => groups.find((g) => g.key === key)?.rowIds ?? [],
+    canStart: () => !readOnly,
+    onDrop: (rowId, from, drop) => {
+      if (!field || !view) return
+      const sorted = view.sorts.length > 0
+      if (from === drop.key && sorted) return toast(dt('db.row.sorted'))
+      if (from !== drop.key) {
+        const row = session.row(rowId)
+        setCell(
+          state.docs,
+          rowId,
+          field.id,
+          movedCellValue(field, row ? cellOf(field, row) : undefined, from, drop.key),
+        )
+      }
+      if (sorted || drop.beforeId === rowId) return // sorted columns keep their order
+      const target = (groups.find((g) => g.key === drop.key)?.rowIds ?? []).filter((id) => id !== rowId)
+      if (drop.beforeId) moveRow(state.docs, rowId, { beforeId: drop.beforeId })
+      else if (target.length) moveRow(state.docs, rowId, { afterId: target.at(-1)! })
+    },
+  })
+  // column headers drag sideways to reorder columns (DB-K04)
+  const columnDrag = useReorder(
+    (from, to) => {
+      if (!view) return
+      const keys = groups.map((g) => g.key)
+      const target = columns[to]!.key
+      const index = keys.filter((k) => k !== columns[from]!.key).indexOf(target) + (to > from ? 1 : 0)
+      moveGroup(state.docs, view.id, keys, columns[from]!.key, index)
+    },
+    { axis: 'x', threshold: 6 },
+  )
 
   if (!view) return null
   if (!field) {
@@ -80,10 +127,8 @@ export default function BoardView({ session, state, title, readOnly }: LayoutPro
       />
     )
   }
-  const group = view.group!
-  const columns = (state.result.groups ?? []).filter(
-    (g) => !group.hidden.includes(g.key) && !(g.key === NO_VALUE && group.hideEmpty),
-  )
+  const drag = cardDrag.drag
+  const dragTitle = drag && primary ? String(cellOf(primary, session.row(drag.rowId)!) ?? '') : ''
   const addCard = (key: string) => {
     const id = newRow(state.docs, state.fields, view)
     const value = groupCellValue(field, key)
@@ -91,11 +136,17 @@ export default function BoardView({ session, state, title, readOnly }: LayoutPro
     setEditing(id)
   }
   return (
-    <div className="dbk" role="list" aria-label={dt('db.board.label', { title })}>
-      {columns.map((g) => (
+    <div ref={attachBoard} className="dbk" role="list" aria-label={dt('db.board.label', { title })}>
+      {columns.map((g, i) => (
         <BoardColumn
           key={g.key}
           group={g}
+          headHandle={readOnly ? undefined : columnDrag.handle(i)}
+          headStyle={columnDrag.style(i)}
+          wasColumnDrag={columnDrag.wasDrag}
+          drag={drag}
+          onCardPointerDown={cardDrag.start}
+          wasCardDrag={cardDrag.wasDrag}
           field={field}
           session={session}
           rowsVersion={state.rowsVersion}
@@ -116,6 +167,15 @@ export default function BoardView({ session, state, title, readOnly }: LayoutPro
       {open && (
         <RowSheet session={session} state={state} rowId={open} readOnly={readOnly} onClose={() => setOpen(null)} />
       )}
+      {drag?.drop && (
+        <div
+          className="dbk-ghost"
+          aria-hidden
+          style={{ left: drag.x - drag.dx, top: drag.y - drag.dy, width: drag.width }}
+        >
+          {dragTitle || dt('db.row.untitled')}
+        </div>
+      )}
     </div>
   )
 }
@@ -129,6 +189,12 @@ function cardHeight(row: RowSnapshot, fields: FieldMeta[], cover: FieldMeta | nu
 
 function BoardColumn({
   group,
+  headHandle,
+  headStyle,
+  wasColumnDrag,
+  drag,
+  onCardPointerDown,
+  wasCardDrag,
   field,
   session,
   rowsVersion,
@@ -143,6 +209,12 @@ function BoardColumn({
   onRename,
 }: {
   group: QueryGroup
+  headHandle: ReturnType<ReturnType<typeof useReorder>['handle']> | undefined
+  headStyle: React.CSSProperties | undefined
+  wasColumnDrag: () => boolean
+  drag: CardDrag | null
+  onCardPointerDown: (e: React.PointerEvent<HTMLElement>, rowId: string, from: string) => void
+  wasCardDrag: () => boolean
   field: FieldMeta
   session: DbSession
   rowsVersion: number
@@ -182,10 +254,25 @@ function BoardColumn({
   const start = ids.length ? Math.max(0, layout.indexAt(box.top) - 3) : 0
   const end = Math.min(ids.length, layout.indexAt(box.top + box.height) + 4)
   return (
-    <section className="dbk-col" role="listitem" data-group={group.key} aria-label={undefined}>
+    <section
+      className={`dbk-col${drag?.drop?.key === group.key ? ' is-drop-target' : ''}${drag?.drop?.key === group.key && drag.drop.beforeId === null ? ' is-drop-end' : ''}`}
+      role="listitem"
+      data-group={group.key}
+      data-reorder-item=""
+      style={headStyle}
+      aria-label={groupName(field, group.key)}
+    >
       <header className="dbk-head">
-        <GroupLabel field={field} groupKey={group.key} />
-        <span className="dbk-count">{ids.length}</span>
+        <span
+          className="dbk-handle"
+          {...headHandle}
+          onClick={() => {
+            if (wasColumnDrag()) return
+          }}
+        >
+          <GroupLabel field={field} groupKey={group.key} />
+          <span className="dbk-count">{ids.length}</span>
+        </span>
         {!readOnly && (
           <button
             type="button"
@@ -215,6 +302,10 @@ function BoardColumn({
                 cover={coverField}
                 readOnly={readOnly}
                 editing={editing === id}
+                dragging={drag?.rowId === id && drag.from === group.key && !!drag.drop}
+                dropBefore={drag?.drop?.key === group.key && drag.drop.beforeId === id}
+                onPointerDown={readOnly ? undefined : (e) => onCardPointerDown(e, id, group.key)}
+                wasDrag={wasCardDrag}
                 onOpen={onOpen}
                 onEdit={onEdit}
                 onRename={onRename}
@@ -242,6 +333,10 @@ const BoardCard = memo(function BoardCard({
   cover,
   readOnly,
   editing,
+  dragging,
+  dropBefore,
+  onPointerDown,
+  wasDrag,
   onOpen,
   onEdit,
   onRename,
@@ -254,6 +349,10 @@ const BoardCard = memo(function BoardCard({
   cover: FieldMeta | null
   readOnly: boolean
   editing: boolean
+  dragging: boolean
+  dropBefore: boolean
+  onPointerDown: ((e: React.PointerEvent<HTMLElement>) => void) | undefined
+  wasDrag: () => boolean
   onOpen: (id: string) => void
   onEdit: (id: string | null) => void
   onRename: (rowId: string, text: string | null) => void
@@ -261,7 +360,11 @@ const BoardCard = memo(function BoardCard({
   const image = cover ? asMedia(cellOf(cover, row)).find((m) => m.mime.startsWith('image/')) : undefined
   const title = primary ? String(cellOf(primary, row) ?? '') : ''
   return (
-    <div className="dbk-card" data-row-id={row.id} style={{ top, height }}>
+    <div
+      className={`dbk-card${dragging ? ' is-dragging' : ''}${dropBefore ? ' is-drop-before' : ''}`}
+      data-row-id={row.id}
+      style={{ top, height }}
+    >
       {editing ? (
         <div className="dbk-card-body">
           {image && <CardCover fileId={image.fileId} />}
@@ -279,7 +382,13 @@ const BoardCard = memo(function BoardCard({
           />
         </div>
       ) : (
-        <button type="button" className="dbk-card-body" onClick={() => onOpen(row.id)}>
+        <button
+          type="button"
+          className="dbk-card-body"
+          onPointerDown={onPointerDown}
+          onContextMenu={(e) => onPointerDown && e.preventDefault()}
+          onClick={() => !wasDrag() && onOpen(row.id)}
+        >
           {image && <CardCover fileId={image.fileId} />}
           <CardBody row={row} primary={primary} fields={fields} labels={false} />
         </button>

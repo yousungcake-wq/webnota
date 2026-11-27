@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Locator } from '@playwright/test'
 import { dbLive, failOnConsoleErrors, openQaDatabase, reload } from './helpers'
 
 test.describe('database views (M5)', () => {
@@ -132,6 +132,71 @@ test.describe('database views (M5)', () => {
     await reload(page)
     await dbLive(page)
     await expect(page.locator('.dbk-col')).toHaveCount(2)
+    noErrors()
+  })
+
+  test('board drag: within a column, to another column (value changes), columns reorder (M5-04)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.getByRole('button', { name: '보기 추가' }).click()
+    await page.getByRole('menuitem', { name: '보드' }).click()
+    const col = (name: string) => page.locator(`.dbk-col[aria-label="${name}"]`)
+    const titles = (name: string) => col(name).locator('.db-card-title').allInnerTexts()
+    await expect(col('Doing').locator('.dbk-card')).not.toHaveCount(0)
+    const drag = async (from: Locator, to: { x: number; y: number }) => {
+      const b = (await from.boundingBox())!
+      await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2)
+      await page.mouse.down()
+      for (let i = 1; i <= 12; i++)
+        await page.mouse.move(
+          b.x + b.width / 2 + ((to.x - b.x - b.width / 2) * i) / 12,
+          b.y + b.height / 2 + ((to.y - b.y - b.height / 2) * i) / 12,
+        )
+      await expect(page.locator('.dbk-ghost')).toBeVisible()
+      await page.mouse.up()
+    }
+
+    // last Doing card → top of Doing
+    const doing = await titles('Doing')
+    const lastCard = col('Doing')
+      .locator('.dbk-card')
+      .nth(doing.length - 1)
+    const firstBox = (await col('Doing').locator('.dbk-card').first().boundingBox())!
+    await drag(lastCard, { x: firstBox.x + 40, y: firstBox.y + 8 })
+    await expect.poll(() => titles('Doing')).toEqual([doing.at(-1)!, ...doing.slice(0, -1)])
+
+    // first Doing card → Done (top): its Status becomes Done
+    const moved = doing.at(-1)!
+    const doneCount = Number(await col('Done').locator('.dbk-count').innerText())
+    const doneFirst = (await col('Done').locator('.dbk-card').first().boundingBox())!
+    await drag(col('Doing').locator('.dbk-card').first(), { x: doneFirst.x + 40, y: doneFirst.y + 8 })
+    await expect.poll(async () => (await titles('Done'))[0]).toBe(moved)
+    await expect(col('Done').locator('.dbk-count')).toHaveText(String(doneCount + 1))
+    await expect(col('Doing').locator('.db-card-title', { hasText: new RegExp(`^${moved}$`) })).toHaveCount(0)
+
+    // drag the "Blocked" column header before "Todo" (all columns on screen)
+    await page.setViewportSize({ width: 1900, height: 900 })
+    const heads = () => page.locator('.dbk-col').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')))
+    const before = await heads()
+    const todoHead = (await col('Todo').locator('.dbk-handle').boundingBox())!
+    const blocked = col('Blocked').locator('.dbk-handle')
+    const bb = (await blocked.boundingBox())!
+    await page.mouse.move(bb.x + 10, bb.y + bb.height / 2)
+    await page.mouse.down()
+    for (let i = 1; i <= 12; i++)
+      await page.mouse.move(bb.x + 10 + ((todoHead.x - 20 - bb.x) * i) / 12, bb.y + bb.height / 2)
+    await page.mouse.up()
+    const expected = before.filter((h) => h !== 'Blocked')
+    expected.splice(expected.indexOf('Todo'), 0, 'Blocked')
+    await expect.poll(heads).toEqual(expected)
+
+    // the grid shows the new Status
+    await page.getByRole('tab', { name: /QA database/ }).click()
+    await reload(page)
+    await dbLive(page)
+    await page.getByRole('tab', { name: '보드' }).click()
+    await expect.poll(heads).toEqual(expected)
+    await expect.poll(async () => (await titles('Done'))[0]).toBe(moved)
     noErrors()
   })
 })

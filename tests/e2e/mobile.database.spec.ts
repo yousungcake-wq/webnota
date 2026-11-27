@@ -100,4 +100,39 @@ test.describe('database on phones (M4-13)', () => {
     await expect(page.locator('.sheet')).toBeVisible()
     noErrors()
   })
+
+  test('board touch drag: long press then move reorders; a quick swipe does not drag (M5-04, MB-32)', async ({
+    page,
+  }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.getByRole('button', { name: '보기 추가' }).tap()
+    await page.getByRole('menuitem', { name: '보드' }).tap()
+    const col = page.locator('.dbk-col').first() // on screen (columns are 82vw)
+    await expect(col.locator('.dbk-card').nth(2)).toBeVisible()
+    const titles = () => col.locator('.db-card-title').allInnerTexts()
+    const before = await titles()
+    const cdp = await page.context().newCDPSession(page)
+    const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', x: number, y: number) =>
+      cdp.send('Input.dispatchTouchEvent', {
+        type,
+        touchPoints: type === 'touchEnd' ? [] : [{ x, y, id: 1 }],
+      })
+    const third = (await col.locator('.dbk-card').nth(2).boundingBox())!
+    const first = (await col.locator('.dbk-card').first().boundingBox())!
+    const x = third.x + third.width / 2
+    // quick swipe: no drag
+    await touch('touchStart', x, third.y + 20)
+    await touch('touchMove', x, third.y + 60)
+    await touch('touchEnd', x, third.y + 60)
+    await expect(page.locator('.dbk-ghost')).toHaveCount(0)
+    // long press, then move to the top
+    await touch('touchStart', x, third.y + 20)
+    await page.waitForTimeout(500)
+    for (let i = 1; i <= 8; i++) await touch('touchMove', x, third.y + 20 + ((first.y + 6 - third.y - 20) * i) / 8)
+    await expect(page.locator('.dbk-ghost')).toBeVisible()
+    await touch('touchEnd', x, first.y + 6)
+    await expect.poll(titles).toEqual([before[2]!, before[0]!, before[1]!, ...before.slice(3)])
+    noErrors()
+  })
 })
