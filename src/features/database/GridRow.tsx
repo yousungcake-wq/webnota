@@ -21,6 +21,7 @@ export const GridRow = memo(function GridRow({
   colRange,
   readOnly,
   activeField,
+  rangeCols,
   editing,
   onCellPointer,
   onToggle,
@@ -38,6 +39,8 @@ export const GridRow = memo(function GridRow({
   colRange: { from: number; to: number }
   readOnly: boolean
   activeField: string | null
+  /** "c0:c1" when this row is inside a range selection (DB-G04). */
+  rangeCols: string | null
   editing: (GridPos & { initial: string }) | null
   onCellPointer: (rowId: string, fieldId: string, e: React.PointerEvent) => void
   onToggle: (rowId: string, fieldId: string) => void
@@ -48,18 +51,21 @@ export const GridRow = memo(function GridRow({
   onRowAction: (rowId: string, action: 'insert' | 'handle' | 'open', e: React.PointerEvent | React.MouseEvent) => void
 }) {
   const { frozen, shown, before, after } = renderedColumns(columns, colRange)
+  const [c0, c1] = rangeCols ? rangeCols.split(':').map(Number) : [-1, -1]
   const cell = (c: Column) => {
     const isEditing = editing?.fieldId === c.field.id
     const active = activeField === c.field.id
+    const ci = columns.indexOf(c)
+    const inRange = ci >= c0! && ci <= c1!
     return (
       <div
         key={c.field.id}
         role="gridcell"
         aria-colindex={columns.indexOf(c) + 1}
-        aria-selected={active}
+        aria-selected={active || inRange}
         data-field-id={c.field.id}
         data-type={c.field.type}
-        className={`dbg-cell${c.frozen ? ' is-frozen' : ''}${active ? ' is-active' : ''}${isEditing ? ' is-editing' : ''}${c.wrap ? ' is-wrap' : ''}`}
+        className={`dbg-cell${c.frozen ? ' is-frozen' : ''}${active ? ' is-active' : ''}${isEditing ? ' is-editing' : ''}${c.wrap ? ' is-wrap' : ''}${inRange ? ' is-inrange' : ''}`}
         style={{ width: c.width, left: c.frozen ? c.left + GUTTER : undefined }}
         onPointerDown={(e) => {
           if (e.button !== 0 || isEditing) return

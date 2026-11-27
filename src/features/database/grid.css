@@ -299,3 +299,6 @@ textarea.dbc-editor {
   padding: 6px 0;
   color: var(--text-2);
 }
+.dbg-cell.is-inrange {
+  background: var(--accent-soft);
+}

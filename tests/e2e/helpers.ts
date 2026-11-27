@@ -106,6 +106,11 @@ export async function gridCell(page: Page, row: number, column: string) {
       grid.scrollLeft = left - frozen
   })
   await frame()
+  // rows are virtualized too: scroll the row into the rendered window
+  if (!(await page.locator(`.dbg-row[aria-rowindex="${row + 2}"]`).count())) {
+    await page.locator('.dbg').evaluate((el, top) => (el.scrollTop = top), Math.max(0, row * 36 - 40))
+    await frame()
+  }
   const cell = page.locator(`.dbg-row[aria-rowindex="${row + 2}"] [role="gridcell"][aria-colindex="${col}"]`)
   await cell.scrollIntoViewIfNeeded()
   return cell

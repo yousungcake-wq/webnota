@@ -1,6 +1,14 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Copy, Maximize2, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react'
-import { cellOf, duplicateRow, moveRow, readDbMeta, setCell, type FieldMeta } from '@/core/model/database'
+import {
+  cellOf,
+  duplicateRow,
+  moveRow,
+  prefillFromFilter,
+  readDbMeta,
+  setCell,
+  type FieldMeta,
+} from '@/core/model/database'
 import { Button, Menu, toast } from '@/ui'
 import type { DbSession, DbState } from './session'
 import { dt } from './i18n'
@@ -8,6 +16,7 @@ import { CellPopover, POPOVER_EDITED } from './CellPopover'
 import { editText, parseEdit, TEXT_EDITED } from './cellEdit'
 import { columnsOf, GUTTER, HEADER_HEIGHT, ROW_HEIGHT } from './gridColumns'
 import { deleteRowsWithUndo, newRow } from './rowActions'
+import { clearRect, copyRect, pasteTSV, rectOf } from './gridClipboard'
 import { RowSheet } from './RowSheet'
 import { GridHeader } from './GridHeader'
 import { GridRow, type GridPos as Pos } from './GridRow'
@@ -36,6 +45,8 @@ export function Grid({
   const bodyRef = useRef<HTMLDivElement>(null)
   const box = useScrollBox(scrollRef)
   const [active, setActive] = useState<Pos | null>(null)
+  /** Range selection (DB-G04): from `anchor` to `active`. */
+  const [anchor, setAnchor] = useState<Pos | null>(null)
   const [editing, setEditing] = useState<(Pos & { initial: string }) | null>(null)
   const [popover, setPopover] = useState<Pos | null>(null)
   const totalWidth = GUTTER + columns.reduce((n, c) => n + c.width, 0)
@@ -108,35 +119,48 @@ export function Grid({
         el.scrollLeft = col.left + col.width - el.clientWidth
     }
   }
-  const move = (dRow: number, dCol: number) => {
+  /** Moves the active cell by rows/columns (`to`: absolute index); `extend` grows the range. */
+  const move = (dRow: number, dCol: number, extend = false, to?: { row?: number; col?: number }) => {
     if (!active) {
       if (rowIds[0] && columns[0]) setActive({ rowId: rowIds[0], fieldId: columns[0].field.id })
       return
     }
-    const r = Math.max(0, Math.min(rowIds.length - 1, rowIds.indexOf(active.rowId) + dRow))
-    const c = Math.max(0, Math.min(columns.length - 1, columns.findIndex((x) => x.field.id === active.fieldId) + dCol))
+    const r = Math.max(0, Math.min(rowIds.length - 1, to?.row ?? rowIds.indexOf(active.rowId) + dRow))
+    const c = Math.max(
+      0,
+      Math.min(columns.length - 1, to?.col ?? columns.findIndex((x) => x.field.id === active.fieldId) + dCol),
+    )
     const next = { rowId: rowIds[r]!, fieldId: columns[c]!.field.id }
+    if (extend) setAnchor((a) => a ?? active)
+    else setAnchor(null)
     setActive(next)
     scrollIntoView(next)
   }
+  const fieldIds = columns.map((c) => c.field.id)
+  const rect = rectOf(anchor, active, rowIds, fieldIds)
+  const multi = !!rect && (rect.r1 > rect.r0 || rect.c1 > rect.c0)
+  const visibleFields = columns.map((c) => c.field)
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (editing || popover || e.nativeEvent.isComposing || e.target !== e.currentTarget) return
+    const mod = e.metaKey || e.ctrlKey
     const keys: Record<string, () => void> = {
-      ArrowDown: () => move(1, 0),
-      ArrowUp: () => move(-1, 0),
-      ArrowRight: () => move(0, 1),
-      ArrowLeft: () => move(0, -1),
+      ArrowDown: () => (mod ? move(0, 0, e.shiftKey, { row: rowIds.length - 1 }) : move(1, 0, e.shiftKey)),
+      ArrowUp: () => (mod ? move(0, 0, e.shiftKey, { row: 0 }) : move(-1, 0, e.shiftKey)),
+      ArrowRight: () => (mod ? move(0, 0, e.shiftKey, { col: columns.length - 1 }) : move(0, 1, e.shiftKey)),
+      ArrowLeft: () => (mod ? move(0, 0, e.shiftKey, { col: 0 }) : move(0, -1, e.shiftKey)),
+      Home: () => move(0, 0, e.shiftKey, mod ? { row: 0, col: 0 } : { col: 0 }),
+      End: () =>
+        move(0, 0, e.shiftKey, mod ? { row: rowIds.length - 1, col: columns.length - 1 } : { col: columns.length - 1 }),
       Tab: () => move(0, e.shiftKey ? -1 : 1),
       Enter: () => active && (startEdit(active) || toggle(active)),
       ' ': () => active && toggle(active),
-      Escape: () => (selected.size ? setSelected(new Set()) : setActive(null)),
+      Escape: () => (selected.size ? setSelected(new Set()) : anchor ? setAnchor(null) : setActive(null)),
       Delete: () =>
         selected.size && !readOnly
           ? (deleteRowsWithUndo(docs, [...selected]), setSelected(new Set()))
-          : active && canEdit(fieldById(active.fieldId)) && setCell(docs, active.rowId, active.fieldId, null),
-      Backspace: () =>
-        active && canEdit(fieldById(active.fieldId)) && setCell(docs, active.rowId, active.fieldId, null),
+          : clearSelection(),
+      Backspace: () => clearSelection(),
     }
     const run = keys[e.key]
     if (run) {
@@ -145,6 +169,33 @@ export function Grid({
     } else if (active && e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
       // typing on a cell replaces its content (spreadsheet behaviour)
       if (startEdit(active, e.key)) e.preventDefault()
+    }
+  }
+
+  const clearSelection = () => {
+    if (readOnly || !rect) return
+    if (multi) clearRect(docs, rect, rowIds, visibleFields)
+    else if (active && canEdit(fieldById(active.fieldId))) setCell(docs, active.rowId, active.fieldId, null)
+  }
+  const onCopy = (e: React.ClipboardEvent, cut = false) => {
+    if (editing || popover || !rect || e.target !== e.currentTarget) return
+    e.preventDefault()
+    e.clipboardData.setData('text/plain', copyRect(docs, rect, rowIds, visibleFields))
+    if (cut && !readOnly) clearRect(docs, rect, rowIds, visibleFields)
+  }
+  const onPaste = (e: React.ClipboardEvent) => {
+    if (editing || popover || readOnly || !rect || e.target !== e.currentTarget) return
+    const text = e.clipboardData.getData('text/plain')
+    if (!text) return
+    e.preventDefault()
+    const pasted = pasteTSV(docs, text, rect, rowIds, visibleFields, () =>
+      prefillFromFilter(state.view?.filter ?? null, state.fields, Date.now()),
+    )
+    // select what was pasted (rows added at the end appear after the query catches up)
+    if (pasted && rowIds[pasted.r0]) {
+      setAnchor({ rowId: rowIds[pasted.r0]!, fieldId: fieldIds[pasted.c0]! })
+      const lastRow = rowIds[Math.min(pasted.r1, rowIds.length - 1)]!
+      setActive({ rowId: lastRow, fieldId: fieldIds[pasted.c1]! })
     }
   }
 
@@ -164,10 +215,37 @@ export function Grid({
 
   const onCellPointer = (rowId: string, fieldId: string, e: React.PointerEvent) => {
     const pos = { rowId, fieldId }
-    if (active?.rowId === rowId && active.fieldId === fieldId && !editing && !popover) {
+    if (e.shiftKey && active) {
+      setAnchor((a) => a ?? active)
+      setActive(pos)
+      return
+    }
+    if (active?.rowId === rowId && active.fieldId === fieldId && !editing && !popover && !anchor) {
       // keep the browser from moving focus back to the grid after the editor took it
       if (startEdit(pos)) e.preventDefault()
-    } else setActive(pos)
+      return
+    }
+    setActive(pos)
+    setAnchor(null)
+    // drag across cells to select a range
+    const onMove = (ev: PointerEvent) => {
+      const cell = (document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null)?.closest<HTMLElement>(
+        '.dbg-cell',
+      )
+      const rid = cell?.closest<HTMLElement>('.dbg-row')?.dataset.rowId
+      const fid = cell?.dataset.fieldId
+      if (!rid || !fid || (rid === rowId && fid === fieldId)) return
+      setAnchor((a) => a ?? pos)
+      setActive({ rowId: rid, fieldId: fid })
+    }
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+    if (e.pointerType === 'mouse') {
+      window.addEventListener('pointermove', onMove)
+      window.addEventListener('pointerup', onUp)
+    }
   }
   const addRowAt = (where: { afterId?: string; beforeId?: string }) => {
     const id = newRow(docs, state.fields, state.view, where)
@@ -290,6 +368,9 @@ export function Grid({
         aria-colcount={columns.length}
         tabIndex={0}
         onKeyDown={onKeyDown}
+        onCopy={(e) => onCopy(e)}
+        onCut={(e) => onCopy(e, true)}
+        onPaste={onPaste}
       >
         <GridHeader columns={columns} colRange={colRange} />
         <div ref={bodyRef} className="dbg-body" style={{ width: totalWidth, height: layout.total }}>
@@ -308,6 +389,7 @@ export function Grid({
                 colRange={colRange}
                 readOnly={readOnly}
                 activeField={active?.rowId === id ? active.fieldId : null}
+                rangeCols={multi && rect && index >= rect.r0 && index <= rect.r1 ? rangeKey(rect) : null}
                 editing={editing?.rowId === id ? editing : null}
                 onCellPointer={onCellPointer}
                 onToggle={onToggle}
@@ -410,3 +492,6 @@ function GridPopover({
   )
   return <CellPopover docs={state.docs} field={field} row={row} anchor={anchor} readOnly={readOnly} onClose={onClose} />
 }
+
+/** Stable value for memoized rows: "c0:c1". */
+const rangeKey = (r: { c0: number; c1: number }) => `${r.c0}:${r.c1}`

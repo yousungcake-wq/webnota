@@ -290,4 +290,59 @@ test.describe('database (M4)', () => {
     await expect.poll(names).toEqual(['D', 'A!', 'B', 'C'])
     noErrors()
   })
+
+  test('keyboard range selection, TSV copy / paste with new rows (M4-10)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    const grid = page.getByRole('grid')
+    /** Fires a clipboard event on the grid; returns what a copy put on the clipboard. */
+    const clip = (type: 'copy' | 'cut' | 'paste', text = '') =>
+      grid.evaluate(
+        (el, { type, text }) => {
+          const dt = new DataTransfer()
+          if (text) dt.setData('text/plain', text)
+          el.dispatchEvent(new ClipboardEvent(type, { clipboardData: dt, bubbles: true, cancelable: true }))
+          return dt.getData('text/plain')
+        },
+        { type, text },
+      )
+
+    // Name + Amount of rows 1–2: click, then Shift+→, Shift+↓
+    await (await gridCell(page, 0, 'Name')).click()
+    await page.keyboard.press('Shift+ArrowRight')
+    await page.keyboard.press('Shift+ArrowDown')
+    await expect(page.locator('.dbg-cell.is-inrange')).toHaveCount(4)
+    const copied = await clip('copy')
+    expect(copied).toMatch(/^Item 1\t\d*\nItem 2\t\d*$/)
+
+    // paste a 2×2 block with select/checkbox values at Status of row 1
+    await page.keyboard.press('Escape')
+    await (await gridCell(page, 0, 'Done')).click()
+    await clip('paste', 'TRUE\tDoing\nfalse\t새 상태')
+    await expect((await gridCell(page, 0, 'Done')).getByRole('checkbox')).toHaveAttribute('aria-checked', 'true')
+    await expect((await gridCell(page, 1, 'Done')).getByRole('checkbox')).toHaveAttribute('aria-checked', 'false')
+    await expect(await gridCell(page, 0, 'Status')).toHaveText('Doing')
+    await expect(await gridCell(page, 1, 'Status')).toHaveText('새 상태')
+
+    // one value fills a selected range
+    await (await gridCell(page, 2, 'Name')).click()
+    await page.keyboard.press('Shift+ArrowDown')
+    await clip('paste', 'same')
+    await expect(await gridCell(page, 2, 'Name')).toHaveText('same')
+    await expect(await gridCell(page, 3, 'Name')).toHaveText('same')
+
+    // Ctrl+↓ to the last row; pasting 3 rows there adds 2 rows
+    await page.keyboard.press('Escape')
+    await page.keyboard.press('ControlOrMeta+ArrowDown')
+    await clip('paste', 'X\nY\nZ')
+    await expect(grid).toHaveAttribute('aria-rowcount', '53')
+    await grid.evaluate((el) => (el.scrollTop = el.scrollHeight))
+    await expect(page.locator('.dbg-row', { hasText: 'Z' }).first()).toBeVisible()
+
+    // cut clears the range
+    await (await gridCell(page, 0, 'Name')).click()
+    expect(await clip('cut')).toBe('Item 1')
+    await expect(await gridCell(page, 0, 'Name')).toHaveText('')
+    noErrors()
+  })
 })

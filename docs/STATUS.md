@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M4 데이터베이스 I (M3 완료 — 실기기 확인은 docs/QA.md "M3"(와 M2·M1), 사용자 확인 대기. 링크 미리보기는 Worker 재배포 필요)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 10/16
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 11/16
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M4-10 셀 키보드·클립보드(범위 선택·TSV). 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
+- **다음 할 일**: M4-11 필드 UI(추가·메뉴·타입 변경·드래그·폭). 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -166,3 +166,4 @@
 | 2026-11-27 | M4-07: media 필드(업로드·썸네일·순서·삭제, refs.ts fileRefsInRows), 타입 변환 규칙 전수 테스트 + convertField/undo, changeFieldType(확인·30초 실행 취소) | 9a04567 |
 | 2026-11-27 | M4-08: Grid 열 가상 스크롤·고정 열·줄 바꿈 자동 행 높이(측정), Grid를 GridHeader/GridRow로 분리 | 6d684e0 |
 | 2026-11-27 | M4-09: 행 조작(새 행·아래 추가·행 메뉴·복제·삭제+실행 취소·다중 선택 삭제·드래그 순서·필터 값 채우기·속성 대화상자) | 3941003 |
+| 2026-11-27 | M4-10: 범위 선택(Shift·끌기)·Ctrl+방향키·Home/End, TSV 복사·잘라내기·붙여넣기(행 자동 추가·타입별 해석·범위 채우기) | HASH |
