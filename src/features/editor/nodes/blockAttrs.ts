@@ -26,6 +26,7 @@ export const LINKABLE = [
   'outline',
   'subPage',
   'horizontalRule',
+  'image',
 ]
 export const COLORABLE = ['paragraph', 'heading', 'blockquote', 'listItem', 'taskItem']
 export const ALIGNABLE = ['paragraph', 'heading']

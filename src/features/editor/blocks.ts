@@ -15,6 +15,7 @@ import {
   Heading4,
   Heading5,
   Heading6,
+  Image as ImageIcon,
   List,
   ListOrdered,
   MessageSquareQuote,
@@ -230,6 +231,16 @@ export const BLOCKS: BlockItem[] = [
     isActive: (e) => e.isActive('codeBlock'),
   },
   {
+    id: 'image',
+    category: 'media',
+    turnInto: false,
+    title: t('block.image'),
+    hint: t('block.image.hint'),
+    keywords: ['image', 'picture', 'photo', 'img', ...kw('block.image.kw')],
+    icon: ImageIcon,
+    run: (c) => c.insertImage(),
+  },
+  {
     id: 'table',
     category: 'advanced',
     turnInto: false,
@@ -310,5 +321,6 @@ export function filterBlocks(query: string): BlockItem[] {
 export const CATEGORY_LABEL: Record<BlockCategory, MessageKey> = {
   basic: 'block.cat.basic',
   list: 'block.cat.list',
+  media: 'block.cat.media',
   advanced: 'block.cat.advanced',
 }

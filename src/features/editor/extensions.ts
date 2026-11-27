@@ -9,6 +9,8 @@ import { MentionSuggest, MentionWithView } from './mentionSuggest'
 import { EmojiSuggest } from './emojiSuggest'
 import { SubPageWithView } from './SubPageBlock'
 import { OutlineWithView } from './OutlineBlock'
+import { ImageWithView } from './ImageBlock'
+import { FileDrop } from './fileDrop'
 import { BlockFlash } from './blockFlash'
 import { BlockSelection } from './blockSelection'
 import { PasteRules } from './pasteRules'
@@ -93,7 +95,9 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
           ? SubPageWithView.configure({ pageId: opts.pageId ?? null })
           : e.name === 'outline'
             ? OutlineWithView
-            : e,
+            : e.name === 'image'
+              ? ImageWithView
+              : e,
     ),
     Placeholder.configure({
       placeholder: ({ node }) => {
@@ -111,6 +115,7 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
     MentionSuggest,
     BlockFlash,
     PasteRules,
+    FileDrop,
     FindReplace,
     UndoGroups,
     IndentBlocks,

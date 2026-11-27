@@ -24,7 +24,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-B09 | 콜아웃 | `callout` (icon, color) | | P0 | ✅ M2-04 (schema v4). 아이콘을 누르면 색 10가지 + 이모지 선택 |
 | ED-B10 | 코드 블록 | `codeBlock` (language, 줄 바꿈 옵션, 복사 버튼, 하이라이트) | ` ``` ` | P0 | ✅ M2-05: 언어 22개(`code/languages.ts`, id는 저장 데이터), `wrap` 속성(기본값 false), 하이라이트는 코드 블록이 있을 때 lowlight 코어 + 해당 문법만 지연 로드 |
 | ED-B11 | 구분선 | `horizontalRule` | `---` | P0 | ✅ |
-| ED-B12 | 이미지 | `image` (src=fileId/url, width, align, caption) | | P0 | M3 |
+| ED-B12 | 이미지 | `image` (src=fileId/url, width, align, caption) | | P0 | ✅ M3-04 (schema v14). `src` = 파일 id(`<sha256>.<ext>`) 또는 http(s) URL, `width` = 글 폭 대비 %(10~100, null = 원래 크기), `align` left/center/right, `caption` 문자열, `naturalWidth/Height`(로드 전 비율 예약). `/이미지`·블록 패널 → 업로드(폰은 `accept=image/*`로 사진·카메라)/링크, 붙여넣기·끌어 놓기(처리 중 자리 표시가 편집을 따라 이동), 양쪽 손잡이로 크기 조절(데스크탑), 선택 시 도구 모음(정렬·크기 메뉴·캡션·바꾸기·내려받기·원본 보기(데스크탑)·삭제). UI는 `ImageView.tsx` 지연 청크, 업로드는 `core/files/ingest.ts` 지연 청크 |
 | ED-B13 | 동영상 임베드 | `video` (YouTube/Vimeo/직접 URL) | | P1 | M3 |
 | ED-B14 | 파일 | `file` (fileId, name, size) | | P0 | M3 |
 | ED-B15 | 수식 블록 | `mathBlock` (LaTeX, KaTeX) | `$$` | P0 | M3 |
@@ -62,7 +62,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-F03 | 블록 메뉴 | 블록 바꾸기, 복제, 삭제, 색상(글자/배경), 블록 링크 복사, 정렬(왼/가운데/오른쪽), 위/아래로 이동 | ✅ M2-13 (schema v11). 다단 블록은 단 추가·마지막 단 합치기(내용 유지). 목록의 색은 각 항목에 적용. 폰은 길게 누르기·도구 모음 버튼(M2-20) |
 | ED-F04 | 다중 블록 선택 | 드래그 선택, Shift+클릭, Esc로 블록 선택 모드, 일괄 삭제·이동·바꾸기 | ✅ M2-14. Esc = 현재 블록 선택, Shift+↑↓·Shift+클릭 = 확장, 여백 드래그 = 범위 선택, Backspace·⌘C/⌘X 그대로 동작, 핸들 메뉴는 선택한 블록 전체에 적용(바꾸기·색·복제·삭제). 폰은 M2-20 블록 시트에서 |
 | ED-F05 | 서식 도구 모음 (선택 시) | 굵게…코드, 링크, 색상, 블록 바꾸기, 정렬 | ✅ / 확장 M2 |
-| ED-F06 | 복사 / 붙여넣기 | HTML ↔ 블록, Markdown 텍스트 감지 후 변환, 이미지 붙여넣기 → 업로드, URL 붙여넣기 → 링크/미리보기/임베드 선택 | ✅ 텍스트 M2-15 (Markdown은 `marked` 지연 로드, 코드 편집기 HTML은 일반 텍스트로, 빈 선택에 URL → 링크, 선택 위 URL → 선택을 링크로) / 이미지·미리보기·임베드 M3 |
+| ED-F06 | 복사 / 붙여넣기 | HTML ↔ 블록, Markdown 텍스트 감지 후 변환, 이미지 붙여넣기 → 업로드, URL 붙여넣기 → 링크/미리보기/임베드 선택 | ✅ 텍스트 M2-15 (Markdown은 `marked` 지연 로드, 코드 편집기 HTML은 일반 텍스트로, 빈 선택에 URL → 링크, 선택 위 URL → 선택을 링크로) / 이미지 파일 붙여넣기·끌어 놓기 ✅ M3-04 (텍스트가 함께 있는 클립보드는 텍스트 우선) / 미리보기·임베드 M3 |
 | ED-F07 | 찾기 / 바꾸기 | `⌘F` (브라우저 찾기 대신), 대소문자, 모두 바꾸기 | ✅ M2-16. 폰은 페이지 더보기 메뉴의 "페이지에서 찾기". 모두 바꾸기는 실행 취소 한 번으로 복구 |
 | ED-F08 | 실행 취소 / 다시 실행 | Yjs UndoManager, 묶음 간격 조정, 원격 변경은 되돌리지 않음 | ✅ (M2-16: 500ms 묶음 + 새 문단·Tab·붙여넣기·잘라내기·놓기·바꾸기에서 끊음) |
 | ED-F09 | 들여쓰기 | Tab/Shift+Tab (목록, 할 일, 토글 하위) | ✅ M2-17: 토글 바로 뒤 블록 → 토글 안, 목록 바로 뒤 블록 → 마지막 항목의 하위, Shift+Tab으로 꺼냄. Tab은 에디터 밖으로 포커스를 옮기지 않음. 폰 도구 모음 버튼도 같음 |

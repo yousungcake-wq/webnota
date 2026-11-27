@@ -1173,3 +1173,31 @@
 .kb-selection {
   border-bottom: 1px solid var(--border);
 }
+
+/* SY-04 upload placeholder (fileDrop.ts) — shown while a pasted/dropped file is stored */
+.wn-editor .upload-placeholder {
+  margin: var(--sp-2) 0;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r);
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+/* reserved image box while the image UI chunk loads (ImageBlock.tsx) */
+.wn-editor .image-block {
+  display: flex;
+  justify-content: center;
+  margin: var(--sp-2) 0;
+}
+.wn-editor .image-block[data-align='left'] {
+  justify-content: flex-start;
+}
+.wn-editor .image-block[data-align='right'] {
+  justify-content: flex-end;
+}
+.wn-editor .image-frame.is-loading {
+  max-width: 100%;
+  min-height: 80px;
+  border-radius: var(--r-sm);
+  background: var(--bg-hover);
+}

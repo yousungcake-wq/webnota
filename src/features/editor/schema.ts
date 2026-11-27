@@ -13,6 +13,7 @@ import { SubPage } from './nodes/subPage'
 import { TABLE_NODES } from './nodes/table'
 import { Column, Columns } from './nodes/columns'
 import { Outline } from './nodes/outline'
+import { Image } from './nodes/image'
 import { BlockAttrs } from './nodes/blockAttrs'
 import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
 
@@ -52,6 +53,7 @@ export function schemaExtensions(): Extensions {
     Columns,
     Column,
     Outline,
+    Image,
     BlockAttrs,
   ]
 }

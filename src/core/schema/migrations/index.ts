@@ -11,6 +11,7 @@ import { v10ColumnsOutline } from './010-columns-outline'
 import { v11BlockAttrs } from './011-block-attrs'
 import { v12TextDirection } from './012-text-direction'
 import { v13TableLayout } from './013-table-layout'
+import { v14Image } from './014-image'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -39,4 +40,5 @@ export const MIGRATIONS: Migration[] = [
   v11BlockAttrs, // M2-13: blockId / textColor / bgColor / textAlign attributes (version stamp only)
   v12TextDirection, // M2-17: dir attribute (version stamp only)
   v13TableLayout, // table layout attribute: left / center / right / full (version stamp only)
+  v14Image, // M3-04: image block node type (version stamp only)
 ]

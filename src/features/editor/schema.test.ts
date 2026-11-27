@@ -58,6 +58,9 @@ MARKS_AT_VERSION[12] = MARKS_AT_VERSION[11]
 // v13: table `layout` attribute only.
 NODES_AT_VERSION[13] = NODES_AT_VERSION[12]
 MARKS_AT_VERSION[13] = MARKS_AT_VERSION[12]
+// v14 (M3-04): image block.
+NODES_AT_VERSION[14] = [...NODES_AT_VERSION[13]!, 'image'].sort()
+MARKS_AT_VERSION[14] = MARKS_AT_VERSION[13]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

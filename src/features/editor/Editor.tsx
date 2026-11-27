@@ -1,5 +1,6 @@
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import type { Node as PMNode } from '@tiptap/pm/model'
+import { NodeSelection } from '@tiptap/pm/state'
 import { EditorContent, useEditor, useEditorState, type Editor as TEditor } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import {
@@ -400,7 +401,10 @@ function FormatBubble({ editor, onColor }: { editor: TEditor; onColor: () => voi
       editor={editor}
       className="bubble"
       shouldShow={({ editor: e, state, from, to }) =>
-        from !== to && !e.isActive('codeBlock') && !isCellSelection(state)
+        from !== to &&
+        !e.isActive('codeBlock') &&
+        !isCellSelection(state) &&
+        !(state.selection instanceof NodeSelection)
       }
     >
       {btn(s.bold, t('editor.bold'), () => editor.chain().focus().toggleBold().run(), <Bold size={16} />)}

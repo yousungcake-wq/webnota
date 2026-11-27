@@ -1,6 +1,6 @@
 import { matchRange } from '@/core/text/hangul'
 /** Block lookup helpers shared by the slash menu, the phone block panel and "turn into" (ED-F01). */
-export type BlockCategory = 'basic' | 'list' | 'advanced'
+export type BlockCategory = 'basic' | 'list' | 'media' | 'advanced'
 
 export interface Rankable {
   id: string
@@ -9,7 +9,7 @@ export interface Rankable {
   category: BlockCategory
 }
 
-const ORDER: BlockCategory[] = ['basic', 'list', 'advanced']
+const ORDER: BlockCategory[] = ['basic', 'list', 'media', 'advanced']
 const RECENT_KEY = 'webnota:recent-blocks'
 
 export function recentBlocks(): string[] {
