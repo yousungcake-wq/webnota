@@ -395,6 +395,15 @@ export const ko = {
   'sync.repoDescription': 'WebNota 노트 데이터 (WebNota 앱이 자동으로 관리합니다)',
   'sync.repoReadme': '# WebNota data\n\nWebNota 앱이 관리하는 노트 데이터입니다. 직접 수정하지 마세요.\n',
 
+  // files (SY-04)
+  'files.loading': '불러오는 중…',
+  'files.notConnected': 'GitHub에 연결하면 이 파일을 볼 수 있습니다',
+  'files.offline': '오프라인 — 연결되면 표시됩니다',
+  'files.missing': '아직 다른 기기에서 올라오지 않은 파일입니다',
+  'files.error': '파일을 불러오지 못했습니다',
+  'files.retry': '다시 시도',
+  'files.tooLarge': '파일이 너무 큽니다 (최대 {max}MB)',
+
   // auth
   'auth.err.noOauth': 'OAuth가 설정되지 않았습니다.',
   'auth.err.state': '로그인 요청을 확인할 수 없습니다. 다시 시도하세요.',

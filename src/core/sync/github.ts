@@ -73,6 +73,23 @@ export class GitHubClient {
     return data
   }
 
+  /**
+   * Raw bytes of a repository file (SY-04 file display), or null if it does not exist.
+   * The raw media type returns the bytes directly (no base64 JSON) and works up to 100MB.
+   */
+  async getRaw(owner: string, repo: string, path: string, ref: string): Promise<Uint8Array | null> {
+    const res = await fetch(`${API}/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(ref)}`, {
+      headers: {
+        Accept: 'application/vnd.github.raw+json',
+        Authorization: `Bearer ${this.token}`,
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    })
+    if (res.status === 404) return null
+    if (!res.ok) throw new GitHubError(res.status, res.statusText, retryAfter(res.status, res.headers, Date.now()))
+    return new Uint8Array(await res.arrayBuffer())
+  }
+
   getUser() {
     return this.request<{ login: string; name: string | null; avatar_url: string }>('GET', '/user')
   }

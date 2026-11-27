@@ -135,3 +135,8 @@ function deviceLabel() {
   if (/Windows/i.test(ua)) return 'Windows'
   return 'Web'
 }
+
+/** Downloads `files/<id>` from the connected repository (SY-04 display cache). */
+export function downloadRepoFile(account: Account, token: string, id: string): Promise<Uint8Array | null> {
+  return new GitHubClient(token).getRaw(account.owner, account.repo, `files/${id}`, account.branch)
+}

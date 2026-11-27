@@ -388,6 +388,15 @@ export const en: Record<MessageKey, string> = {
   'sync.repoDescription': 'WebNota notes data (managed automatically by the WebNota app)',
   'sync.repoReadme': '# WebNota data\n\nNotes data managed by the WebNota app. Do not edit by hand.\n',
 
+  // files (SY-04)
+  'files.loading': 'Loading…',
+  'files.notConnected': 'Connect GitHub to see this file',
+  'files.offline': 'Offline — shown when back online',
+  'files.missing': 'This file has not been uploaded from another device yet',
+  'files.error': 'Could not load the file',
+  'files.retry': 'Retry',
+  'files.tooLarge': 'The file is too large (max {max}MB)',
+
   'auth.err.noOauth': 'OAuth is not configured.',
   'auth.err.state': 'Could not verify the sign-in request. Please try again.',
   'auth.err.exchange': 'Token exchange failed',
