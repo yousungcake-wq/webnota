@@ -452,6 +452,9 @@ export const ko = {
   'flag.debugLog': '디버그 로그',
   'flag.debugLog.desc': '동기화 과정을 브라우저 콘솔에 기록합니다',
   'settings.about': '정보',
+  'settings.files': '파일과 이미지',
+  'settings.imageOriginal': '이미지 원본 그대로 올리기',
+  'settings.imageOriginal.desc': '끄면 긴 변 2560px로 줄이고 WebP로 바꿔 저장 공간을 아낍니다 (사진 회전은 바로잡음)',
   'settings.aboutText':
     'WebNota {version}. 노트는 이 기기(IndexedDB)에 먼저 저장되고, GitHub를 연결하면 자동으로 동기화됩니다. 홈 화면에 추가하면 오프라인에서도 앱처럼 쓸 수 있습니다.',
 } satisfies Record<string, string>

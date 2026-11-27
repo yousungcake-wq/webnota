@@ -443,6 +443,10 @@ export const en: Record<MessageKey, string> = {
   'flag.debugLog': 'Debug logging',
   'flag.debugLog.desc': 'Writes sync activity to the browser console',
   'settings.about': 'About',
+  'settings.files': 'Files & images',
+  'settings.imageOriginal': 'Upload original images',
+  'settings.imageOriginal.desc':
+    'When off, images are scaled to 2560px on the long side and saved as WebP to save space (photo rotation is fixed)',
   'settings.aboutText':
     'WebNota {version}. Notes are saved on this device (IndexedDB) first and sync automatically once GitHub is connected. Add it to your home screen to use it offline like an app.',
 }

@@ -50,6 +50,7 @@
   - 대안: `raw.githubusercontent.com`은 비공개 저장소에서 토큰 헤더로 CORS가 안 되므로 쓰지 않습니다.
   - ✅ M3-02 구현: 내려받기는 Git blob API 대신 **Contents API의 raw 미디어 타입**(`GET /repos/:o/:r/contents/files/<id>?ref=<branch>`, `Accept: application/vnd.github.raw+json`)을 씁니다. 경로로 바로 받으므로 파일별 blob sha를 기록할 필요가 없고, base64 JSON 없이 바이트가 오며 100MB까지 됩니다. `core/files/cache.ts`의 `loadFile(id)`: 메모리 objectURL → IndexedDB `cache` → 업로드 대기열 → GitHub 순서. 같은 파일 동시 요청은 하나로 합칩니다. LRU는 `meta` 저장소(크기·마지막 사용)만 읽어 200MB를 넘는 만큼 오래된 것부터 지웁니다. 상태: `ready`, `not-connected`(연결 전), `offline`, `missing`(저장소에 아직 없음 — 다른 기기 대기열), `error`. React는 `@/features/files`의 `useFile(id)` — 연결·동기화 완료·온라인 복귀 시 다시 시도, 자리 표시 문구는 `fileStatusKey(status)`.
 - 이미지 처리: 업로드 전 긴 변 2560px로 축소, WebP 변환(지원 시), EXIF 회전 반영. 원본 유지 옵션도 둡니다.
+  - ✅ M3-03 구현 (`core/files/image.ts`의 `prepareImage`, 업로드 코드와 함께 지연 로드): PNG·JPEG·WebP·AVIF·HEIC(디코딩 가능한 브라우저)만 처리하고 GIF(애니메이션)·SVG는 그대로. `createImageBitmap(…, { imageOrientation: 'from-image' })`로 EXIF 회전을 반영해 그립니다. 축소가 필요 없고 1MB 이하이며 회전 정보가 없으면 원본 그대로(화질 손실 없음), 다시 인코딩한 결과가 더 크면 원본을 씁니다. WebP 인코딩이 안 되면(구형 Safari) PNG는 PNG, 나머지는 JPEG(품질 0.85). 설정 → 파일과 이미지 → "이미지 원본 그대로 올리기"(기기별 `webnota:image-original`)를 켜면 처리하지 않습니다.
 - 크기 제한: 파일당 25MB (Git Data API 블롭 업로드는 base64라 실제 요청은 약 33MB).
 - 참조되지 않는 파일 정리: "저장소 정리" 작업에서 모든 문서를 스캔해 고아 파일을 삭제합니다 (수동 실행).
 

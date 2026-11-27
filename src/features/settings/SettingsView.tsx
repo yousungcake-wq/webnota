@@ -4,7 +4,14 @@ import { oauthAvailable, startLogin } from '@/core/auth/auth'
 import { FLAGS, setFlag, type FlagName } from '@/core/flags'
 import { useFlag } from '@/core/store/flags'
 import { getLang, getLangPref, LANG_NAMES, LANGS, setLangPref, t, tParts, type MessageKey } from '@/core/i18n'
-import { setTheme, setTrashAutoEmpty, trashAutoEmptyStore, useTheme } from '@/core/store/prefs'
+import {
+  setImageOriginal,
+  setTheme,
+  setTrashAutoEmpty,
+  trashAutoEmptyStore,
+  useImageOriginal,
+  useTheme,
+} from '@/core/store/prefs'
 import { useStore } from '@/core/store/useStore'
 import { useSync } from '@/core/store/sync'
 import { connect, disconnect, syncNow } from '@/core/sync/controller'
@@ -44,6 +51,7 @@ export function SettingsView() {
   const systemTheme = useSystemTheme()
   const sync = useSync()
   const trashAuto = useStore(trashAutoEmptyStore)
+  const imageOriginal = useImageOriginal()
   const [pat, setPat] = useState('')
   const [repo, setRepo] = useState('webnota-data')
   const [busy, setBusy] = useState(false)
@@ -198,6 +206,16 @@ export function SettingsView() {
           {t('settings.now', { value: LANG_NAMES[getLang()] })}
           {langPref === 'system' && ` · ${t('settings.language.followsBrowser')}`}
         </p>
+      </section>
+
+      <section className="card">
+        <h2>{t('settings.files')}</h2>
+        <Switch
+          checked={imageOriginal}
+          onChange={setImageOriginal}
+          label={t('settings.imageOriginal')}
+          description={t('settings.imageOriginal.desc')}
+        />
       </section>
 
       <section className="card">

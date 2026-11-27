@@ -126,3 +126,13 @@ export function setSidebar(patch: Partial<{ open: boolean; width: number }>) {
   sidebarStore.set((s) => ({ ...s, ...patch }))
   write(SIDEBAR_KEY, JSON.stringify(sidebarStore.get()))
 }
+
+/** Upload images untouched (no resize/WebP, SY-04 "keep original"). Device-wide. */
+const IMAGE_ORIGINAL_KEY = 'webnota:image-original'
+const imageOriginalStore = createStore(read(IMAGE_ORIGINAL_KEY) === '1')
+export const getImageOriginal = () => imageOriginalStore.get()
+export const useImageOriginal = () => useStore(imageOriginalStore)
+export function setImageOriginal(v: boolean) {
+  write(IMAGE_ORIGINAL_KEY, v ? '1' : '0')
+  imageOriginalStore.set(v)
+}
