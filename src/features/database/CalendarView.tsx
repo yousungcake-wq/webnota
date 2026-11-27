@@ -1,8 +1,11 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { CalendarX2, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   addField,
+  asDate,
+  cellOf,
   dayStart,
+  daysBetween,
   defaultDateField,
   eventOf,
   isoWeek,
@@ -10,6 +13,7 @@ import {
   monthWeeks,
   orderedFields,
   setCell,
+  shiftDateValue,
   updateDbView,
   type CalendarEvent,
   DEFAULT_CALENDAR,
@@ -17,6 +21,8 @@ import {
 } from '@/core/model/database'
 import { Button, EmptyState, Overlay } from '@/ui'
 import { useLayout } from '@/platform/layout'
+import { blockTouchScroll } from './boardDrag'
+import { useDayDrag } from './calendarDrag'
 import { CardBody } from './CardBody'
 import { dt } from './i18n'
 import type { LayoutProps } from './layoutProps'
@@ -53,6 +59,23 @@ export default function CalendarView({ session, state, title, readOnly }: Layout
   const [today] = useState(() => dayStart(Date.now()))
   const [open, setOpen] = useState<string | null>(null)
   const [more, setMore] = useState<{ day: number; anchor: HTMLElement } | null>(null)
+  const [selected, setSelected] = useState<number>(() => dayStart(Date.now()))
+  const [noDateOpen, setNoDateOpen] = useState(false)
+  const phone = useLayout().layout === 'phone'
+  const editable = !readOnly && field?.type === 'date'
+  const dayDrag = useDayDrag((rowId, from, to) => {
+    if (!field || field.type !== 'date') return
+    const row = session.row(rowId)
+    const v = row ? asDate(cellOf(field, row)) : null
+    // from the "no date" panel: that day; an event: moved by whole days (time and length kept)
+    setCell(
+      state.docs,
+      rowId,
+      field.id,
+      v && from !== null ? shiftDateValue(v, daysBetween(from, to)) : { start: to, includeTime: false },
+    )
+  })
+  const attach = useCallback((el: HTMLDivElement | null) => (el ? blockTouchScroll(el) : undefined), [])
   const primary = state.fields.find((f) => f.id === state.meta.primaryFieldId)
   const props = useMemo(
     () =>
@@ -75,6 +98,11 @@ export default function CalendarView({ session, state, title, readOnly }: Layout
     return out
     // eslint-disable-next-line react-hooks/exhaustive-deps -- rowsVersion invalidates row snapshots
   }, [field, state.result.rowIds, session, state.rowsVersion])
+  const undated = useMemo(() => {
+    if (!field) return []
+    const dated = new Set(events.map((e) => e.id))
+    return state.result.rowIds.filter((id) => !dated.has(id))
+  }, [field, events, state.result.rowIds])
 
   if (!view) return null
   if (!field) {
@@ -109,15 +137,20 @@ export default function CalendarView({ session, state, title, readOnly }: Layout
     setMonth({ y: d.getFullYear(), m: d.getMonth() })
   }
   const addOn = (day: number) => {
-    if (readOnly || field.type !== 'date') return
+    if (!editable) return
     const id = newRow(state.docs, state.fields, view)
     setCell(state.docs, id, field.id, { start: day, includeTime: false })
     setOpen(id)
   }
+  const titleOf = (id: string) => {
+    const row = session.row(id)
+    return (primary && row ? String(cellOf(primary, row) ?? '') : '') || dt('db.row.untitled')
+  }
+  const drag = dayDrag.drag
   const cols = shownDays(weeks[0]!).length
   const template = `${settings.showWeekNumbers ? '32px ' : ''}repeat(${cols}, minmax(0, 1fr))`
   return (
-    <div className="dbc" aria-label={dt('db.cal.label', { title })}>
+    <div ref={attach} className={`dbc${phone ? ' is-phone' : ''}`} aria-label={dt('db.cal.label', { title })}>
       <div className="dbc-nav">
         <h3 className="dbc-month" aria-live="polite">
           {monthFmt.format(new Date(month.y, month.m, 1))}
@@ -134,6 +167,16 @@ export default function CalendarView({ session, state, title, readOnly }: Layout
         </button>
         <button type="button" className="db-icon-btn" aria-label={dt('db.cal.next')} onClick={() => go(1)}>
           <ChevronRight size={16} aria-hidden />
+        </button>
+        <button
+          type="button"
+          className={`db-barbtn dbc-nodate-btn${noDateOpen ? ' is-on' : ''}`}
+          aria-expanded={noDateOpen}
+          aria-label={dt('db.cal.noDate', { count: undated.length })}
+          onClick={() => setNoDateOpen(!noDateOpen)}
+        >
+          <CalendarX2 size={14} aria-hidden />
+          {phone ? undated.length : dt('db.cal.noDate', { count: undated.length })}
         </button>
         <input
           type="month"
@@ -172,14 +215,18 @@ export default function CalendarView({ session, state, title, readOnly }: Layout
                     key={day}
                     role="gridcell"
                     data-day={day}
-                    className={`dbc-day${new Date(day).getMonth() !== month.m ? ' is-other' : ''}${day === today ? ' is-today' : ''}`}
+                    aria-selected={phone ? day === selected : undefined}
+                    className={`dbc-day${new Date(day).getMonth() !== month.m ? ' is-other' : ''}${day === today ? ' is-today' : ''}${drag?.over === day ? ' is-drop' : ''}${phone && day === selected ? ' is-selected' : ''}`}
+                    onClick={phone ? () => setSelected(day) : undefined}
                     onDoubleClick={(e) => {
+                      if (phone) return
                       if ((e.target as HTMLElement).closest('.dbc-event')) return
                       addOn(day)
                     }}
                   >
                     <span className="dbc-date">{new Date(day).getDate()}</span>
-                    {hiddenCount > 0 && (
+                    {phone && <DayDots count={events.filter((e) => e.start <= day && e.end >= day).length} />}
+                    {!phone && hiddenCount > 0 && (
                       <button
                         type="button"
                         className="dbc-more"
@@ -192,30 +239,65 @@ export default function CalendarView({ session, state, title, readOnly }: Layout
                 )
               })}
               <div className="dbc-bars" style={{ left: settings.showWeekNumbers ? 32 : 0 }}>
-                {bars
-                  .filter((b) => b.lane < LANES)
-                  .map((b) => (
-                    <EventBar
-                      key={b.id}
-                      session={session}
-                      rowId={b.id}
-                      primary={primary}
-                      props={props}
-                      style={{
-                        left: `calc(${(b.col / cols) * 100}% + 2px)`,
-                        width: `calc(${(b.span / cols) * 100}% - 4px)`,
-                        top: 26 + b.lane * 24,
-                      }}
-                      before={b.before}
-                      after={b.after}
-                      onOpen={setOpen}
-                    />
-                  ))}
+                {!phone &&
+                  bars
+                    .filter((b) => b.lane < LANES)
+                    .map((b) => (
+                      <EventBar
+                        key={b.id}
+                        session={session}
+                        rowId={b.id}
+                        primary={primary}
+                        props={props}
+                        style={{
+                          left: `calc(${(b.col / cols) * 100}% + 2px)`,
+                          width: `calc(${(b.span / cols) * 100}% - 4px)`,
+                          top: 26 + b.lane * 24,
+                        }}
+                        before={b.before}
+                        after={b.after}
+                        dragging={drag?.rowId === b.id}
+                        onPointerDown={editable ? (e) => dayDrag.start(e, b.id, false, titleOf(b.id)) : undefined}
+                        onOpen={(id) => !dayDrag.wasDrag() && setOpen(id)}
+                      />
+                    ))}
               </div>
             </div>
           )
         })}
       </div>
+      {phone && (
+        <DayAgenda
+          day={selected}
+          events={events.filter((e) => e.start <= selected && e.end >= selected)}
+          session={session}
+          primary={primary}
+          props={props}
+          onOpen={setOpen}
+          onAdd={editable ? () => addOn(selected) : undefined}
+        />
+      )}
+      {noDateOpen && (
+        <NoDatePanel
+          ids={undated}
+          phone={phone}
+          titleOf={titleOf}
+          selectedLabel={new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric' }).format(new Date(selected))}
+          onPointerDown={editable && !phone ? (e, id) => dayDrag.start(e, id, true, titleOf(id)) : undefined}
+          onPlace={
+            editable && phone
+              ? (id) => setCell(state.docs, id, field.id, { start: selected, includeTime: false })
+              : undefined
+          }
+          onOpen={(id) => !dayDrag.wasDrag() && setOpen(id)}
+          onClose={() => setNoDateOpen(false)}
+        />
+      )}
+      {drag?.over != null && (
+        <div className="dbc-ghost" aria-hidden style={{ left: drag.x + 8, top: drag.y + 8 }}>
+          {drag.label}
+        </div>
+      )}
       {more && (
         <DayList
           day={more.day}
@@ -250,6 +332,8 @@ function EventBar({
   style,
   before,
   after,
+  dragging,
+  onPointerDown,
   onOpen,
 }: {
   session: DbSession
@@ -257,6 +341,8 @@ function EventBar({
   primary: FieldMeta | undefined
   props: FieldMeta[]
   style: React.CSSProperties
+  dragging: boolean
+  onPointerDown: ((e: React.PointerEvent<HTMLElement>) => void) | undefined
   before: boolean
   after: boolean
   onOpen: (id: string) => void
@@ -266,9 +352,11 @@ function EventBar({
   return (
     <button
       type="button"
-      className={`dbc-event${before ? ' is-cont-before' : ''}${after ? ' is-cont-after' : ''}`}
+      className={`dbc-event${before ? ' is-cont-before' : ''}${after ? ' is-cont-after' : ''}${dragging ? ' is-dragging' : ''}`}
       data-row-id={rowId}
       style={style}
+      onPointerDown={onPointerDown}
+      onContextMenu={(e) => onPointerDown && e.preventDefault()}
       onClick={() => onOpen(rowId)}
     >
       <CardBody row={row} primary={primary} fields={props} labels={false} />
@@ -311,5 +399,121 @@ function DayList({
         })}
       </div>
     </Overlay>
+  )
+}
+
+/** Phone: up to three dots for the day's events (MB-33). */
+function DayDots({ count }: { count: number }) {
+  if (!count) return null
+  return (
+    <span className="dbc-dots" aria-label={dt('db.cal.events', { count })}>
+      {Array.from({ length: Math.min(3, count) }, (_, i) => (
+        <span key={i} className="dbc-dot" />
+      ))}
+    </span>
+  )
+}
+
+/** Phone: the selected day's events under the month (AppFlowy mobile calendar, DB-C08). */
+function DayAgenda({
+  day,
+  events,
+  session,
+  primary,
+  props,
+  onOpen,
+  onAdd,
+}: {
+  day: number
+  events: CalendarEvent[]
+  session: DbSession
+  primary: FieldMeta | undefined
+  props: FieldMeta[]
+  onOpen: (id: string) => void
+  onAdd: (() => void) | undefined
+}) {
+  const label = new Intl.DateTimeFormat(appLocale(), { month: 'long', day: 'numeric', weekday: 'long' }).format(
+    new Date(day),
+  )
+  return (
+    <section className="dbc-agenda" aria-label={label}>
+      <h4 className="dbc-agenda-title">{label}</h4>
+      {!events.length && <p className="db-empty">{dt('db.cal.noEvents')}</p>}
+      {events.map((e) => {
+        const row = session.row(e.id)
+        if (!row) return null
+        return (
+          <button key={e.id} type="button" className="db-card dbc-agenda-item" onClick={() => onOpen(e.id)}>
+            <CardBody row={row} primary={primary} fields={props} labels={false} />
+          </button>
+        )
+      })}
+      {onAdd && (
+        <button type="button" className="dbc-new" onClick={onAdd}>
+          <Plus size={14} aria-hidden />
+          {dt('db.board.new')}
+        </button>
+      )}
+    </section>
+  )
+}
+
+/**
+ * Rows without a date (DB-C05): drag one onto a day (desktop), or on phones tap "place"
+ * to give it the selected day.
+ */
+function NoDatePanel({
+  ids,
+  phone,
+  titleOf,
+  selectedLabel,
+  onPointerDown,
+  onPlace,
+  onOpen,
+  onClose,
+}: {
+  ids: string[]
+  phone: boolean
+  titleOf: (id: string) => string
+  selectedLabel: string
+  onPointerDown: ((e: React.PointerEvent<HTMLElement>, id: string) => void) | undefined
+  onPlace: ((id: string) => void) | undefined
+  onOpen: (id: string) => void
+  onClose: () => void
+}) {
+  const list = (
+    <div className="dbc-nodate-list">
+      {!ids.length && <p className="db-empty">{dt('db.cal.allDated')}</p>}
+      {ids.map((id) => (
+        <div key={id} className="dbc-nodate-item">
+          <button
+            type="button"
+            className="dbc-event is-static"
+            data-row-id={id}
+            onPointerDown={onPointerDown ? (e) => onPointerDown(e, id) : undefined}
+            onClick={() => onOpen(id)}
+          >
+            <span className="db-card-title">{titleOf(id)}</span>
+          </button>
+          {onPlace && (
+            <button type="button" className="db-option-create" onClick={() => onPlace(id)}>
+              {dt('db.cal.placeOn', { date: selectedLabel })}
+            </button>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+  if (phone)
+    return (
+      <Overlay anchor={null} title={dt('db.cal.noDateTitle')} sheet onClose={onClose}>
+        <div className="db-pop">{list}</div>
+      </Overlay>
+    )
+  return (
+    <aside className="dbc-nodate" aria-label={dt('db.cal.noDateTitle')}>
+      <div className="dbk-side-title">{dt('db.cal.noDateHint')}</div>
+      {list}
+    </aside>
   )
 }

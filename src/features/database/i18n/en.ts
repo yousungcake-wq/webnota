@@ -256,4 +256,11 @@ export const en: Record<DbKey, string> = {
   'db.cal.monday': 'Monday',
   'db.cal.weekends': 'Show weekends',
   'db.cal.weekNumbers': 'Show week numbers',
+  'db.cal.noDate': 'No date {count}',
+  'db.cal.noDateTitle': 'No date',
+  'db.cal.noDateHint': 'Drag onto a day',
+  'db.cal.allDated': 'Every row has a date',
+  'db.cal.placeOn': 'Place on {date}',
+  'db.cal.events': '{count} events',
+  'db.cal.noEvents': 'No events',
 }

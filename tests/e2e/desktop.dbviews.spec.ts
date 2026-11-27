@@ -310,4 +310,60 @@ test.describe('database views (M5)', () => {
     await expect(page.locator('.dbc-week .dbc-wn').first()).toHaveText('9') // 2025-02-24 is ISO week 9
     noErrors()
   })
+
+  test('calendar drag: move an event to another day; place an undated row from the panel (M5-07)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.getByRole('button', { name: '보기 추가' }).click()
+    await page.getByRole('menuitem', { name: '캘린더' }).click()
+    await page.getByLabel('월 선택').fill('2025-03')
+    const day = (n: number) =>
+      page.locator('.dbc-day:not(.is-other)', { has: page.locator('.dbc-date', { hasText: new RegExp(`^${n}$`) }) })
+    const dragTo = async (from: Locator, to: Locator) => {
+      const a = (await from.boundingBox())!
+      const b = (await to.boundingBox())!
+      await page.mouse.move(a.x + 10, a.y + a.height / 2)
+      await page.mouse.down()
+      for (let i = 1; i <= 10; i++)
+        await page.mouse.move(
+          a.x + 10 + ((b.x + b.width / 2 - a.x - 10) * i) / 10,
+          a.y + a.height / 2 + ((b.y + b.height / 2 - a.y - a.height / 2) * i) / 10,
+        )
+      await expect(to).toHaveClass(/is-drop/)
+      await page.mouse.up()
+    }
+    // an event on the 12th (double-click), named
+    await day(12).dblclick()
+    await expect(page.getByRole('dialog')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    await expect(page.locator('.dbc-event')).toHaveCount(1)
+    const bar = page.locator('.dbc-event').first()
+    const barDay = async () => {
+      const b = (await bar.boundingBox())!
+      return page.evaluate(
+        ([x, y]) =>
+          [...document.elementsFromPoint(x!, y!)]
+            .map((e) => (e as HTMLElement).closest?.('[data-day]'))
+            .find(Boolean)
+            ?.querySelector('.dbc-date')?.textContent,
+        [b.x + 4, b.y + b.height / 2],
+      )
+    }
+    expect(await barDay()).toBe('12')
+    await dragTo(bar, day(20))
+    await expect.poll(barDay).toBe('20')
+
+    // undated rows: the panel lists them; drag one onto the 5th
+    await page.getByRole('button', { name: /^일정 없음/ }).click()
+    const panel = page.getByRole('complementary', { name: '일정 없음' })
+    const items = panel.locator('.dbc-nodate-item')
+    const n = await items.count()
+    expect(n).toBeGreaterThan(0)
+    const name = (await items.first().innerText()).trim()
+    await dragTo(items.first().locator('.dbc-event'), day(5))
+    await expect(items).toHaveCount(n - 1)
+    await expect(day(5).locator('xpath=..').locator('.dbc-event', { hasText: name })).toBeVisible()
+    noErrors()
+  })
 })

@@ -24,6 +24,9 @@ export interface CardDrag {
  * when a blocking listener was there when the touch started.
  */
 let touchDragging = false
+export const setTouchDragging = (v: boolean) => {
+  touchDragging = v
+}
 export function blockTouchScroll(el: HTMLElement) {
   const onMove = (e: TouchEvent) => {
     if (touchDragging && e.cancelable) e.preventDefault()

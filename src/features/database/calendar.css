@@ -150,3 +150,150 @@
 .dbc-daylist {
   min-width: 240px;
 }
+
+/* drag, no-date panel, phone (M5-07) */
+.dbc {
+  position: relative;
+}
+.dbc-nodate-btn {
+  margin-left: auto;
+}
+.dbc-nodate-btn + .dbc-picker {
+  margin-left: 0;
+}
+.dbc-day.is-drop {
+  background: var(--bg-hover);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.dbc-event.is-dragging {
+  opacity: 0.35;
+}
+.dbc-ghost {
+  position: fixed;
+  z-index: 50;
+  max-width: 240px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  background: var(--bg-elev);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dbc-nodate {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 3;
+  width: 240px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-elev);
+  box-shadow: var(--shadow);
+}
+.dbc-nodate-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.dbc-nodate-item .dbc-event {
+  margin-bottom: 0;
+  touch-action: none;
+}
+/* phone: compact month + the selected day's list (DB-C08) */
+.dbc.is-phone .dbc-week {
+  min-height: 52px;
+}
+.dbc.is-phone .dbc-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 0;
+  text-align: center;
+  cursor: pointer;
+}
+.dbc.is-phone .dbc-day.is-selected .dbc-date {
+  box-shadow: 0 0 0 2px var(--text);
+}
+.dbc.is-phone .dbc-weekday {
+  text-align: center;
+}
+.dbc.is-phone .dbc-picker {
+  display: none;
+}
+.dbc-dots {
+  display: flex;
+  gap: 3px;
+}
+.dbc-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-2);
+}
+.dbc-agenda {
+  margin-top: 12px;
+}
+.dbc-agenda-title {
+  margin: 0 0 8px;
+  font-size: var(--fs-md, 15px);
+}
+.dbc-agenda-item {
+  position: static;
+  width: 100%;
+  margin-bottom: 8px;
+  min-height: 44px;
+}
+.dbc.is-phone .dbc-nav .db-icon-btn,
+.dbc.is-phone .dbc-nav .db-barbtn {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.dbc-nav {
+  flex-wrap: nowrap;
+}
+.dbc-nav > * {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.dbc-nav .dbc-month {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dbc.is-phone .dbc-month {
+  font-size: var(--fs-md, 15px);
+  margin-right: auto;
+}
+.dbc.is-phone .dbc-nodate-btn {
+  margin-left: 0;
+  padding: 0 8px;
+}
+.dbc-new {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.dbc-new:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}

@@ -142,4 +142,39 @@ test.describe('database on phones (M4-13)', () => {
     await expect.poll(titles).toEqual([before[2]!, before[0]!, before[1]!, ...before.slice(3)])
     noErrors()
   })
+
+  test('calendar on phones: month with dots, the selected day listed, add, place undated (M5-07, MB-33)', async ({
+    page,
+  }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.getByRole('button', { name: '보기 추가' }).tap()
+    await page.getByRole('menuitem', { name: '캘린더' }).tap()
+    await expect(page.locator('.dbc.is-phone')).toBeVisible()
+    await expect(page.locator('.dbc-event')).toHaveCount(0) // no bars on phones
+    // the seed's dates start today: today has dots or a later day does
+    const dotted = page.locator('.dbc-day:not(.is-other):has(.dbc-dot)').first()
+    await dotted.tap()
+    const agenda = page.locator('.dbc-agenda')
+    await expect(agenda.locator('.dbc-agenda-item').first()).toBeVisible()
+    const n = await agenda.locator('.dbc-agenda-item').count()
+    await agenda.getByRole('button', { name: '새로 만들기' }).tap()
+    await expect(page.locator('.sheet')).toBeVisible()
+    await page.goBack()
+    await expect(page.locator('.sheet')).toHaveCount(0)
+    await expect(agenda.locator('.dbc-agenda-item')).toHaveCount(n + 1)
+    // undated rows: a sheet with "place on <day>"
+    await page.getByRole('button', { name: /^일정 없음/ }).tap()
+    const sheet = page.locator('.sheet')
+    const before = await sheet.locator('.dbc-nodate-item').count()
+    await sheet
+      .locator('.dbc-nodate-item')
+      .first()
+      .getByRole('button', { name: /에 놓기$/ })
+      .tap()
+    await expect(sheet.locator('.dbc-nodate-item')).toHaveCount(before - 1)
+    await page.goBack()
+    await expect(agenda.locator('.dbc-agenda-item')).toHaveCount(n + 2)
+    noErrors()
+  })
 })

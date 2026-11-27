@@ -255,6 +255,13 @@ export const ko = {
   'db.cal.monday': '월요일',
   'db.cal.weekends': '주말 표시',
   'db.cal.weekNumbers': '주 번호 표시',
+  'db.cal.noDate': '일정 없음 {count}',
+  'db.cal.noDateTitle': '일정 없음',
+  'db.cal.noDateHint': '날짜에 끌어다 놓으세요',
+  'db.cal.allDated': '날짜 없는 행이 없습니다',
+  'db.cal.placeOn': '{date}에 놓기',
+  'db.cal.events': '일정 {count}개',
+  'db.cal.noEvents': '일정이 없습니다',
 }
 
 export type DbKey = keyof typeof ko
