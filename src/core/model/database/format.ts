@@ -106,3 +106,61 @@ export function formatDateTime(ts: number, locale: string, withTime = true): str
     ...(withTime ? { hour: 'numeric', minute: '2-digit' } : {}),
   }).format(ts)
 }
+
+export type DateFormat = 'friendly' | 'iso' | 'us' | 'eu'
+export const DATE_FORMATS: readonly DateFormat[] = ['friendly', 'iso', 'us', 'eu']
+
+const pad2 = (n: number) => String(n).padStart(2, '0')
+
+/** One date (+ time) in a date field's formats (spec/05 §3.2). */
+export function formatDay(ts: number, options: FieldOptions, locale: string, withTime: boolean): string {
+  const d = new Date(ts)
+  const y = d.getFullYear()
+  const m = pad2(d.getMonth() + 1)
+  const day = pad2(d.getDate())
+  let date: string
+  switch (options.dateFormat) {
+    case 'iso':
+      date = `${y}-${m}-${day}`
+      break
+    case 'us':
+      date = `${m}/${day}/${y}`
+      break
+    case 'eu':
+      date = `${day}/${m}/${y}`
+      break
+    default:
+      date = new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'short', day: 'numeric' }).format(d)
+  }
+  if (!withTime) return date
+  const time =
+    options.timeFormat === '12'
+      ? new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit', hour12: true }).format(d)
+      : `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
+  return `${date} ${time}`
+}
+
+/** A date cell: `start` or `start → end`. */
+export function formatDateValue(
+  v: { start: number; end?: number; includeTime: boolean },
+  options: FieldOptions,
+  locale: string,
+): string {
+  const a = formatDay(v.start, options, locale, v.includeTime)
+  return v.end === undefined ? a : `${a} → ${formatDay(v.end, options, locale, v.includeTime)}`
+}
+
+/**
+ * A typed or pasted date (spec/05 §3.4): ISO `YYYY-MM-DD`, `YYYY.MM.DD`, `YYYY/MM/DD`
+ * (optionally `HH:mm`), or a timestamp number. Local time. Null when not a date.
+ */
+export function parseDate(input: string | number): { start: number; includeTime: boolean } | null {
+  if (typeof input === 'number') return Number.isFinite(input) ? { start: input, includeTime: false } : null
+  const m = /^\s*(\d{4})[-./]\s*(\d{1,2})[-./]\s*(\d{1,2})\.?(?:[ T](\d{1,2}):(\d{2}))?\s*$/.exec(input)
+  if (!m) return null
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])]
+  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null
+  const date = new Date(y, mo - 1, d, m[4] ? Number(m[4]) : 0, m[5] ? Number(m[5]) : 0)
+  if (date.getMonth() !== mo - 1) return null // 2026-02-31
+  return { start: date.getTime(), includeTime: !!m[4] }
+}

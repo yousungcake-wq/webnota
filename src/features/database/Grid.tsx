@@ -11,6 +11,7 @@ import type { DbSession, DbState } from './session'
 import { FIELD_TYPE_INFO } from './fieldTypes'
 import { dt } from './i18n'
 import { CellEditor } from './CellEditor'
+import { CellPopover, POPOVER_EDITED } from './CellPopover'
 import { CellView } from './CellView'
 import { editText, parseEdit, TEXT_EDITED } from './cellEdit'
 import { useRowWindow } from './useRowWindow'
@@ -64,6 +65,7 @@ export function Grid({
   const win = useRowWindow(scrollRef, rowIds.length, ROW_HEIGHT, HEADER_HEIGHT)
   const [active, setActive] = useState<Pos | null>(null)
   const [editing, setEditing] = useState<(Pos & { initial: string }) | null>(null)
+  const [popover, setPopover] = useState<Pos | null>(null)
   const totalWidth = columns.reduce((n, c) => n + c.width, 0)
   const docs = state.docs
 
@@ -72,6 +74,10 @@ export function Grid({
 
   const startEdit = (pos: Pos, initial?: string) => {
     const field = fieldById(pos.fieldId)
+    if (field && POPOVER_EDITED.has(field.type) && initial === undefined) {
+      setPopover(pos) // read-only views still open it to show the whole value
+      return true
+    }
     if (!canEdit(field) || !TEXT_EDITED.has(field!.type)) return false
     const row = session.row(pos.rowId)
     setEditing({ ...pos, initial: initial ?? (row ? editText(field!, cellOf(field!, row)) : '') })
@@ -111,7 +117,7 @@ export function Grid({
   }
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (editing || e.nativeEvent.isComposing) return
+    if (editing || popover || e.nativeEvent.isComposing) return
     const keys: Record<string, () => void> = {
       ArrowDown: () => move(1, 0),
       ArrowUp: () => move(-1, 0),
@@ -182,7 +188,7 @@ export function Grid({
               editing={editing?.rowId === id ? editing : null}
               onCellPointer={(fieldId, e) => {
                 const pos = { rowId: id, fieldId }
-                if (active?.rowId === id && active.fieldId === fieldId && !editing) {
+                if (active?.rowId === id && active.fieldId === fieldId && !editing && !popover) {
                   // keep the browser from moving focus back to the grid after the editor took it
                   if (startEdit(pos)) e.preventDefault()
                 } else setActive(pos)
@@ -196,8 +202,42 @@ export function Grid({
           )
         })}
       </div>
+      {popover && (
+        <GridPopover
+          pos={popover}
+          session={session}
+          state={state}
+          readOnly={readOnly}
+          onClose={() => {
+            setPopover(null)
+            scrollRef.current?.focus({ preventScroll: true })
+          }}
+        />
+      )}
     </div>
   )
+}
+
+function GridPopover({
+  pos,
+  session,
+  state,
+  readOnly,
+  onClose,
+}: {
+  pos: Pos
+  session: DbSession
+  state: DbState
+  readOnly: boolean
+  onClose: () => void
+}) {
+  const field = state.fields.find((f) => f.id === pos.fieldId)
+  const row = session.row(pos.rowId)
+  if (!field || !row) return null
+  const anchor = document.querySelector<HTMLElement>(
+    `.dbg-row[data-row-id="${CSS.escape(pos.rowId)}"] [data-field-id="${CSS.escape(pos.fieldId)}"]`,
+  )
+  return <CellPopover docs={state.docs} field={field} row={row} anchor={anchor} readOnly={readOnly} onClose={onClose} />
 }
 
 function HeaderCell({ col, index }: { col: Column; index: number }) {

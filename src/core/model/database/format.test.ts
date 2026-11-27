@@ -54,3 +54,29 @@ describe('url', () => {
     expect(formatDateTime(new Date(2026, 10, 27, 15, 4).getTime(), 'en-US')).toMatch(/Nov 27, 2026.*3:04/)
   })
 })
+
+describe('date format and parsing', () => {
+  const ts = new Date(2026, 10, 7, 9, 5).getTime()
+  it('formats in each date format, with 12/24h time and ranges', async () => {
+    const { formatDay, formatDateValue } = await import('./format')
+    expect(formatDay(ts, { dateFormat: 'iso' }, 'en-US', false)).toBe('2026-11-07')
+    expect(formatDay(ts, { dateFormat: 'us' }, 'en-US', false)).toBe('11/07/2026')
+    expect(formatDay(ts, { dateFormat: 'eu' }, 'en-US', false)).toBe('07/11/2026')
+    expect(formatDay(ts, {}, 'en-US', false)).toBe('Nov 7, 2026')
+    expect(formatDay(ts, {}, 'ko-KR', false)).toBe('2026년 11월 7일')
+    expect(formatDay(ts, { dateFormat: 'iso' }, 'en-US', true)).toBe('2026-11-07 09:05')
+    expect(formatDay(ts, { dateFormat: 'iso', timeFormat: '12' }, 'en-US', true)).toBe('2026-11-07 9:05 AM')
+    expect(
+      formatDateValue({ start: ts, end: ts + 86_400_000, includeTime: false }, { dateFormat: 'iso' }, 'en-US'),
+    ).toBe('2026-11-07 → 2026-11-08')
+  })
+  it('parses ISO, dotted and slashed dates', async () => {
+    const { parseDate } = await import('./format')
+    expect(parseDate('2026-11-07')).toEqual({ start: new Date(2026, 10, 7).getTime(), includeTime: false })
+    expect(parseDate('2026.11.07')).toEqual({ start: new Date(2026, 10, 7).getTime(), includeTime: false })
+    expect(parseDate('2026. 11. 7.')).toEqual({ start: new Date(2026, 10, 7).getTime(), includeTime: false })
+    expect(parseDate('2026/1/2 13:30')).toEqual({ start: new Date(2026, 0, 2, 13, 30).getTime(), includeTime: true })
+    expect(parseDate('2026-02-31')).toBeNull()
+    expect(parseDate('tomorrow')).toBeNull()
+  })
+})

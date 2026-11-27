@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M4 데이터베이스 I (M3 완료 — 실기기 확인은 docs/QA.md "M3"(와 M2·M1), 사용자 확인 대기. 링크 미리보기는 Worker 재배포 필요)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 6/16
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 7/16
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M4-06 필드 타입 2(select·date·checklist). 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
+- **다음 할 일**: M4-07 media 필드 + 타입 변환. 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -162,3 +162,4 @@
 | 2026-11-27 | M4-03: 쿼리 엔진 runQuery/compileQuery(필터 전 조건·AND/OR·상대 날짜, 다중 정렬·ko 콜레이터·빈 값 마지막, 계산 14종) + 전수·fast-check 속성 테스트 | 5c73b31 |
 | 2026-11-27 | M4-04: 증분 쿼리(createLiveQuery·observeRows)·워커(5,000행 이상)·DB 세션(useDbSession) + 증분=전체 재계산 속성 테스트 | ddf9ef0 |
 | 2026-11-27 | M4-05: 기본 Grid + text·number(서식·통화)·checkbox·url·만든/수정 시각·소요 시간 셀 표시·편집, DB 뷰 아이콘, QA seed-db | 11320c5 |
+| 2026-11-27 | M4-06: select/multiSelect 옵션 팝오버(검색·생성·이름·색·삭제·순서), 날짜 달력(종료일·시간·형식), 체크리스트, 선택 색 토큰 10색, 폰 시트 | HASH |

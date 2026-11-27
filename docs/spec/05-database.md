@@ -66,6 +66,8 @@ function runQuery(input: {
 
 AppFlowy 팔레트 10색(Purple, Pink, Light Pink, Orange, Yellow, Lime, Green, Aqua, Blue, Gray)을 씁니다. 라이트·다크 대비를 모두 만족하도록 토큰으로 정의합니다.
 
+구현 (M4-06): 옵션 목록은 `options.choices` 한 값(LWW)으로 통째로 씁니다(`core/model/database/choices.ts`: 추가 시 같은 이름이면 기존 옵션, 색은 팔레트 순환). 옵션을 지우면 그 옵션을 가리키던 셀은 빈 값으로 읽힙니다(셀은 그대로 둠). 색 토큰은 `--sel-<color>`(배경, 글자는 `--text`, 라이트·다크). 날짜 형식 `dateFormat`: friendly(로캘 기본)·iso·us·eu, `timeFormat`: 24(기본)·12. 날짜 입력 해석 `parseDate`: `YYYY-MM-DD`, `YYYY.MM.DD`, `YYYY/MM/DD`, `2026. 11. 7.`, 선택적 `HH:mm`. 종료일을 켜면 달력 클릭이 시작·끝을 번갈아 고르고, 끝이 시작보다 앞이면 바꿉니다. 시간 포함을 켜면 09:00으로 시작. 체크리스트의 "완료 숨기기"는 화면 상태(저장 안 함). 편집기는 데스크탑 팝오버, 폰 하단 시트(`Overlay`).
+
 ### 3.4 타입 변환 규칙
 
 | 원래 → 새 타입 | 변환 |

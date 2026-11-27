@@ -1,6 +1,11 @@
 import { Check, Copy, ExternalLink } from 'lucide-react'
 import {
+  asChecklist,
+  asDate,
   asNumber,
+  choicesOf,
+  formatDateValue,
+  selectedIds,
   asText,
   cellText,
   formatDateTime,
@@ -11,6 +16,7 @@ import {
   type FieldMeta,
 } from '@/core/model/database'
 import { toast } from '@/ui'
+import { Chip } from './Chip'
 import { dt } from './i18n'
 import { appLocale } from './locale'
 
@@ -96,6 +102,36 @@ export function CellView({
     case 'updatedTime': {
       const n = asNumber(value)
       return <span className="dbc-muted">{n === null ? '' : formatDateTime(n, appLocale())}</span>
+    }
+    case 'select':
+    case 'multiSelect': {
+      const byId = new Map(choicesOf(field).map((c) => [c.id, c]))
+      return (
+        <span className={`dbc-chips${wrap ? ' is-wrap' : ''}`}>
+          {selectedIds(field, value).map((id) => (
+            <Chip key={id} choice={byId.get(id)!} />
+          ))}
+        </span>
+      )
+    }
+    case 'date': {
+      const d = asDate(value)
+      return <span className="dbc-text">{d ? formatDateValue(d, field.options, appLocale()) : ''}</span>
+    }
+    case 'checklist': {
+      const items = asChecklist(value)
+      if (!items.length) return null
+      const done = items.filter((i) => i.done).length
+      return (
+        <span className="dbc-progress" aria-label={dt('db.check.progress', { done, total: items.length })}>
+          <span className="db-progress-bar">
+            <span style={{ width: `${(done / items.length) * 100}%` }} />
+          </span>
+          <span className="dbc-muted">
+            {done}/{items.length}
+          </span>
+        </span>
+      )
     }
     case 'text':
       return <span className={wrap ? 'dbc-text is-wrap' : 'dbc-text'}>{asText(value)}</span>

@@ -1,3 +1,310 @@
 .db-view {
   min-height: 200px;
 }
+
+/* select chips (spec/05 §3.3) */
+.db-chip {
+  display: inline-block;
+  max-width: 100%;
+  padding: 1px 8px;
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: var(--fs-xs);
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dbc-chips {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+.dbc-chips.is-wrap {
+  flex-wrap: wrap;
+}
+.dbc-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.db-progress-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-hover);
+  overflow: hidden;
+}
+.db-progress-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--ok);
+}
+
+/* cell popovers / sheets */
+.db-pop {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 300px;
+  max-width: 100%;
+  max-height: min(480px, 70vh);
+  overflow: auto;
+  padding: 8px;
+}
+.sheet .db-pop {
+  width: 100%;
+  max-height: none;
+}
+.db-input {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: max(16px, var(--fs-sm));
+}
+.db-input.is-plain {
+  border-color: transparent;
+  background: transparent;
+  min-height: 32px;
+}
+.db-input.is-plain:focus {
+  border-color: var(--accent);
+}
+.db-select,
+.db-checklist,
+.db-date {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.db-select-current {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.db-chip-x {
+  display: inline-flex;
+  align-items: center;
+}
+.db-chip-remove,
+.db-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.db-chip-remove:hover,
+.db-icon-btn:hover {
+  background: var(--bg-hover);
+}
+.db-list {
+  display: flex;
+  flex-direction: column;
+}
+.db-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  border-radius: var(--r-sm);
+  background: var(--bg-elev);
+}
+.db-option:hover {
+  background: var(--bg-hover);
+}
+.db-option-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.db-option-check {
+  margin-left: auto;
+  color: var(--accent);
+}
+.db-grip {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  min-height: 32px;
+  color: var(--text-3);
+  cursor: grab;
+  touch-action: none;
+}
+.db-option-create {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.db-option-create:hover {
+  background: var(--bg-hover);
+}
+.db-option-create.is-danger {
+  color: var(--danger);
+}
+.db-empty {
+  padding: 8px;
+  color: var(--text-3);
+}
+.db-colors {
+  display: flex;
+  flex-direction: column;
+}
+.db-color {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.db-color:hover {
+  background: var(--bg-hover);
+}
+.db-color > svg {
+  margin-left: auto;
+}
+.db-color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+}
+
+/* date */
+.db-date-values {
+  display: flex;
+  gap: 6px;
+}
+.db-date-value {
+  flex: 1;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+.db-date-value.is-picking {
+  border-color: var(--accent);
+}
+.db-date-times {
+  display: flex;
+  gap: 6px;
+}
+.db-date-times label,
+.db-date-select {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}
+.db-date-select select {
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.db-cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.db-cal-title {
+  font-weight: 600;
+}
+.db-cal {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.db-cal-wd {
+  text-align: center;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+.db-cal-day {
+  min-height: 36px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.db-cal-day:hover {
+  background: var(--bg-hover);
+}
+.db-cal-day.is-other {
+  color: var(--text-3);
+}
+.db-cal-day.is-today {
+  color: var(--accent);
+  font-weight: 700;
+}
+.db-cal-day.is-range {
+  background: var(--accent-soft);
+}
+.db-cal-day.is-selected {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+.db-date-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+.db-check-add {
+  display: flex;
+  gap: 4px;
+}
+.db-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}

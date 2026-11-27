@@ -56,6 +56,17 @@
   --c-pink-bg: #faf1f5;
   --c-red-text: #d44c47;
   --c-red-bg: #fdebec;
+  /* database select options (spec/05 §3.3), text is --text */
+  --sel-purple: #e9e1ff;
+  --sel-pink: #ffe4ee;
+  --sel-light-pink: #ffeee6;
+  --sel-orange: #ffeccf;
+  --sel-yellow: #fff6c7;
+  --sel-lime: #eaf8d2;
+  --sel-green: #d9f5e5;
+  --sel-aqua: #d8f4f8;
+  --sel-blue: #dceaff;
+  --sel-gray: #ececee;
   /* cover gradients (ED-F11), the same in both themes */
   --cover-g1: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
   --cover-g2: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
@@ -154,6 +165,16 @@
     --c-pink-bg: #4e2c3c;
     --c-red-text: #df5452;
     --c-red-bg: #522e2a;
+    --sel-purple: #3e3360;
+    --sel-pink: #5a2c3e;
+    --sel-light-pink: #56372f;
+    --sel-orange: #5a3f1d;
+    --sel-yellow: #544a17;
+    --sel-lime: #3c4d20;
+    --sel-green: #1f4a34;
+    --sel-aqua: #1d4950;
+    --sel-blue: #22395f;
+    --sel-gray: #3a3b40;
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
     --shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.45);
@@ -202,6 +223,16 @@
   --c-pink-bg: #4e2c3c;
   --c-red-text: #df5452;
   --c-red-bg: #522e2a;
+  --sel-purple: #3e3360;
+  --sel-pink: #5a2c3e;
+  --sel-light-pink: #56372f;
+  --sel-orange: #5a3f1d;
+  --sel-yellow: #544a17;
+  --sel-lime: #3c4d20;
+  --sel-green: #1f4a34;
+  --sel-aqua: #1d4950;
+  --sel-blue: #22395f;
+  --sel-gray: #3a3b40;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.45);

@@ -84,4 +84,72 @@ test.describe('database (M4)', () => {
     await expect(await gridCell(page, 0, 'Amount')).toHaveText('₩15,000')
     noErrors()
   })
+
+  test('select, multi-select, date and checklist editors (M4-06)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    // single select: choose, create a new option, edit an option's colour and name
+    const status = await gridCell(page, 0, 'Status')
+    await status.click()
+    await page.keyboard.press('Enter')
+    const pop = page.getByRole('dialog', { name: 'Status' })
+    await pop.getByRole('option', { name: 'Doing' }).click()
+    await expect(pop).toHaveCount(0) // single select closes
+    await expect(status).toHaveText('Doing')
+    await status.click() // active cell: opens again
+    await page.getByRole('dialog', { name: 'Status' }).getByLabel('옵션 검색 또는 만들기').fill('검토')
+    await page.keyboard.press('Enter')
+    await expect(status).toHaveText('검토')
+    await status.click()
+    const pop2 = page.getByRole('dialog', { name: 'Status' })
+    await pop2.getByRole('option', { name: '검토' }).locator('..').getByRole('button', { name: '옵션 편집' }).click()
+    await pop2.getByRole('radio', { name: '초록' }).click()
+    await pop2.getByLabel('옵션 이름').fill('리뷰')
+    await page.keyboard.press('Enter')
+    await page.keyboard.press('Escape')
+    await expect(status).toHaveText('리뷰')
+    await expect(status.locator('.db-chip')).toHaveAttribute('style', /--sel-green/)
+
+    // multi select: add and remove
+    const tags = await gridCell(page, 1, 'Tags')
+    await tags.click()
+    await page.keyboard.press('Enter')
+    const tp = page.getByRole('dialog', { name: 'Tags' })
+    const before = (await tags.textContent()) ?? ''
+    const todo = tp.getByRole('option', { name: 'Todo' })
+    const wasOn = (await todo.getAttribute('aria-selected')) === 'true'
+    await todo.click()
+    await expect(todo).toHaveAttribute('aria-selected', wasOn ? 'false' : 'true')
+    await page.keyboard.press('Escape')
+    await expect(tags).not.toHaveText(before)
+
+    // date: pick a day, then a range
+    const due = await gridCell(page, 0, 'Due')
+    await due.click()
+    await page.keyboard.press('Enter')
+    const dp = page.getByRole('dialog', { name: 'Due' })
+    await dp.getByRole('button', { name: /^(다음 달)$/ }).click()
+    await dp.locator('.db-cal-day:not(.is-other)', { hasText: /^15$/ }).click()
+    await dp.getByRole('switch', { name: '종료일' }).click()
+    await dp.locator('.db-cal-day:not(.is-other)', { hasText: /^18$/ }).click()
+    await dp.getByLabel('날짜 형식').selectOption('iso')
+    await page.keyboard.press('Escape')
+    await expect(due).toHaveText(/^\d{4}-\d{2}-15 → \d{4}-\d{2}-18$/)
+
+    // checklist: add, check
+    const tasks = await gridCell(page, 2, 'Tasks')
+    await tasks.click()
+    await page.keyboard.press('Enter')
+    const cp = page.getByRole('dialog', { name: 'Tasks' })
+    await cp.getByLabel('항목 추가').first().fill('새 항목')
+    await page.keyboard.press('Enter')
+    await cp.getByRole('checkbox', { name: '새 항목' }).check()
+    await page.keyboard.press('Escape')
+    await expect(tasks).toContainText(/\d+\/4/)
+
+    await reload(page)
+    await expect(await gridCell(page, 0, 'Status')).toHaveText('리뷰')
+    await expect(await gridCell(page, 0, 'Due')).toHaveText(/15 → .*18$/)
+    noErrors()
+  })
 })
