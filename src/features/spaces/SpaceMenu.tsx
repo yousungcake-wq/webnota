@@ -1,4 +1,4 @@
-import { Plus, Settings2 } from 'lucide-react'
+import { ArrowUpDown, Plus, Settings2 } from 'lucide-react'
 import { t } from '@/core/i18n'
 import { visibleSpaces } from '@/core/model/views'
 import { setCurrentSpace } from '@/core/store/prefs'
@@ -11,12 +11,14 @@ export default function SpaceMenu({
   currentId,
   onClose,
   onEdit,
+  onReorder,
 }: {
   anchor: HTMLElement
   currentId: string
   onClose: () => void
   /** Opens the space dialog: an id to edit, null to create. */
   onEdit: (id: string | null) => void
+  onReorder: () => void
 }) {
   const spaces = visibleSpaces(useSpaces())
   const items: MenuEntry[] = [
@@ -28,6 +30,7 @@ export default function SpaceMenu({
     'separator',
     { label: t('space.new'), icon: Plus, onSelect: () => onEdit(null) },
     { label: t('space.settings'), icon: Settings2, onSelect: () => onEdit(currentId) },
+    ...(spaces.length > 1 ? [{ label: t('space.reorder'), icon: ArrowUpDown, onSelect: onReorder }] : []),
   ]
   return <Menu anchor={anchor} title={t('space.title')} items={items} onClose={onClose} />
 }

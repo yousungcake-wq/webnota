@@ -140,12 +140,15 @@ export function startListDrag(ctx: {
   y: number
   touch: boolean
   onDrop: (id: string, index: number) => void
+  /** Item attribute holding the id (`data-<attr>`), default `id`. */
+  attr?: string
 }) {
-  const items = () => [...ctx.list.querySelectorAll<HTMLElement>('[data-id]')]
-  const source = items().find((el) => el.dataset.id === ctx.id)
+  const attr = `data-${ctx.attr ?? 'id'}`
+  const items = () => [...ctx.list.querySelectorAll<HTMLElement>(`[${attr}]`)]
+  const source = items().find((el) => el.getAttribute(attr) === ctx.id)
   const ghost = document.createElement('div')
   ghost.className = 'tree-ghost'
-  ghost.textContent = source?.textContent ?? ''
+  ghost.textContent = (source?.querySelector('[data-drag-label]') ?? source)?.textContent ?? ''
   const line = document.createElement('div')
   line.className = 'tree-drop-line'
   document.body.append(ghost, line)

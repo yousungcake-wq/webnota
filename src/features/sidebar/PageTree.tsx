@@ -26,7 +26,21 @@ interface RowProps {
 }
 
 /** One tree row. Memoized: re-renders only when its own view or position changes. */
-const Row = memo(function Row({ view, depth, hasChildren, open, current, index }: RowProps & { index: number }) {
+const INDENT = 16
+
+const Row = memo(function Row({
+  view,
+  depth,
+  hasChildren,
+  open,
+  current,
+  index,
+  maxDepth,
+}: RowProps & { index: number; maxDepth: number }) {
+  // Deep pages (feedback 7): indentation stops at `maxDepth` so the title, "⋯" and "+"
+  // always fit; deeper levels show one "·" per extra level before the icon instead.
+  const shown = Math.min(depth, maxDepth)
+  const extra = depth - shown
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
   const editing = useStore(renameStore, (r) => r?.id === view.id && r.where === 'tree')
   const phone = useLayout().layout === 'phone'
@@ -40,7 +54,7 @@ const Row = memo(function Row({ view, depth, hasChildren, open, current, index }
       aria-expanded={hasChildren ? open : undefined}
       aria-selected={current}
     >
-      <div className={`tree-row${current ? ' is-current' : ''}`} style={{ paddingLeft: 4 + depth * 16 }}>
+      <div className={`tree-row${current ? ' is-current' : ''}`} style={{ paddingLeft: 4 + shown * INDENT }}>
         <button
           type="button"
           className={`tree-toggle${open ? ' is-open' : ''}`}
@@ -65,6 +79,11 @@ const Row = memo(function Row({ view, depth, hasChildren, open, current, index }
             void renameView(view, 'tree', false)
           }}
         >
+          {extra > 0 && (
+            <span className="tree-depth" aria-hidden>
+              {'·'.repeat(extra)}
+            </span>
+          )}
           <span className="tree-icon">
             <ViewIcon icon={view.icon} layout={view.layout} />
           </span>
@@ -131,6 +150,7 @@ export function PageTree({ spaceId, currentId }: { spaceId: string; currentId?: 
   const rows = useMemo(() => flattenTree(views, spaceId, expanded), [views, spaceId, expanded])
   const listRef = useRef<HTMLUListElement>(null)
   const { start, end, rowHeight } = useWindow(listRef, rows.length)
+  const maxDepth = useMaxDepth(listRef)
   const latest = useRef({ rows, views })
   useEffect(() => {
     latest.current = { rows, views }
@@ -162,10 +182,26 @@ export function PageTree({ spaceId, currentId }: { spaceId: string; currentId?: 
           hasChildren={r.hasChildren}
           open={r.open}
           current={r.view.id === currentId}
+          maxDepth={maxDepth}
         />
       ))}
     </ul>
   )
+}
+
+/** How deep rows may indent in a list this wide: room is kept for toggle, icon, ~70px of title and the actions. */
+function useMaxDepth(ref: React.RefObject<HTMLElement | null>) {
+  const [max, setMax] = useState(8)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const update = () => setMax(Math.max(1, Math.floor((el.clientWidth - 190) / INDENT)))
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [ref])
+  return max
 }
 
 export function PageListItem({ page, subtitle }: { page: ViewMeta; subtitle?: string }) {

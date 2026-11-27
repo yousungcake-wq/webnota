@@ -12,6 +12,7 @@ export {
 export { PageMenu } from './LazyPageMenu'
 export { newView, PageOverlays } from './overlays'
 export { afterMenuClosed, renameStore, renameView } from './rename'
-export { PageView } from './PageView'
+/** The page screen is its own chunk, fetched as soon as the app module runs (initial bundle budget). */
+export const loadPageView = () => import('./PageView')
 export { displayTitle, pathOf } from './titles'
 export { emoji, ViewIcon } from './ViewIcon'

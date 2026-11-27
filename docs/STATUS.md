@@ -7,7 +7,7 @@
 - **마일스톤**: M5 데이터베이스 II (M4 완료 — 실기기 확인은 docs/QA.md "M4"(와 M3·M2), 사용자 확인 대기. DB는 설정 → 고급 "데이터베이스 (개발 중)" 플래그 뒤)
 - **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12, M4 16/16 완료. M5 0/13 (체크리스트 세부화 완료). 사용자 피드백 13건(2026-11-27) 처리 중
 - **진행 중 항목**: (없음)
-- **다음 할 일**: 사용자 피드백 처리 중 (다음: 사이드바 6·7). 그 후 M5-00
+- **다음 할 일**: 사용자 피드백 처리 중 (다음: Notion 가져오기/내보내기). 그 후 M5-00
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -61,6 +61,8 @@
 - **e2e 새 페이지 버튼**: 사이드바 `.sidebar [data-new-page] >> nth=0` (피드백 12로 하단 '새 페이지' 제거). **뒤로가기**: `goBack()`은 `core/store/router.ts`의 trail(sessionStorage `webnota:trail`, 기록마다 `wnSeq`)을 따름. 오버레이가 열린 채 이동하면 그 오버레이 기록은 되돌리지 않음(`platform/history.ts`).
 
 - 미디어 도구 문자열은 지연 사전 `features/editor/mediaI18n`(`mt()`) — 부팅 사전 8KB 예산. 이미지·동영상은 `MediaToolbar`/`MediaCaption`(`MediaToolbar.tsx`, `media.css`) 공유.
+
+- **초기 번들 (피드백 7)**: 페이지 화면(`loadPageView`, 앱 시작 시 바로 받음)과 폰 홈(`loadHome`)은 지연 청크 — 122.4/125KB. 에디터 예산은 `after: 'pageView'`. 사이드바는 `SpaceSections`(스페이스마다 `PageTree`), 목록 끌기는 `beginListDrag(e, list, onDrop, 'space-id')`.
 
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
 - GitHub 로그인 (2026-11-27 설정 완료, 사용자가 실기기 로그인 확인): Worker `https://webnota-auth.yousungcake.workers.dev`(Actions가 배포, `/token`·`/unfurl` 동작 확인), 저장소 Variables `WEBNOTA_GITHUB_CLIENT_ID`·`WEBNOTA_AUTH_PROXY_URL`, Secrets `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`·`WEBNOTA_GITHUB_CLIENT_SECRET`. 작업 환경의 `gh`로 Actions 변수·비밀은 읽고 쓸 수 없음(403) — `gh workflow run`은 가능. Cloudflare 토큰이 만료되면 worker 작업이 실패해 Pages 배포도 멈춤.
@@ -182,3 +184,4 @@
 | 2026-11-27 | 피드백 1·2·13: 블록 핸들 호버 영역 확장(왼쪽 여백), 폰 전용 핸들(+ 없음, 페이지 안쪽), 잡은 블록 강조 유지·다른 곳 클릭 시 해제 | 7d50bc2 |
 | 2026-11-27 | 피드백 4·5: 이미지·동영상 공통 도구 모음(왼쪽 위, 정렬+크기·캡션·캡션 정렬·다운로드·비우기·복제·삭제), 캡션 정렬 분리, 동영상 정렬·캡션 — schema v20 | 1f07e97 |
 | 2026-11-27 | 피드백 3: 다단 → 열(이름), 열 안 블록 핸들·열 사이/밖 이동·옆에 놓아 열 만들기, 빈 열 정리, 폰에서도 나란히 | f5d6d37 |
+| 2026-11-27 | 피드백 6·7: 사이드바 — 로고 복원, 스페이스 전부 나열·접기·끌어서 순서, 워크스페이스 전환 아래로, 깊은 하위 페이지(들여쓰기 상한 + ·), 접기 애니메이션·열기 버튼·넓은 호버 영역·이중 사이드바 버그, 폰 스페이스 순서. 초기 번들 122.4KB(페이지 화면·폰 홈 지연 청크) | HASH |

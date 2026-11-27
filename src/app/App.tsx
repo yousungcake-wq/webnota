@@ -4,8 +4,8 @@ import { useViews } from '@/core/store/views'
 import { pushRecent } from '@/core/store/prefs'
 import { wsKey } from '@/core/docs/slots'
 import { href, navigate, useRoute, type Route } from '@/core/store/router'
-import { HomeView } from '@/features/home'
-import { PageOverlays, PageView } from '@/features/page'
+import { loadHome } from '@/features/home'
+import { loadPageView, PageOverlays } from '@/features/page'
 import { loadSearchView, PaletteHost } from '@/features/search'
 import { useLayout } from '@/platform/layout'
 import { t } from '@/core/i18n'
@@ -17,6 +17,10 @@ import { SchemaBanner } from './SchemaBanner'
 const LAST_KEY = wsKey('last-page')
 
 // Screens that are never the first thing shown load on demand (spec/10 §2).
+// started right away: the page screen is what desktop shows first
+const pageViewChunk = loadPageView()
+const PageView = lazy(() => pageViewChunk.then((m) => ({ default: m.PageView })))
+const HomeView = lazy(() => loadHome().then((m) => ({ default: m.HomeView })))
 const FavoritesView = lazy(() => import('@/features/favorites').then((m) => ({ default: m.FavoritesView })))
 const TrashView = lazy(() => import('@/features/trash').then((m) => ({ default: m.TrashView })))
 const SearchView = lazy(() => loadSearchView().then((m) => ({ default: m.SearchView })))
@@ -97,7 +101,11 @@ function MainContent({
 }) {
   switch (route.name) {
     case 'page':
-      return <PageView id={route.id} sidebarOpen={sidebarOpen} onToggleSidebar={onToggleSidebar} />
+      return (
+        <Lazy>
+          <PageView id={route.id} sidebarOpen={sidebarOpen} onToggleSidebar={onToggleSidebar} />
+        </Lazy>
+      )
     case 'search':
       return (
         <Lazy>
@@ -134,7 +142,9 @@ function PhoneShell({ route }: { route: Route }) {
       <div className="phone">
         <SchemaBanner />
         <ErrorBoundary key={route.id}>
-          <PageView id={route.id} />
+          <Lazy>
+            <PageView id={route.id} />
+          </Lazy>
         </ErrorBoundary>
       </div>
     )
@@ -167,7 +177,9 @@ function PhoneShell({ route }: { route: Route }) {
               <TrashView />
             </Lazy>
           ) : (
-            <HomeView />
+            <Lazy>
+              <HomeView />
+            </Lazy>
           )}
         </ErrorBoundary>
       </div>

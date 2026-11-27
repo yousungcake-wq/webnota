@@ -16,13 +16,26 @@ test('sidebar: resize (persisted), collapse with Ctrl+\\, hover to peek (WS-10)'
   await expect.poll(async () => Math.round((await sidebar.boundingBox())!.width)).toBe(Math.round(w0 + 100))
 
   await page.keyboard.press('Control+\\')
-  await expect(page.locator('.sidebar-dock')).toHaveCount(0)
-  await page.mouse.move(2, 400)
+  await expect(page.locator('.desktop')).toHaveClass(/sidebar-collapsed/)
+  await expect(page.locator('.sidebar-dock')).toHaveAttribute('aria-hidden', 'true')
+  // a hover zone wider than the window edge (feedback 6)
+  await page.mouse.move(16, 400)
   await expect(page.locator('.sidebar-overlay .sidebar')).toBeVisible()
   await page.mouse.move(900, 400)
   await expect(page.locator('.sidebar-overlay')).toHaveCount(0)
+  // hovering the "open sidebar" button peeks too; clicking it docks the sidebar
+  await page.getByRole('button', { name: '사이드바 열기' }).hover()
+  await expect(page.locator('.sidebar-overlay .sidebar')).toBeVisible()
   await page.getByRole('button', { name: '사이드바 열기' }).click()
-  await expect(page.locator('.sidebar-dock')).toBeVisible()
+  await expect(page.locator('.desktop')).not.toHaveClass(/sidebar-collapsed/)
+  await expect(page.locator('.sidebar-overlay')).toHaveCount(0) // never two sidebars at once
+
+  // settings: collapse there too, then open with the button (feedback 6)
+  await page.goto('/#/settings')
+  await page.keyboard.press('Control+\\')
+  await page.getByRole('button', { name: '사이드바 열기' }).click()
+  await expect(page.locator('.desktop')).not.toHaveClass(/sidebar-collapsed/)
+  await expect(page.locator('.sidebar')).toHaveCount(1)
 })
 
 test.describe('tablet', () => {

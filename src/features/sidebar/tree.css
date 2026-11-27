@@ -153,3 +153,13 @@ body.is-tree-dragging * {
   color: var(--text);
   font: inherit;
 }
+/* levels deeper than the indentation allows (feedback 7) */
+.tree-depth {
+  flex: none;
+  color: var(--text-3);
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+.tree-actions {
+  flex: none;
+}

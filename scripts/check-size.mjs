@@ -11,7 +11,9 @@ const KB = 1024
 const BUDGETS = {
   initial: { kb: 125 }, // React 19 (~60KB) + Yjs + y-indexeddb + shell; see spec/10 §1.1
   css: { kb: 25 },
-  editor: { kb: 210, entry: 'src/features/editor/Editor.tsx' },
+  editor: { kb: 210, entry: 'src/features/editor/Editor.tsx', after: 'pageView' }, // opened only from the page screen
+  // page screen (title, banners, cover hooks), fetched as soon as the app starts (feedback 7: initial budget)
+  pageView: { kb: 12, entry: 'src/features/page/PageView.tsx' },
   i18n: { kb: 8, entry: 'src/core/i18n/ko.ts' }, // one language's dictionary, loaded at boot
   sync: { kb: 12, entry: 'src/core/sync/remote.ts' }, // GitHub client + engine, only once connected
   emoji: { kb: 20, entry: 'src/features/emoji/EmojiPicker.tsx' }, // picker UI + icon set, on first open

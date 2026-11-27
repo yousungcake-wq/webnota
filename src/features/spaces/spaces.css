@@ -89,3 +89,20 @@
     height: 44px;
   }
 }
+.space-order {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.space-order li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+.space-order .space-name {
+  flex: 1;
+  min-width: 0;
+}

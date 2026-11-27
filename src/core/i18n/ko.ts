@@ -102,6 +102,7 @@ export const ko = {
   'space.color': '색상',
   'space.private': '나만 보기',
   'space.privateHint': '사이드바에서 나에게만 표시합니다. 저장소에 접근할 수 있는 사람은 데이터를 볼 수 있습니다.',
+  'space.reorder': '스페이스 순서 바꾸기',
   'space.moveUp': '위로',
   'space.moveDown': '아래로',
   'space.delete': '스페이스 삭제',

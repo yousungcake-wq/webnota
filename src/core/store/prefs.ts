@@ -75,6 +75,24 @@ export function setCurrentSpace(id: string) {
   spacePrefStore.set(id)
 }
 
+/** Spaces folded in the desktop sidebar (feedback 7), per device and workspace. */
+const SPACES_FOLDED_KEY = wsKey('spaces-folded')
+export const foldedSpacesStore = createStore<Set<string>>(
+  (() => {
+    try {
+      return new Set(JSON.parse(read(SPACES_FOLDED_KEY) || '[]') as string[])
+    } catch {
+      return new Set<string>()
+    }
+  })(),
+)
+export function toggleSpaceFolded(id: string) {
+  const next = new Set(foldedSpacesStore.get())
+  if (!next.delete(id)) next.add(id)
+  write(SPACES_FOLDED_KEY, JSON.stringify([...next]))
+  foldedSpacesStore.set(next)
+}
+
 /** Empty trash items older than 30 days on startup (WS-06), per device. Off by default. */
 const TRASH_AUTO_KEY = 'webnota:trash-auto-empty'
 export const trashAutoEmptyStore = createStore<boolean>(read(TRASH_AUTO_KEY) === '1')

@@ -4,7 +4,8 @@ import { setSidebar, SIDEBAR_DEFAULT, SIDEBAR_MAX, SIDEBAR_MIN, sidebarStore } f
 import { href, type Route } from '@/core/store/router'
 import { useStore } from '@/core/store/useStore'
 import { Sidebar } from '@/features/sidebar'
-import { ErrorBoundary } from '@/ui'
+import { PanelLeft } from 'lucide-react'
+import { ErrorBoundary, IconButton } from '@/ui'
 
 /**
  * Desktop and tablet frame (WS-10):
@@ -26,8 +27,17 @@ export function DesktopShell({
   // The overlay remembers the route it was opened on, so navigating closes it.
   const routeKey = href(route)
   const [opened, setOpened] = useState<{ kind: 'hover' | 'drawer'; at: string } | null>(null)
-  const overlay = opened?.at === routeKey ? opened.kind : null
-  const setOverlay = (kind: 'hover' | 'drawer' | null) => setOpened(kind ? { kind, at: routeKey } : null)
+  // a docked sidebar never shows the overlay too (feedback 6: two sidebars at once)
+  const overlay = !docked && opened?.at === routeKey ? opened.kind : null
+  // the overlay slides out before it unmounts (feedback 6)
+  const [closing, setClosing] = useState<'hover' | 'drawer' | null>(null)
+  const setOverlay = (kind: 'hover' | 'drawer' | null) => {
+    if (!kind && overlay) {
+      setClosing(overlay)
+      setTimeout(() => setClosing(null), 180)
+    }
+    setOpened(kind ? { kind, at: routeKey } : null)
+  }
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // Keyboard toggle (WS-14) and closing the drawer on navigation.
@@ -49,7 +59,12 @@ export function DesktopShell({
     if (overlay !== 'hover') return
     const move = (e: PointerEvent) => {
       if (e.clientX > sidebarStore.get().width + 40) {
-        if (!leaveTimer.current) leaveTimer.current = setTimeout(() => setOpened(null), 300)
+        if (!leaveTimer.current)
+          leaveTimer.current = setTimeout(() => {
+            setClosing('hover')
+            setTimeout(() => setClosing(null), 180)
+            setOpened(null)
+          }, 300)
       } else {
         clearTimeout(leaveTimer.current)
         leaveTimer.current = undefined
@@ -62,6 +77,23 @@ export function DesktopShell({
       leaveTimer.current = undefined
     }
   }, [overlay])
+
+  // Hovering an "open sidebar" button peeks the sidebar too (Notion-like, feedback 6).
+  useEffect(() => {
+    if (tablet || docked) return
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const over = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return
+      const on = (e.target as HTMLElement | null)?.closest?.('[data-sidebar-peek]')
+      clearTimeout(timer)
+      if (on) timer = setTimeout(() => setOpened({ kind: 'hover', at: routeKey }), 120)
+    }
+    document.addEventListener('pointerover', over)
+    return () => {
+      document.removeEventListener('pointerover', over)
+      clearTimeout(timer)
+    }
+  }, [tablet, docked, routeKey])
 
   // Tablet: swipe right from the left edge opens the drawer.
   useEffect(() => {
@@ -95,20 +127,38 @@ export function DesktopShell({
 
   return (
     <div
-      className={`desktop${docked ? '' : ' sidebar-collapsed'}`}
+      className={`desktop${docked ? '' : ' sidebar-collapsed'}${tablet ? ' is-tablet' : ''}`}
       style={{ '--side-w': `${width}px` } as CSSProperties}
     >
-      {docked && (
-        <div className="sidebar-dock">
-          {sidebar(() => setSidebar({ open: false }))}
-          <Resizer width={width} />
+      {!tablet && (
+        // stays mounted while collapsed so folding animates (feedback 6); inert when hidden
+        <div className="sidebar-dock" inert={!docked} aria-hidden={!docked || undefined}>
+          {sidebar(() => {
+            setOpened(null)
+            setSidebar({ open: false })
+          })}
+          {docked && <Resizer width={width} />}
         </div>
       )}
       {!docked && !tablet && <div className="sidebar-hover-zone" onPointerEnter={() => setOverlay('hover')} />}
-      {overlay && (
+      {!docked && !tablet && route.name !== 'page' && (
+        <IconButton
+          className="sidebar-open-btn"
+          icon={PanelLeft}
+          label={t('sidebar.open')}
+          data-sidebar-peek
+          onClick={() => {
+            setOpened(null)
+            setSidebar({ open: true })
+          }}
+        />
+      )}
+      {(overlay || closing) && (
         <>
-          {overlay === 'drawer' && <div className="sidebar-backdrop" onClick={() => setOverlay(null)} />}
-          <div className={`sidebar-overlay is-${overlay}`}>{sidebar(() => setOverlay(null))}</div>
+          {(overlay ?? closing) === 'drawer' && <div className="sidebar-backdrop" onClick={() => setOverlay(null)} />}
+          <div className={`sidebar-overlay is-${overlay ?? closing}${overlay ? '' : ' is-closing'}`}>
+            {sidebar(() => setOverlay(null))}
+          </div>
         </>
       )}
       <main className="main">

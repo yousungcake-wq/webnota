@@ -100,7 +100,9 @@ export function PageView({
         {phone ? (
           <IconButton icon={ChevronLeft} iconSize={22} label={t('common.back')} onClick={goBack} />
         ) : (
-          !sidebarOpen && <IconButton icon={PanelLeft} label={t('sidebar.open')} onClick={onToggleSidebar} />
+          !sidebarOpen && (
+            <IconButton icon={PanelLeft} label={t('sidebar.open')} onClick={onToggleSidebar} data-sidebar-peek />
+          )
         )}
         <nav className="crumbs" aria-label={t('page.breadcrumbs')}>
           {!phone && <Crumbs crumbs={crumbs} />}

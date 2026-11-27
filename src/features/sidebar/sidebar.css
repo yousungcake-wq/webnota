@@ -65,3 +65,60 @@
   font-size: 11px;
   color: var(--text-3);
 }
+
+/* feedback 7: every space is a foldable section; its header is the drag handle */
+.space-section + .space-section {
+  margin-top: 6px;
+}
+.space-head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 30px;
+  padding: 0 2px 0 0;
+  border-radius: 6px;
+  cursor: grab;
+}
+.space-head:hover {
+  background: var(--bg-hover);
+}
+.space-head-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+.space-head-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+}
+.space-head:hover .space-head-actions,
+.space-head:focus-within .space-head-actions {
+  opacity: 1;
+}
+.space-section.is-dragging {
+  opacity: 0.4;
+}
+.sidebar-ws {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+.sidebar-ws .ws-switcher {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+}
+@media (pointer: coarse) {
+  .space-head-actions {
+    opacity: 1;
+  }
+}

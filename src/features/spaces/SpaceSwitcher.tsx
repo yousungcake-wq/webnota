@@ -8,6 +8,7 @@ import './spaces.css'
 
 const SpaceMenu = lazy(() => import('./SpaceMenu'))
 const SpaceDialog = lazy(() => import('./SpaceDialog'))
+const SpaceOrderDialog = lazy(() => import('./SpaceOrderDialog'))
 
 /** Sidebar / home header button showing the current space; opens the space menu (WS-02). */
 export function SpaceSwitcher() {
@@ -16,6 +17,7 @@ export function SpaceSwitcher() {
   const current = spaces.find((s) => s.id === currentId)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [editing, setEditing] = useState<{ id: string | null } | null>(null)
+  const [ordering, setOrdering] = useState(false)
   return (
     <>
       <button
@@ -36,7 +38,13 @@ export function SpaceSwitcher() {
             currentId={currentId}
             onClose={() => setAnchor(null)}
             onEdit={(id) => void afterMenuClosed().then(() => setEditing({ id }))}
+            onReorder={() => void afterMenuClosed().then(() => setOrdering(true))}
           />
+        </Suspense>
+      )}
+      {ordering && (
+        <Suspense fallback={null}>
+          <SpaceOrderDialog onClose={() => setOrdering(false)} />
         </Suspense>
       )}
       {editing && (

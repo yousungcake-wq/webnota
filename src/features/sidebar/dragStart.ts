@@ -59,10 +59,10 @@ export function onPress(e: ReactPointerEvent<HTMLElement>, start: (x: number, y:
   return true
 }
 
-const pressedId = (e: ReactPointerEvent<HTMLElement>) => {
+const pressedId = (e: ReactPointerEvent<HTMLElement>, attr = 'id') => {
   const target = e.target as HTMLElement
   if (target.closest('button, input, .tree-actions')) return null
-  return target.closest<HTMLElement>('[data-id]')?.dataset.id ?? null
+  return target.closest<HTMLElement>(`[data-${attr}]`)?.getAttribute(`data-${attr}`) ?? null
 }
 
 /** Runs `run` once the drag module is loaded — unless the pointer was released meanwhile. */
@@ -98,15 +98,16 @@ export function beginDrag(
     void preloadDrag()
 }
 
-/** Reorder drag for a flat list of `[data-id]` items (favorites). */
+/** Reorder drag for a flat list of `[data-<attr>]` items (favorites; spaces use `space-id`). */
 export function beginListDrag(
   e: ReactPointerEvent<HTMLElement>,
   list: HTMLElement | null,
   onDrop: (id: string, index: number) => void,
+  attr = 'id',
 ) {
-  const id = pressedId(e)
+  const id = pressedId(e, attr)
   if (!list || !id) return
-  if (onPress(e, (x, y, touch) => whenLoaded((m) => m.startListDrag({ list, id, x, y, touch, onDrop }))))
+  if (onPress(e, (x, y, touch) => whenLoaded((m) => m.startListDrag({ list, id, x, y, touch, onDrop, attr }))))
     void preloadDrag()
 }
 

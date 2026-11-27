@@ -1,19 +1,22 @@
 import { useEffect } from 'react'
-import { PanelLeftClose, Plus, Search, Settings, Star, Trash2 } from 'lucide-react'
-import { useCurrentSpace } from '@/core/store/views'
+import { PanelLeftClose, Search, Settings, Star, Trash2 } from 'lucide-react'
 import { href, type Route } from '@/core/store/router'
-import { newView } from '@/features/page'
 import { openPalette } from '@/features/search'
-import { SpaceSwitcher } from '@/features/spaces'
 import { SyncBadge } from '@/features/sync'
 import { WorkspaceSwitcher } from '@/features/workspaces'
 import { preloadDrag } from './dragStart'
-import { FavoritesList, PageTree } from './PageTree'
+import { FavoritesList } from './PageTree'
+import { SpaceSections } from './SpaceSections'
 import './sidebar.css'
 import { t } from '@/core/i18n'
 import { IconButton } from '@/ui'
 import { debugCrash } from '@/platform/debug'
 
+/**
+ * Desktop sidebar (feedback 7, Notion-like): the WebNota brand on top, search, favorites,
+ * then every space with its pages (foldable, draggable); settings, trash and the
+ * workspace switcher at the bottom.
+ */
 export function Sidebar({ route, onClose }: { route: Route; onClose: () => void }) {
   debugCrash('sidebar')
   // Drag & drop starts synchronously only once its module is loaded: warm it when idle.
@@ -21,13 +24,15 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
     const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1000))
     idle(() => void preloadDrag())
   }, [])
-  const spaceId = useCurrentSpace()
   const currentId = route.name === 'page' ? route.id : undefined
 
   return (
     <aside className="sidebar" aria-label={t('sidebar.label')}>
       <div className="sidebar-top">
-        <WorkspaceSwitcher />
+        <a className="brand" href={href({ name: 'home' })}>
+          <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" width={22} height={22} />
+          WebNota
+        </a>
         <IconButton size="sm" icon={PanelLeftClose} label={t('sidebar.close')} onClick={onClose} />
       </div>
 
@@ -48,19 +53,7 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
             </div>
           }
         />
-        <section className="section">
-          <div className="section-head">
-            <SpaceSwitcher />
-            <IconButton
-              size="sm"
-              icon={Plus}
-              data-new-page
-              label={t('common.newPage')}
-              onClick={(e) => newView(e.currentTarget, null, spaceId)}
-            />
-          </div>
-          <PageTree spaceId={spaceId} currentId={currentId} />
-        </section>
+        <SpaceSections currentId={currentId} />
       </div>
 
       <div className="sidebar-bottom">
@@ -70,6 +63,9 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
         <a className={`side-link${route.name === 'trash' ? ' is-current' : ''}`} href={href({ name: 'trash' })}>
           <Trash2 size={16} /> {t('common.trash')}
         </a>
+        <div className="sidebar-ws">
+          <WorkspaceSwitcher />
+        </div>
         <div className="sidebar-sync">
           <SyncBadge />
         </div>

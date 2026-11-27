@@ -98,6 +98,7 @@ export const en: Record<MessageKey, string> = {
   'space.private': 'Private',
   'space.privateHint':
     'Only shown to you in the sidebar. Anyone with access to the repository can still read the data.',
+  'space.reorder': 'Reorder spaces',
   'space.moveUp': 'Move up',
   'space.moveDown': 'Move down',
   'space.delete': 'Delete space',
