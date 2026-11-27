@@ -67,3 +67,22 @@ export async function reload(page: Page) {
 export async function enableDatabase(page: Page) {
   await page.addInitScript(() => localStorage.setItem('webnota:flags', JSON.stringify({ database: true })))
 }
+
+/** Opens the app with the `database` flag and the QA database (`seed-db`: 50 rows, every M4 field type). */
+export async function openQaDatabase(page: Page) {
+  await page.addInitScript(() => {
+    localStorage.setItem('webnota:flags', JSON.stringify({ database: true }))
+    localStorage.setItem('webnota:debug', 'seed-db')
+  })
+  await page.goto('/')
+  await expect(page.locator('.dbg-row').first()).toBeVisible()
+}
+
+/** A grid cell by row index (0-based, in view order) and column header name. */
+export async function gridCell(page: Page, row: number, column: string) {
+  await expect(page.locator('.dbg-hcell').first()).toBeVisible()
+  const headers = await page.locator('.dbg-hcell .dbg-hname').allTextContents()
+  const col = headers.indexOf(column)
+  if (col < 0) throw new Error(`no column ${column} in ${headers.join(', ')}`)
+  return page.locator(`.dbg-row[aria-rowindex="${row + 2}"] [role="gridcell"][aria-colindex="${col + 1}"]`)
+}

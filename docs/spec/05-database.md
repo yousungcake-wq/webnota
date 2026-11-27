@@ -60,6 +60,8 @@ function runQuery(input: {
 | media | 썸네일 / 파일 아이콘 | 업로드, 미리보기, 삭제, 순서 변경 |
 | time | `1h 30m` | 분 입력 / 스톱워치(P2) |
 
+구현 (M4-05): 서식·입력 해석은 `core/model/database/format.ts`(순수, 로캘은 앱 언어 `ko-KR`/`en-US`). 숫자: 천 단위 구분(`separator`, 기본 켬), 소수 자릿수(`decimals`, 없으면 그대로), 백분율(저장 0.25 → `25%`, 입력 `25`·`25%` → 0.25), 통화 KRW·USD·EUR·JPY·GBP·CNY. 입력은 구분자·통화 기호·`원`을 무시하고, 숫자가 아니면 기존 값을 유지합니다. 소요 시간: `1h 30m`, `90`(분), `1:30`, `1.5h`, `2시간 10분` → 분. URL: 도메인만 쓰면 `https://`를 붙이고, 열기 버튼은 http(s)·mailto만. 편집: 셀을 고른 상태에서 다시 누르거나 Enter, 또는 바로 입력(내용 교체). Enter 저장 후 아래로, Tab 오른쪽, Esc 취소, 텍스트는 Shift+Enter 줄 바꿈. Delete/Backspace는 셀 비우기, Space는 체크박스 토글. 만든·수정한 시각은 편집 불가.
+
 ### 3.3 select 옵션 색상
 
 AppFlowy 팔레트 10색(Purple, Pink, Light Pink, Orange, Yellow, Lime, Green, Aqua, Blue, Gray)을 씁니다. 라이트·다크 대비를 모두 만족하도록 토큰으로 정의합니다.

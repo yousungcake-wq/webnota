@@ -1,0 +1,105 @@
+import { Check, Copy, ExternalLink } from 'lucide-react'
+import {
+  asNumber,
+  asText,
+  cellText,
+  formatDateTime,
+  formatMinutes,
+  formatNumber,
+  isOpenableUrl,
+  type CellValue,
+  type FieldMeta,
+} from '@/core/model/database'
+import { toast } from '@/ui'
+import { dt } from './i18n'
+import { appLocale } from './locale'
+
+/** Read-only presentation of one cell (spec/05 §3.2). Editing is the grid's job. */
+export function CellView({
+  field,
+  value,
+  wrap,
+  readOnly,
+  onToggle,
+}: {
+  field: FieldMeta
+  value: CellValue | undefined
+  wrap: boolean
+  readOnly: boolean
+  onToggle: () => void
+}) {
+  switch (field.type) {
+    case 'number': {
+      const n = asNumber(value)
+      return <span className="dbc-num">{n === null ? '' : formatNumber(n, field.options, appLocale())}</span>
+    }
+    case 'time': {
+      const n = asNumber(value)
+      return <span className="dbc-num">{n === null ? '' : formatMinutes(n)}</span>
+    }
+    case 'checkbox':
+      return (
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={value === true}
+          aria-label={field.name}
+          className={`dbc-check${value === true ? ' is-on' : ''}`}
+          disabled={readOnly}
+          tabIndex={-1}
+          onClick={(e) => {
+            e.stopPropagation()
+            onToggle()
+          }}
+        >
+          {value === true && <Check size={14} strokeWidth={3} aria-hidden />}
+        </button>
+      )
+    case 'url': {
+      const url = asText(value)
+      if (!url) return null
+      return (
+        <span className="dbc-url">
+          <span className="dbc-url-text">{url}</span>
+          <span className="dbc-actions">
+            {isOpenableUrl(url) && (
+              <a
+                className="dbc-action"
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={dt('db.url.open')}
+                title={dt('db.url.open')}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLink size={14} aria-hidden />
+              </a>
+            )}
+            <button
+              type="button"
+              className="dbc-action"
+              aria-label={dt('db.url.copy')}
+              title={dt('db.url.copy')}
+              tabIndex={-1}
+              onClick={(e) => {
+                e.stopPropagation()
+                void navigator.clipboard?.writeText(url).then(() => toast(dt('db.copied')))
+              }}
+            >
+              <Copy size={14} aria-hidden />
+            </button>
+          </span>
+        </span>
+      )
+    }
+    case 'createdTime':
+    case 'updatedTime': {
+      const n = asNumber(value)
+      return <span className="dbc-muted">{n === null ? '' : formatDateTime(n, appLocale())}</span>
+    }
+    case 'text':
+      return <span className={wrap ? 'dbc-text is-wrap' : 'dbc-text'}>{asText(value)}</span>
+    default:
+      return <span className="dbc-text">{cellText(field, value)}</span>
+  }
+}

@@ -500,6 +500,52 @@ export function addRow(db: DbDocs, opts: AddRowOptions = {}): string {
   return id
 }
 
+/**
+ * Appends many rows at once (TSV paste, CSV import, QA seeds): one transaction per shard,
+ * keys from a single `generateNKeysBetween`. Returns the new ids in order.
+ */
+export function addRows(db: DbDocs, cellsList: Record<string, CellValue>[], opts: { afterId?: string } = {}): string[] {
+  assertWritable()
+  if (!cellsList.length) return []
+  const rows = listRows(db)
+  let i = rows.length
+  if (opts.afterId) {
+    const at = rows.findIndex((r) => r.id === opts.afterId)
+    if (at >= 0) i = at + 1
+  }
+  const a = rows[i - 1]?.order || null
+  let b = rows[i]?.order || null
+  if (a !== null && b !== null && a >= b) b = null // equal keys: append after them
+  const keys = generateNKeysBetween(a, b, cellsList.length)
+  const ids = cellsList.map(() => newId())
+  const now = Date.now()
+  const user = getCurrentUser()
+  const byShard = new Map<Y.Doc, number[]>()
+  ids.forEach((id, k) => {
+    const s = shardFor(db, id)
+    byShard.set(s, [...(byShard.get(s) ?? []), k])
+  })
+  for (const [shard, list] of byShard)
+    shard.transact(() => {
+      for (const k of list) {
+        const m = new Y.Map<unknown>()
+        m.set('order', keys[k])
+        const cells = new Y.Map<unknown>()
+        for (const [f, v] of Object.entries(cellsList[k]!)) if (v !== undefined && v !== null) cells.set(f, v)
+        m.set('cells', cells)
+        m.set('icon', null)
+        m.set('cover', null)
+        m.set('hasDoc', false)
+        m.set('createdAt', now)
+        m.set('createdBy', user)
+        m.set('updatedAt', now)
+        m.set('updatedBy', user)
+        rowsOf(shard).set(ids[k]!, m)
+      }
+    })
+  return ids
+}
+
 function touch(m: YMap) {
   m.set('updatedAt', Date.now())
   m.set('updatedBy', getCurrentUser())

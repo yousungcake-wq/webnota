@@ -31,7 +31,7 @@ export function ResultItem({
       onClick={onPick}
     >
       <span className="tree-icon">
-        <ViewIcon icon={view.icon} size={18} />
+        <ViewIcon icon={view.icon} size={18} layout={view.layout} />
       </span>
       <span className="list-text">
         <span className="list-title">

@@ -107,7 +107,7 @@ export function PageView({
           <span className="crumb is-current">
             {page.icon && (
               <span>
-                <ViewIcon icon={page.icon} />
+                <ViewIcon icon={page.icon} layout={page.layout} />
               </span>
             )}
             {displayTitle(page.title)}
@@ -344,7 +344,7 @@ function Crumb({ c }: { c: ViewMeta }) {
       <a href={href({ name: 'page', id: c.id })}>
         {c.icon && (
           <span>
-            <ViewIcon icon={c.icon} />
+            <ViewIcon icon={c.icon} layout={c.layout} />
           </span>
         )}
         {displayTitle(c.title)}

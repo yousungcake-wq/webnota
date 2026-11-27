@@ -118,7 +118,7 @@
 - [x] M4-02 DB 문서 수명·동기화: 레지스트리 LRU/retain(DB 열람 중 스키마+샤드 8개 유지), 탭 중계, 영구 삭제 시 `data/dbs/<id>/` 파일 삭제(엔진), 첫 연결 시 DB 문서 더티 표시, 엔진 테스트 (SY-02a) — 행 페이지 `row/` 문서의 첫 연결 더티 표시는 M5-04에서 — a4535c9
 - [x] M4-03 쿼리 엔진 `runQuery`: 필터(타입별 조건 전부, AND/OR 2단계, 상대 날짜), 정렬(여러 조건, `Intl.Collator('ko', {numeric})`, 빈 값 마지막, 안정 정렬), 계산 14종 — 조건 × 타입 전수 단위 테스트 + fast-check 속성 테스트 (spec/05 §2, §4.1~4.2, spec/02 §4.4) — 5c73b31
 - [x] M4-04 증분 갱신 + 워커: 행 변경 키만 다시 평가(이진 탐색 삽입), 설정 변경 시 전체 재계산, 5,000행 이상은 `query.worker.ts`(변경분만 전송) — 증분 결과 = 전체 재계산 결과 속성 테스트 (spec/05 §2) — `openDbSession`/`useDbSession` — ddf9ef0
-- [ ] M4-05 필드 타입 1: text(줄 바꿈), number(서식·소수점·통화 KRW/USD/EUR/JPY, `inputmode=decimal`), checkbox, url(열기·복사), createdTime/updatedTime(읽기 전용), time(`1h 30m`) — 셀 표시·편집 (spec/05 §3.2)
+- [x] M4-05 필드 타입 1: text(줄 바꿈), number(서식·소수점·통화 KRW/USD/EUR/JPY, `inputmode=decimal`), checkbox, url(열기·복사), createdTime/updatedTime(읽기 전용), time(`1h 30m`) — 셀 표시·편집 (spec/05 §3.2) — 기본 Grid(행 가상 스크롤·고정 헤더·첫 열 고정)·QA 시드 `seed-db`/`seed-db-10k` 포함 — HASH00
 - [ ] M4-06 필드 타입 2: select/multiSelect(옵션 팝오버: 검색·새 옵션·이름·색·삭제·순서, 10색 토큰 라이트·다크), date(달력 팝오버: 시간·종료일·형식·지우기), checklist(진행률, 항목 편집) — 폰은 하단 시트 (spec/05 §3.2~3.3)
 - [ ] M4-07 필드 타입 3 + 변환: media(files/ 업로드·썸네일·순서·삭제, `refs.ts`에 추가), 타입 변환 규칙 §3.4 전수 테스트, 값이 사라지면 확인 대화상자("N개 셀"), 변환 30초 실행 취소(DB 범위 UndoManager) (spec/05 §3.4)
 - [ ] M4-08 Grid 렌더링: 행·열 가상 스크롤, 고정 헤더, 첫 열 고정(frozenColumns), 줄 바꿈 필드 자동 행 높이(측정) (DB-G01, DB-G08, DB-F06)

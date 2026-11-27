@@ -90,7 +90,7 @@ function RecentStrip() {
         {items.map((v) => (
           <a key={v.id} className="recent-card" href={href({ name: 'page', id: v.id })}>
             <span className="recent-card-icon">
-              <ViewIcon icon={v.icon} size={22} />
+              <ViewIcon icon={v.icon} size={22} layout={v.layout} />
             </span>
             <span className="recent-card-title">{displayTitle(v.title)}</span>
           </a>

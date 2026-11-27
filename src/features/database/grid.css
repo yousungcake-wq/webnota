@@ -1,0 +1,174 @@
+.dbg {
+  position: relative;
+  overflow: auto;
+  max-height: calc(100dvh - 220px);
+  min-height: 160px;
+  border-top: 1px solid var(--border);
+  outline: none;
+  font-size: var(--fs-sm);
+  overscroll-behavior: contain;
+}
+.dbg-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  min-width: 100%;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.dbg-hcell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 0 8px;
+  color: var(--text-2);
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.dbg-hicon {
+  flex: none;
+  color: var(--text-3);
+}
+.dbg-hname {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dbg-fill {
+  flex: 1 0 40px;
+}
+.dbg-body {
+  position: relative;
+  min-width: 100%;
+}
+.dbg-row {
+  position: absolute;
+  left: 0;
+  display: flex;
+  min-width: 100%;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.dbg-row:hover,
+.dbg-row:hover .dbg-cell.is-frozen {
+  background: var(--bg-hover);
+}
+.dbg-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: none;
+  min-width: 0;
+  padding: 0 8px;
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: default;
+  background: inherit;
+}
+.dbg-cell.is-frozen,
+.dbg-hcell.is-frozen {
+  position: sticky;
+  z-index: 1;
+}
+.dbg-hcell.is-frozen {
+  z-index: 4;
+}
+.dbg-cell.is-active {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.dbg-cell.is-editing {
+  overflow: visible;
+  z-index: 2;
+}
+.dbg-cell[data-type='number'],
+.dbg-cell[data-type='time'] {
+  justify-content: flex-end;
+}
+.dbc-text,
+.dbc-num,
+.dbc-muted,
+.dbc-url-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dbc-text.is-wrap {
+  white-space: pre-wrap;
+}
+.dbc-muted {
+  color: var(--text-2);
+}
+.dbc-check {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text-on-accent);
+  cursor: pointer;
+}
+.dbc-check.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.dbc-url {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+.dbc-url-text {
+  flex: 1;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+}
+.dbc-actions {
+  display: none;
+  gap: 2px;
+}
+.dbg-cell:hover .dbc-actions,
+.dbg-cell.is-active .dbc-actions {
+  display: flex;
+}
+.dbc-action {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-elev);
+  color: var(--text-2);
+  cursor: pointer;
+}
+.dbc-editor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    var(--shadow);
+  background: var(--bg-elev);
+  color: var(--text);
+  font: inherit;
+  resize: none;
+  outline: none;
+}
+textarea.dbc-editor {
+  min-height: 100%;
+  white-space: pre-wrap;
+}

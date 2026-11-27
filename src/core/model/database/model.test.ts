@@ -4,6 +4,7 @@ import { listViews } from '../views'
 import {
   addField,
   addRow,
+  addRows,
   createDatabase,
   deleteField,
   deleteRows,
@@ -156,6 +157,14 @@ describe('rows and cells', () => {
     expect(listRows(db).map((r) => r.id)).toEqual([a, d, b, c, z])
     deleteRows(db, [b, c])
     expect(listRows(db).map((r) => r.id)).toEqual([a, d, z])
+  })
+  it('appends many rows at once in order (bulk)', () => {
+    const { db, primary } = setup(1)
+    const first = listRows(db)[0]!.id
+    const last = addRow(db)
+    const ids = addRows(db, [{ [primary]: 'x' }, { [primary]: 'y' }, {}], { afterId: first })
+    expect(listRows(db).map((r) => r.id)).toEqual([first, ...ids, last])
+    expect(getRow(db, ids[1]!)!.cells[primary]).toBe('y')
   })
   it('sets and clears cells, stamping updatedAt', () => {
     const { db, primary } = setup()

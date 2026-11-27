@@ -40,7 +40,7 @@ export function TrashView() {
         {trashed.map((p) => (
           <div key={p.id} className="list-item static">
             <span className="tree-icon">
-              <ViewIcon icon={p.icon} />
+              <ViewIcon icon={p.icon} layout={p.layout} />
             </span>
             <span className="list-text">
               <span className="list-title">{displayTitle(p.title)}</span>

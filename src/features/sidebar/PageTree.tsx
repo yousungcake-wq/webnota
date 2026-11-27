@@ -66,7 +66,7 @@ const Row = memo(function Row({ view, depth, hasChildren, open, current, index }
           }}
         >
           <span className="tree-icon">
-            <ViewIcon icon={view.icon} />
+            <ViewIcon icon={view.icon} layout={view.layout} />
           </span>
           {editing ? <RenameInput view={view} /> : <span className="tree-title">{displayTitle(view.title)}</span>}
         </a>
@@ -172,7 +172,7 @@ export function PageListItem({ page, subtitle }: { page: ViewMeta; subtitle?: st
   return (
     <a className="list-item" href={href({ name: 'page', id: page.id })} data-id={page.id} draggable={false}>
       <span className="tree-icon">
-        <ViewIcon icon={page.icon} size={18} />
+        <ViewIcon icon={page.icon} size={18} layout={page.layout} />
       </span>
       <span className="list-text">
         <span className="list-title">{displayTitle(page.title)}</span>

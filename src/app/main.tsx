@@ -55,6 +55,7 @@ async function boot() {
     seedWelcome(await openDoc(pageDocName(welcome)))
     navigate({ name: 'page', id: welcome }, { replace: true })
   }
+  if ((debugFlag('seed-db') || debugFlag('seed-db-10k')) && !isReadOnly()) await (await import('./qa/seedDb')).seedDb() // QA: M4 grid
 
   // Home-screen shortcut "new page" (MB-44): `?action=new-page`, removed from the URL.
   const action = new URLSearchParams(location.search).get('action')
