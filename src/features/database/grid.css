@@ -172,3 +172,23 @@ textarea.dbc-editor {
   min-height: 100%;
   white-space: pre-wrap;
 }
+.dbg-spacer {
+  flex: none;
+}
+.dbg-row.is-auto {
+  min-height: 36px;
+  align-items: stretch;
+}
+.dbg-row.is-auto .dbg-cell {
+  align-items: flex-start;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  min-height: 36px;
+}
+.dbg-row.is-auto .dbg-cell[data-type='checkbox'] {
+  padding-top: 8px;
+}
+.dbg-cell.is-wrap {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

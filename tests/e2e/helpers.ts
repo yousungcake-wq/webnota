@@ -81,8 +81,32 @@ export async function openQaDatabase(page: Page) {
 /** A grid cell by row index (0-based, in view order) and column header name. */
 export async function gridCell(page: Page, row: number, column: string) {
   await expect(page.locator('.dbg-hcell').first()).toBeVisible()
-  const headers = await page.locator('.dbg-hcell .dbg-hname').allTextContents()
-  const col = headers.indexOf(column)
-  if (col < 0) throw new Error(`no column ${column} in ${headers.join(', ')}`)
-  return page.locator(`.dbg-row[aria-rowindex="${row + 2}"] [role="gridcell"][aria-colindex="${col + 1}"]`)
+  // columns are virtualized: scroll until the header is rendered
+  const header = page.locator('.dbg-hcell', { has: page.locator('.dbg-hname', { hasText: new RegExp(`^${column}$`) }) })
+  const frame = () => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))))
+  if (!(await header.count())) {
+    await page.locator('.dbg').evaluate((el) => (el.scrollLeft = 0))
+    await frame()
+  }
+  for (let i = 0; i < 20 && !(await header.count()); i++) {
+    await page.locator('.dbg').evaluate((el) => (el.scrollLeft += 300))
+    await frame()
+  }
+  const col = await header.getAttribute('aria-colindex')
+  // bring the column fully into view, right of the frozen columns
+  await header.evaluate((h) => {
+    if (h.classList.contains('is-frozen')) return
+    const grid = h.closest('.dbg')!
+    const frozen = [...grid.querySelectorAll<HTMLElement>('.dbg-hcell.is-frozen')].reduce(
+      (n, e) => n + e.offsetWidth,
+      0,
+    )
+    const left = (h as HTMLElement).offsetLeft
+    if (left < grid.scrollLeft + frozen || left + (h as HTMLElement).offsetWidth > grid.scrollLeft + grid.clientWidth)
+      grid.scrollLeft = left - frozen
+  })
+  await frame()
+  const cell = page.locator(`.dbg-row[aria-rowindex="${row + 2}"] [role="gridcell"][aria-colindex="${col}"]`)
+  await cell.scrollIntoViewIfNeeded()
+  return cell
 }

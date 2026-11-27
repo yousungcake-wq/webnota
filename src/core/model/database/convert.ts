@@ -122,16 +122,20 @@ export function planConversion(db: DbDocs, fieldId: string, to: FieldType): Conv
   if ((to === 'select' || to === 'multiSelect') && (field.type === 'select' || field.type === 'multiSelect'))
     plan.choices = [...choicesOf(field)]
   const computedFrom = field.type === 'createdTime' || field.type === 'updatedTime'
+  // rows in manual order, so new options are created in the order the rows show them
+  const rows: { rowId: string; order: string; rm: Y.Map<unknown> }[] = []
   for (const shard of db.shards)
-    rowsOf(shard).forEach((rm, rowId) => {
-      const cells = rm.get('cells')
-      const stored = cells instanceof Y.Map ? cells.get(fieldId) : undefined
-      const v = computedFrom ? rm.get(field.type === 'createdTime' ? 'createdAt' : 'updatedAt') : stored
-      const out = COMPUTED.has(to) ? undefined : convertValue(field, to, v, plan.choices)
-      if (!computedFrom && lost(field, v, out)) plan.lostCount++
-      if (computedFrom ? out !== undefined : JSON.stringify(out ?? null) !== JSON.stringify(stored ?? null))
-        plan.cells.set(rowId, out)
-    })
+    rowsOf(shard).forEach((rm, rowId) => rows.push({ rowId, order: String(rm.get('order') ?? ''), rm }))
+  rows.sort((a, b) => (a.order < b.order ? -1 : a.order > b.order ? 1 : a.rowId < b.rowId ? -1 : 1))
+  for (const { rowId, rm } of rows) {
+    const cells = rm.get('cells')
+    const stored = cells instanceof Y.Map ? cells.get(fieldId) : undefined
+    const v = computedFrom ? rm.get(field.type === 'createdTime' ? 'createdAt' : 'updatedAt') : stored
+    const out = COMPUTED.has(to) ? undefined : convertValue(field, to, v, plan.choices)
+    if (!computedFrom && lost(field, v, out)) plan.lostCount++
+    if (computedFrom ? out !== undefined : JSON.stringify(out ?? null) !== JSON.stringify(stored ?? null))
+      plan.cells.set(rowId, out)
+  }
   return plan
 }
 

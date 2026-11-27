@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M4 데이터베이스 I (M3 완료 — 실기기 확인은 docs/QA.md "M3"(와 M2·M1), 사용자 확인 대기. 링크 미리보기는 Worker 재배포 필요)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 8/16
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 9/16
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M4-08 Grid 렌더링(열 가상 스크롤·자동 행 높이). 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
+- **다음 할 일**: M4-09 Grid 행 조작. 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -164,3 +164,4 @@
 | 2026-11-27 | M4-05: 기본 Grid + text·number(서식·통화)·checkbox·url·만든/수정 시각·소요 시간 셀 표시·편집, DB 뷰 아이콘, QA seed-db | 11320c5 |
 | 2026-11-27 | M4-06: select/multiSelect 옵션 팝오버(검색·생성·이름·색·삭제·순서), 날짜 달력(종료일·시간·형식), 체크리스트, 선택 색 토큰 10색, 폰 시트 | 10a45d2 |
 | 2026-11-27 | M4-07: media 필드(업로드·썸네일·순서·삭제, refs.ts fileRefsInRows), 타입 변환 규칙 전수 테스트 + convertField/undo, changeFieldType(확인·30초 실행 취소) | 9a04567 |
+| 2026-11-27 | M4-08: Grid 열 가상 스크롤·고정 열·줄 바꿈 자동 행 높이(측정), Grid를 GridHeader/GridRow로 분리 | HASH |

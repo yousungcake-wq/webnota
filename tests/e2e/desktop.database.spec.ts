@@ -28,7 +28,7 @@ test.describe('database (M4)', () => {
     await openQaDatabase(page)
     const name = await gridCell(page, 0, 'Name')
     await expect(name).toHaveText('Item 1')
-    await expect(page.locator('.dbg-hcell')).toHaveCount(12)
+    await expect(page.getByRole('grid')).toHaveAttribute('aria-colcount', '12')
 
     // text: double click edits, Enter saves and moves down
     await name.click()
@@ -179,5 +179,22 @@ test.describe('database (M4)', () => {
     await expect(files).not.toContainText('photo.png')
     await expect(files.locator('img.db-thumb')).toHaveCount(1)
     noErrors()
+  })
+
+  test('rows and columns are virtualized; the first column stays frozen (M4-08)', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 700 })
+    await openQaDatabase(page)
+    const grid = page.getByRole('grid')
+    await expect(page.locator('.dbg-row')).not.toHaveCount(50) // 50 rows, only the visible ones (+overscan)
+    expect(await page.locator('.dbg-hcell').count()).toBeLessThan(12)
+    await grid.evaluate((el) => (el.scrollLeft = el.scrollWidth))
+    await expect(page.locator('.dbg-hcell .dbg-hname').last()).toHaveText('Updated')
+    const name = page.locator('.dbg-hcell', { hasText: 'Name' })
+    await expect(name).toBeVisible()
+    const box = await name.boundingBox()
+    const gridBox = await grid.boundingBox()
+    expect(Math.abs(box!.x - gridBox!.x)).toBeLessThan(2) // sticky at the left edge
+    await grid.evaluate((el) => (el.scrollTop = el.scrollHeight))
+    await expect(page.locator('.dbg-row', { hasText: 'Item 50' })).toBeVisible()
   })
 })
