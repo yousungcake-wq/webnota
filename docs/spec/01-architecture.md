@@ -60,7 +60,7 @@ src/
   core/
     docs/           Y.Doc 레지스트리, 더티 추적, LRU
     persistence/    IndexedDB 어댑터
-    sync/           엔진(순수 로직), GitHub 어댑터, 컨트롤러(스케줄링)
+    sync/           엔진(순수 로직), GitHub 어댑터, 컨트롤러(상태·스케줄링, 초기 번들), session(연결·실행, 지연 sync 청크)
     schema/         스키마 버전, 마이그레이션 레지스트리
     model/          워크스페이스, 뷰, 데이터베이스 모델 (순수 함수, React 비의존)
     store/          React 바인딩 (useY 셀렉터 훅), 라우터 상태(router.ts), 기기별 설정(prefs.ts)

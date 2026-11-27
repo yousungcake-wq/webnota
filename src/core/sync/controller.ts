@@ -1,14 +1,11 @@
 import { debugLog } from '../flags'
-import { t } from '../i18n'
 import { getToken, setToken } from '../auth/auth'
-import { clearDirty, getDirty, markDirty, onDirtyChange, openDoc, pageDocName, retainDoc, tabs } from '../docs/registry'
+import { getDirty, markDirty, onDirtyChange, openDoc, pageDocName, tabs } from '../docs/registry'
 import { currentWorkspaceId, wsKey } from '../docs/slots'
 import { adoptFavorites, listViews, setCurrentUser } from '../model/views'
 import { createStore } from '../store/createStore'
 import { isReadOnly } from '../schema/gate'
-import type { LocalStore, SyncState } from './engine'
 import { electLeader } from './leader'
-import { recordSync } from './log'
 import { createScheduler, PULL_INTERVAL_MS, type SyncOutcome, type SyncReason } from './schedule'
 
 export type SyncStatus = 'disconnected' | 'idle' | 'pending' | 'syncing' | 'offline' | 'error'
@@ -48,32 +45,13 @@ function readAccount(): Account | null {
   }
 }
 
+/** State updates; also used by the lazy `session.ts`. */
+export function setSyncState(patch: Partial<ControllerState>) {
+  set(patch)
+}
+
 function set(patch: Partial<ControllerState>) {
   syncStore.set((s) => ({ ...s, ...patch }))
-}
-
-function stateKey(a: Account) {
-  return `webnota:sync-state:${a.owner}/${a.repo}@${a.branch}`
-}
-
-/** `releases` collects retains: docs the engine touches stay loaded until the sync ends (SY-01 LRU). */
-function localStore(a: Account, releases: (() => void)[]): LocalStore {
-  return {
-    getDoc: (name) => {
-      releases.push(retainDoc(name))
-      return openDoc(name)
-    },
-    getDirty,
-    clearDirty,
-    loadState: () => {
-      try {
-        return JSON.parse(localStorage.getItem(stateKey(a)) || 'null') ?? { headSha: null, blobs: {} }
-      } catch {
-        return { headSha: null, blobs: {} }
-      }
-    },
-    saveState: (s: SyncState) => localStorage.setItem(stateKey(a), JSON.stringify(s)),
-  }
 }
 
 const remote = () => import('./remote')
@@ -109,7 +87,6 @@ export async function initUser() {
   if (login) await applyLogin(login)
 }
 
-/** Validates a token, creates the private data repo if needed, and stores the account. */
 /** Repository a new workspace should connect to once a token exists (`owner/repo` or `repo`). */
 const TARGET_KEY = () => wsKey('connect-target')
 export function setPendingTarget(target: string, slot?: Parameters<typeof wsKey>[1]) {
@@ -124,63 +101,25 @@ export function pendingTarget(): string | null {
 }
 
 /**
- * Validates a token and connects this workspace to a repository: `repo` (the user's own,
- * created private if missing) or `owner/repo` (someone else's, which must exist and
- * allow pushing — a repository shared with the user as a collaborator, WS-01).
+ * Validates a token and connects this workspace to a repository (WS-01). The GitHub work
+ * lives in the lazy sync chunk (`session.ts`): devices that never connect never load it.
  */
-export async function connect(token: string, target = pendingTarget() ?? DEFAULT_REPO): Promise<Account> {
-  const { GitHubClient, GitHubError, GitHubGitApi } = await remote()
-  const gh = new GitHubClient(token)
-  const user = await gh.getUser()
-  const [owner, repoName] = target.includes('/') ? (target.split('/', 2) as [string, string]) : [user.login, target]
-  let repo = await gh.getRepo(owner, repoName)
-  if (!repo && owner !== user.login) throw new Error(t('sync.err.repoNotFound', { repo: `${owner}/${repoName}` }))
-  if (!repo) {
-    try {
-      repo = await gh.createRepo(repoName).then((r) => ({ ...r, private: true, size: 0 }))
-    } catch (e) {
-      if (e instanceof GitHubError && (e.status === 403 || e.status === 404)) {
-        throw new Error(t('sync.err.noRepoPermission', { repo: repoName }), { cause: e })
-      }
-      throw e
-    }
-  }
-  const account: Account = {
-    login: user.login,
-    avatarUrl: user.avatar_url,
-    owner,
-    repo: repoName,
-    branch: repo!.default_branch || 'main',
-  }
-  // A brand-new repo (or one created empty by the user) has no commits yet.
-  const api = new GitHubGitApi(gh, account.owner, account.repo, account.branch)
-  let head = await api.getHead()
-  for (let i = 0; !head && i < 4; i++) {
-    if (i === 0 && repo!.size === 0) {
-      try {
-        await gh.initEmptyRepo(account.owner, account.repo)
-      } catch {
-        /* auto_init may still be in progress */
-      }
-    }
-    await new Promise((r) => setTimeout(r, 800 * (i + 1)))
-    head = await api.getHead()
-  }
+export async function connect(token: string, target?: string): Promise<Account> {
+  return (await remote()).connectAccount(token, target ?? pendingTarget() ?? DEFAULT_REPO)
+}
+
+/** Called by `session.ts` once the account is verified. */
+export async function saveAccount(token: string, account: Account) {
   setToken(token)
   localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account))
   localStorage.removeItem(TARGET_KEY())
   set({ account, status: 'idle', error: null })
   await applyLogin(account.login)
   // Everything that exists locally must be uploaded at least once.
-  await markAllDirtyForFirstSync()
-  requestSync('manual')
-  return account
-}
-
-async function markAllDirtyForFirstSync() {
   const ws = await openDoc('workspace')
   markDirty('workspace')
   for (const p of listViews(ws)) markDirty(pageDocName(p.id))
+  requestSync('manual')
 }
 
 export function disconnect() {
@@ -220,64 +159,13 @@ async function runSync(): Promise<SyncOutcome> {
     return { ok: true } // the 'online' event triggers the next attempt
   }
   set({ status: 'syncing', error: null })
-  const releases: (() => void)[] = []
-  let net: Awaited<ReturnType<typeof remote>> | undefined
   try {
-    net = await remote()
-    const { GitHubClient, GitHubGitApi, syncOnce } = net
-    const api = new GitHubGitApi(new GitHubClient(token), account.owner, account.repo, account.branch)
-    const started = performance.now()
-    debugLog('sync', 'start', `${account.owner}/${account.repo}@${account.branch}`, 'dirty:', Object.keys(getDirty()))
-    const result = await syncOnce(api, localStore(account, releases), {
-      deviceName: deviceLabel(),
-      canPush: () => !isReadOnly(),
-    })
-    const ms = Math.round(performance.now() - started)
-    debugLog('sync', 'done', result, `${ms}ms`)
-    recordSync({ at: Date.now(), ok: true, pulled: result.pulled, pushed: result.pushed, deleted: result.deleted, ms })
-    set({ status: Object.keys(getDirty()).length ? 'pending' : 'idle', lastSyncedAt: Date.now() })
-    return { ok: true }
+    return await (await remote()).runSession(account, token)
   } catch (e) {
-    console.error('[webnota] sync failed', e)
-    const GitHubError = net?.GitHubError
-    const isGh = (x: unknown): x is InstanceType<NonNullable<typeof GitHubError>> =>
-      !!GitHubError && x instanceof GitHubError
-    recordSync({
-      at: Date.now(),
-      ok: false,
-      pulled: 0,
-      pushed: 0,
-      deleted: 0,
-      ms: 0,
-      error: e instanceof Error ? `${isGh(e) ? `${e.status} ` : ''}${e.message}` : String(e),
-    })
-    if (isGh(e) && e.status === 401) {
-      disconnect()
-      set({ error: t('sync.err.expired') })
-      return { ok: false, error: e, final: true }
-    }
-    set({
-      status: navigator.onLine ? 'error' : 'offline',
-      error:
-        net && e instanceof net.ConflictRetryError
-          ? t('sync.err.conflict')
-          : e instanceof Error
-            ? e.message
-            : String(e),
-    })
-    return { ok: false, error: e, retryAfterMs: isGh(e) ? e.retryAfterMs : null }
-  } finally {
-    releases.forEach((r) => r())
+    // the sync chunk itself failed to load (offline, new deploy)
+    set({ status: navigator.onLine ? 'error' : 'offline', error: e instanceof Error ? e.message : String(e) })
+    return { ok: false, error: e, retryAfterMs: null }
   }
-}
-
-function deviceLabel() {
-  const ua = navigator.userAgent
-  if (/Android/i.test(ua)) return 'Android'
-  if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS'
-  if (/Mac/i.test(ua)) return 'macOS'
-  if (/Windows/i.test(ua)) return 'Windows'
-  return 'Web'
 }
 
 let started = false

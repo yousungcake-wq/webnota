@@ -23,7 +23,8 @@
 - 문서 수명 (M0-19): `openDoc`으로 연 문서는 LRU로 언로드될 수 있음 (최대 30개, 최근 10초 사용분은 보호). **비동기 작업 동안 문서를 붙잡고 있어야 하면 `retainDoc(name)`을 호출하고 끝나면 release** (PageView·동기화·복제가 그렇게 함). 언로드된 문서 객체에 쓰면 IndexedDB에 저장되지 않음.
 - 에디터 (M0-20): `editorExtensions(doc, { onInvalidContent })` — Collaboration의 `ySyncOptions.onInvalidContent`를 **절대 빼지 말 것** (빼면 y-tiptap이 모르는 노드를 Y에서 삭제). 모르는 내용이 있으면 그 페이지만 읽기 전용 + 안내.
 - 에디터 스키마 (M2-08): 문서 스키마는 `features/editor/schema.ts`(`schemaExtensions`/`docSchema`, React 없음 — 단위 테스트·시드용), UI 확장은 `extensions.ts`. React 노드 뷰가 필요한 노드는 스키마에는 순수 노드를 두고 `editorExtensions`에서 뷰 달린 버전으로 바꿔 끼움 (예: `mention` → `MentionWithView`). `features/editor/` 하위 폴더는 상위 파일을 import할 수 없음(lint) — 순수 로직만 하위 폴더에.
-- **초기 번들 예산 거의 소진 (M2-18: 123.5/125KB).** 초기 청크에 들어가는 코드(셸, 사이드바, PageView 등)를 늘릴 때는 클릭해야 보이는 UI를 지연 로드할 것 (예: `PageCover`·`pageStyleViews`). M3 전에 초기 번들 정리(예: 사이드바 일부 지연) 검토.
+- **초기 번들 122.0/125KB (M3-00).** 동기화 연결·실행은 `core/sync/session.ts`(지연 sync 청크, `remote.ts`가 내보냄) — 컨트롤러에는 상태·스케줄만. 남은 앱 코드는 대부분 작아서(react-dom·yjs가 대부분) 더 줄이기 어려움 → **M3 기능은 전부 지연 청크**로 (업로드·이미지 처리·파일 캐시는 쓸 때 import). 초기 청크 코드를 늘릴 때는 클릭해야 보이는 UI를 지연 로드할 것 (예: `PageCover`·`pageStyleViews`).
+- 데코레이션 (M3-00): 에디터 데코레이션 플러그인은 바뀐 부분만 다시 계산 — `code/changed.ts`의 `changedRanges`/`blocksInRanges` 사용 (spec/10 §2).
 - 표 (M2-11): 노드 정의는 `nodes/table.ts`(prosemirror-tables 없이), 편집 플러그인·명령은 `table/kit.ts` 지연 로드 후 `registerPlugin`. 단, `@tiptap/extension-bubble-menu`가 prosemirror-tables를 정적으로 import해서 라이브러리 코드 자체는 에디터 청크에 들어감(+8KB, 에디터 187.8/210KB). 에디터 예산 여유가 줄었으니 다음 무거운 확장은 별도 청크로.
 - 동기화 스케줄 (M0-21): 동기화는 `core/sync/controller.ts`의 `scheduler`를 통해서만 시작 (`syncNow()`=수동 요청). 타이밍 규칙은 `core/sync/schedule.ts` (순수, 테스트 있음).
 - 탭 (M0-23): 동기화는 리더 탭만 (`electLeader`). 다른 탭에서 동기화를 시작하려면 `requestSync`/`syncNow` 사용 (직접 `scheduler.request` 금지). 문서 업데이트는 `tabs` 중계로 실시간 공유되며, 받은 업데이트 origin은 `TAB_ORIGIN`.

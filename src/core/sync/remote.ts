@@ -2,3 +2,4 @@
 // devices that never connect never download it).
 export { ConflictRetryError, syncOnce } from './engine'
 export { GitHubClient, GitHubError, GitHubGitApi } from './github'
+export { connectAccount, runSession } from './session'

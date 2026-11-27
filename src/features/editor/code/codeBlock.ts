@@ -1,9 +1,10 @@
 import CodeBlock from '@tiptap/extension-code-block'
 import type * as HighlighterNs from './highlighter'
 import type { Node as PMNode } from '@tiptap/pm/model'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { Plugin, PluginKey, type Transaction } from '@tiptap/pm/state'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
 import { t } from '@/core/i18n'
+import { blocksInRanges, changedRanges } from './changed'
 import { LANGUAGES } from './languages'
 
 /**
@@ -19,28 +20,56 @@ const loadHighlighter = () => (hlLoading ??= import('./highlighter').then((m) =>
 
 const key = new PluginKey<DecorationSet>('codeHighlight')
 
+const langOf = (node: PMNode) => {
+  const lang = node.attrs.language as string | null
+  return lang && lang !== 'plaintext' ? lang : null
+}
+
+function blockDecorations(node: PMNode, pos: number): Decoration[] {
+  const lang = langOf(node)
+  if (!hl || !lang) return []
+  return hl
+    .highlight(node.textContent, lang)
+    .map((s) => Decoration.inline(pos + 1 + s.from, pos + 1 + s.to, { class: s.className }))
+}
+
 function decorations(doc: PMNode): DecorationSet {
   if (!hl) return DecorationSet.empty
   const decos: Decoration[] = []
   doc.descendants((node, pos) => {
     if (node.type.name !== 'codeBlock') return true
-    const lang = node.attrs.language as string | null
-    if (!lang || lang === 'plaintext') return false
-    for (const s of hl!.highlight(node.textContent, lang))
-      decos.push(Decoration.inline(pos + 1 + s.from, pos + 1 + s.to, { class: s.className }))
+    decos.push(...blockDecorations(node, pos))
     return false
   })
   return DecorationSet.create(doc, decos)
 }
 
-/** Loads the highlighter and any grammar a code block needs, then redraws. */
-function ensure(view: EditorView) {
+/**
+ * Typing elsewhere maps the old highlight; only code blocks the transaction touched are
+ * re-highlighted (M3-00: no whole-document pass per keystroke).
+ */
+function nextDecorations(tr: Transaction, old: DecorationSet): DecorationSet {
+  if (!hl) return old
+  let set = old.map(tr.mapping, tr.doc)
+  for (const { node, pos } of blocksInRanges(tr.doc, changedRanges(tr), 'codeBlock')) {
+    set = set.remove(set.find(pos, pos + node.nodeSize)).add(tr.doc, blockDecorations(node, pos))
+  }
+  return set
+}
+
+/** Loads the highlighter and any grammar the given code blocks need, then redraws. */
+function ensure(view: EditorView, blocks?: PMNode[]) {
   const langs = new Set<string>()
-  view.state.doc.descendants((node) => {
-    if (node.type.name === 'codeBlock' && node.attrs.language && node.attrs.language !== 'plaintext')
-      langs.add(node.attrs.language as string)
-    return node.type.name !== 'codeBlock'
-  })
+  const add = (node: PMNode) => {
+    const lang = langOf(node)
+    if (lang) langs.add(lang)
+  }
+  if (blocks) blocks.forEach(add)
+  else
+    view.state.doc.descendants((node) => {
+      if (node.type.name === 'codeBlock') add(node)
+      return node.type.name !== 'codeBlock'
+    })
   if (!langs.size) return
   void loadHighlighter().then(async (m) => {
     const fresh = (await Promise.all([...langs].map((l) => m.ensureLanguage(l)))).some(Boolean)
@@ -132,14 +161,22 @@ export const CodeBlockPlus = CodeBlock.extend({
         key,
         state: {
           init: (_, state) => decorations(state.doc),
-          apply: (tr, old, _o, state) => (tr.docChanged || tr.getMeta(key) ? decorations(state.doc) : old),
+          apply: (tr, old, _o, state) =>
+            tr.getMeta(key) ? decorations(state.doc) : tr.docChanged ? nextDecorations(tr, old) : old,
         },
         props: { decorations: (state) => key.getState(state) },
         view: (view) => {
           ensure(view)
           return {
             update: (v, prev) => {
-              if (v.state.doc !== prev.doc) ensure(v)
+              if (v.state.doc === prev.doc) return
+              // a new language (picker or paste) may need its grammar; look only at changed blocks
+              const changed = v.state.doc.content.findDiffStart(prev.doc.content)
+              const end = prev.doc.content.findDiffEnd(v.state.doc.content)
+              if (changed == null || !end) return
+              const ranges: [number, number][] = [[changed, Math.max(changed, end.b)]]
+              const blocks = blocksInRanges(v.state.doc, ranges, 'codeBlock').map((b) => b.node)
+              if (blocks.length) ensure(v, blocks)
             },
           }
         },
@@ -147,3 +184,6 @@ export const CodeBlockPlus = CodeBlock.extend({
     ]
   },
 })
+
+/** For tests: full vs incremental highlight, and loading the highlighter. */
+export const highlightInternals = { decorations, nextDecorations, load: loadHighlighter }

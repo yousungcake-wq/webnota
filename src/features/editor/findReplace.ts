@@ -11,6 +11,8 @@ export interface FindState {
   current: number
 }
 
+const decoCache = new WeakMap<object, DecorationSet>()
+
 export const findKey = new PluginKey<FindState>('findReplace')
 const EMPTY: FindState = { query: '', caseSensitive: false, matches: [], current: 0 }
 
@@ -106,12 +108,18 @@ export const FindReplace = Extension.create({
           decorations(state) {
             const f = findKey.getState(state)
             if (!f?.matches.length) return null
-            return DecorationSet.create(
-              state.doc,
-              f.matches.map((m, i) =>
-                Decoration.inline(m.from, m.to, { class: i === f.current ? 'find-match is-current' : 'find-match' }),
-              ),
-            )
+            // built once per find state: cursor moves and other plugins' updates reuse it (M3-00)
+            let set = decoCache.get(f)
+            if (!set) {
+              set = DecorationSet.create(
+                state.doc,
+                f.matches.map((m, i) =>
+                  Decoration.inline(m.from, m.to, { class: i === f.current ? 'find-match is-current' : 'find-match' }),
+                ),
+              )
+              decoCache.set(f, set)
+            }
+            return set
           },
         },
       }),
