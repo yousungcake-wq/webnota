@@ -14,6 +14,8 @@ import { gitBlobSha } from './encoding'
  *  4. Delete files of pages that no longer exist in the workspace. Legacy PoC files
  *     (`data/pages/<id>.yjs`) are merged in step 2, re-written at `data/docs/<id>.yjs`
  *     and deleted in the same commit (SY-02a).
+ *     Binary files waiting in the upload queue (`pendingFiles`, SY-04) are added as
+ *     `files/<sha256>.<ext>`; a file the tree already has is not uploaded again.
  *  5. Create one tree + one commit and fast-forward the branch. If another
  *     device pushed in between, the ref update is rejected and we go back to
  *     step 1 — the next round merges their changes first.
@@ -43,7 +45,23 @@ export interface LocalStore {
   /** blob sha per path, as last merged/pushed by this device */
   loadState(): SyncState
   saveState(state: SyncState): void
+  /** Binary files waiting for upload (SY-04). The dirty flag `FILES_DIRTY` says there are some. */
+  pendingFiles?(): Promise<PendingFile[]>
+  /** The files are in the repository now: drop them from the queue. */
+  filesUploaded?(ids: string[]): Promise<void>
 }
+
+export interface PendingFile {
+  /** `<sha256 hex>.<ext>` — the repository path is `files/<id>`. */
+  id: string
+  bytes: Uint8Array
+}
+
+/** Dirty-set entry meaning "the upload queue is not empty" (not a doc: `pathForDoc` is null). */
+export const FILES_DIRTY = 'files'
+export const FILES_DIR = 'files/'
+/** File ids are content addresses: lowercase sha-256 hex + a short extension. */
+export const FILE_ID = /^[0-9a-f]{64}\.[a-z0-9]{1,10}$/
 
 export interface SyncState {
   headSha: string | null
@@ -122,15 +140,24 @@ export async function syncOnce(
 
     // Known legacy files still to move keep the round going even with nothing dirty.
     const legacyPending = Object.keys(state.blobs).some(isLegacyPath)
-    if (head && head.commitSha === state.headSha && dirtyNames.length === 0 && !legacyPending) {
+    const filesGen = dirty[FILES_DIRTY]
+    if (
+      head &&
+      head.commitSha === state.headSha &&
+      dirtyNames.length === 0 &&
+      filesGen === undefined &&
+      !legacyPending
+    ) {
       return result
     }
 
     // ---- pull ----
     const remote = new Map<string, string>()
+    const remoteFiles = new Set<string>()
     if (head) {
       for (const e of await api.getTree(head.treeSha)) {
         if (docForPath(e.path)) remote.set(e.path, e.sha)
+        else if (e.path.startsWith(FILES_DIR)) remoteFiles.add(e.path)
       }
     }
     // Workspace first so we know which views exist before touching their files.
@@ -202,7 +229,22 @@ export async function syncOnce(
       }
     }
 
+    // Binary files (SY-04): content-addressed, so a path the tree has is the same file.
+    const uploadedFiles: string[] = []
+    if (filesGen !== undefined) {
+      for (const f of (await store.pendingFiles?.()) ?? []) {
+        uploadedFiles.push(f.id) // malformed ids are dropped from the queue, never retried
+        if (!FILE_ID.test(f.id)) continue
+        const path = FILES_DIR + f.id
+        if (remoteFiles.has(path)) continue
+        entries.push({ path, sha: await api.createBlob(f.bytes) })
+        remoteFiles.add(path)
+      }
+      pushedGens.push([FILES_DIRTY, filesGen])
+    }
+
     if (entries.length === 0) {
+      if (uploadedFiles.length) await store.filesUploaded?.(uploadedFiles)
       pushedGens.forEach(([n, g]) => store.clearDirty(n, g))
       return result
     }
@@ -220,6 +262,7 @@ export async function syncOnce(
     }
     state.headSha = commit
     store.saveState(state)
+    if (uploadedFiles.length) await store.filesUploaded?.(uploadedFiles)
     pushedGens.forEach(([n, g]) => store.clearDirty(n, g))
     result.pushed = entries.filter((e) => e.sha).length
     result.deleted = entries.filter((e) => !e.sha).length

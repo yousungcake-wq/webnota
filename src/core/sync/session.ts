@@ -4,6 +4,7 @@
 import { debugLog } from '../flags'
 import { t } from '../i18n'
 import { clearDirty, getDirty, openDoc, retainDoc } from '../docs/registry'
+import { filesUploaded, pendingFiles } from '../files/upload'
 import { isReadOnly } from '../schema/gate'
 import { disconnect, saveAccount, setSyncState, type Account } from './controller'
 import { ConflictRetryError, syncOnce, type LocalStore, type SyncState } from './engine'
@@ -32,6 +33,8 @@ function localStore(a: Account, releases: (() => void)[]): LocalStore {
       }
     },
     saveState: (s: SyncState) => localStorage.setItem(stateKey(a), JSON.stringify(s)),
+    pendingFiles,
+    filesUploaded,
   }
 }
 

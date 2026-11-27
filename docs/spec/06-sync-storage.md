@@ -45,6 +45,7 @@
 
 - 업로드: 파일 → SHA-256 → `files/<sha256>.<ext>`. 이미 있으면 업로드를 건너뜁니다 (중복 제거).
 - 업로드는 다음 동기화 커밋에 포함합니다. 오프라인이면 IndexedDB `pendingFiles`에 보관합니다.
+  - ✅ M3-01 구현: `core/files/upload.ts`의 `addFile(blob, name)` → `FileRef {id, name, size, mime}` (`id` = `<sha256 hex>.<ext>`, 확장자는 이름 → MIME → `bin`). 파일 바이트는 워크스페이스별 IndexedDB `wn:<wsId>:$files`(`core/files/db.ts`)의 `pending` 저장소(업로드 대기)와 `cache` 저장소(표시용, M3-02)에 넣고, 더티 집합에 `files` 항목(`FILES_DIRTY`, 문서가 아님)을 올려 동기화를 예약합니다. 엔진은 `files` 더티가 있으면 `LocalStore.pendingFiles()`를 읽어 트리에 없는 것만 블롭으로 올리고 같은 커밋에 `files/<id>`로 넣습니다. 커밋이 성공하면 `filesUploaded(ids)`로 대기열에서 지웁니다(읽기 전용·재시도 중에는 유지). 형식이 잘못된 id는 올리지 않고 대기열에서 버립니다. `files/` 경로는 문서로 풀(pull)하지 않습니다.
 - 표시: 비공개 저장소라 공개 URL이 없습니다. `GET /repos/.../git/blobs/:sha`(인증)로 받아 IndexedDB 캐시(`fileCache`, LRU 200MB) → `URL.createObjectURL`.
   - 대안: `raw.githubusercontent.com`은 비공개 저장소에서 토큰 헤더로 CORS가 안 되므로 쓰지 않습니다.
 - 이미지 처리: 업로드 전 긴 변 2560px로 축소, WebP 변환(지원 시), EXIF 회전 반영. 원본 유지 옵션도 둡니다.

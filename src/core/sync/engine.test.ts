@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import * as Y from 'yjs'
 import { createView, deleteViewPermanently, listViews, updateView } from '../model/views'
 import { gitBlobSha } from './encoding'
-import { docForPath, pathForDoc, syncOnce, type GitApi, type LocalStore, type SyncState } from './engine'
+import { docForPath, FILES_DIRTY, pathForDoc, syncOnce, type GitApi, type LocalStore, type SyncState } from './engine'
 
 /** In-memory imitation of GitHub's Git Data API (fast-forward-only ref updates). */
 class FakeRemote implements GitApi {
@@ -360,5 +360,87 @@ describe('sync engine', () => {
       expect(docForPath('files/abc.png')).toBeNull()
       expect(docForPath('data/docs/../x.yjs')).toBeNull()
     })
+  })
+})
+
+/** A device with an upload queue (SY-04): `files` is the IndexedDB `pendingFiles` store. */
+class FileDevice extends Device {
+  pending = new Map<string, Uint8Array>()
+  addFile(id: string, bytes: Uint8Array) {
+    this.pending.set(id, bytes)
+    this.dirty[FILES_DIRTY] = (this.dirty[FILES_DIRTY] ?? 0) + 1
+  }
+  async pendingFiles() {
+    return [...this.pending].map(([id, bytes]) => ({ id, bytes }))
+  }
+  async filesUploaded(ids: string[]) {
+    ids.forEach((id) => this.pending.delete(id))
+  }
+}
+const sha = (c: string) => c.repeat(64)
+
+describe('sync engine: files (SY-04, M3-01)', () => {
+  it('uploads pending files under files/ in the next sync commit and empties the queue', async () => {
+    const remote = new FakeRemote()
+    const a = new FileDevice()
+    a.addFile(`${sha('a')}.png`, new Uint8Array([1, 2, 3]))
+    const r = await syncOnce(remote, a)
+    expect(remote.files()).toEqual([`files/${sha('a')}.png`])
+    expect(r.pushed).toBe(1)
+    expect(a.pending.size).toBe(0)
+    expect(a.dirty).toEqual({})
+  })
+  it('a file alone (nothing else dirty) starts a commit; doc edits go in the same commit', async () => {
+    const remote = new FakeRemote()
+    const a = new FileDevice()
+    const id = createView(a.ws, { title: 'P' })
+    a.type(id, 0, 'x')
+    await syncOnce(remote, a)
+    const commits = remote.commits.size
+    a.addFile(`${sha('b')}.pdf`, new Uint8Array([9]))
+    a.type(id, 1, 'y')
+    await syncOnce(remote, a)
+    expect(remote.commits.size).toBe(commits + 1)
+    expect(remote.files()).toContain(`files/${sha('b')}.pdf`)
+  })
+  it('skips the upload when the repository already has the file (dedupe by content hash)', async () => {
+    const remote = new FakeRemote()
+    await remote.seed({ [`files/${sha('c')}.jpg`]: new Uint8Array([7, 7]) })
+    const a = new FileDevice()
+    a.addFile(`${sha('c')}.jpg`, new Uint8Array([7, 7]))
+    remote.requests = 0
+    const r = await syncOnce(remote, a)
+    expect(r.pushed).toBe(0)
+    expect(a.pending.size).toBe(0)
+    expect(a.dirty).toEqual({})
+  })
+  it('keeps files queued while pushing is blocked (read-only) and when the commit is retried', async () => {
+    const remote = new FakeRemote()
+    const a = new FileDevice()
+    a.addFile(`${sha('d')}.png`, new Uint8Array([1]))
+    await syncOnce(remote, a, { canPush: () => false })
+    expect(a.pending.size).toBe(1)
+    expect(a.dirty[FILES_DIRTY]).toBeDefined()
+    const b = new Device()
+    remote.beforeUpdateHead = async () => {
+      createView(b.ws, { title: 'other device' })
+      await syncOnce(remote, b)
+    }
+    await syncOnce(remote, a)
+    expect(a.pending.size).toBe(0)
+    expect(remote.files()).toContain(`files/${sha('d')}.png`)
+  })
+  it('ignores malformed file ids and never pulls files/ as docs', async () => {
+    const remote = new FakeRemote()
+    const a = new FileDevice()
+    a.addFile('../data/workspace.yjs', new Uint8Array([1]))
+    await syncOnce(remote, a)
+    expect(remote.files()).toEqual([])
+    expect(a.pending.size).toBe(0) // dropped, not retried forever
+    await remote.seed({ [`files/${sha('e')}.png`]: new Uint8Array([5]) })
+    const b = new FileDevice()
+    const r = await syncOnce(remote, b)
+    expect(r.pulled).toBe(0)
+    expect(pathForDoc('files')).toBeNull()
   })
 })
