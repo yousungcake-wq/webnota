@@ -14,7 +14,8 @@
     "size": "node scripts/check-size.mjs",
     "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm run size",
     "e2e": "playwright test",
-    "perf": "node tests/perf/baseline.mjs"
+    "perf": "node tests/perf/baseline.mjs",
+    "perf:db": "node tests/perf/database.mjs"
   },
   "dependencies": {
     "@tiptap/core": "^3.35.0",

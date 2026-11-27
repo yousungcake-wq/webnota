@@ -48,6 +48,8 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
   let search = ''
   let docs: DbDocs | null = null
   let runner: QueryRunner | null = null
+  /** Row snapshots by id, stable until the row changes (memoized grid rows, M4-14). */
+  const rowCache = new Map<string, RowSnapshot | null>()
 
   const queryInput = (fields: FieldMeta[], view: ViewSettings | null) => ({
     fields,
@@ -65,26 +67,37 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
     runner.setQuery(queryInput(fields, view))
   }
 
+  // phases of opening, for tests/perf/database.mjs (performance marks are cheap)
+  performance.mark('db:open')
   void openDatabase(dbId).then(({ docs: d, release }) => {
     if (closed) return release()
+    performance.mark('db:docs')
     docs = d
     const fields = listFields(d)
     const view = readViewSettings(d, viewId)
-    const onResult = (result: QueryResult) =>
+    const onResult = (result: QueryResult) => {
+      if (!store.get()) performance.mark('db:query')
       store.set((s) =>
         s
           ? { ...s, result, rowsVersion: s.rowsVersion + 1 }
           : { docs: d, meta: readDbMeta(d), fields, view, result, rowsVersion: 0, search },
       )
-    runner = createQueryRunner({ ...queryInput(fields, view), rows: listRows(d) }, onResult)
+    }
+    const all = listRows(d)
+    for (const r of all) rowCache.set(r.id, r)
+    performance.mark('db:rows')
+    runner = createQueryRunner({ ...queryInput(fields, view), rows: all }, onResult)
     const offRows = observeRows(d, (ids) => {
       const upserts: RowSnapshot[] = []
       const deletes: string[] = []
       for (const id of ids) {
         const r = getRow(d, id)
+        rowCache.set(id, r)
         if (r) upserts.push(r)
         else deletes.push(id)
       }
+      // repaint the changed cells now; order and filter follow when the query answers (worker)
+      store.set((s) => s && { ...s, rowsVersion: s.rowsVersion + 1 })
       runner!.apply({ upserts, deletes })
     })
     const offSchema = observeSchema(d, refreshSchema)
@@ -105,7 +118,12 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
       store.set((s) => s && { ...s, search: q })
       if (docs && runner) runner.setQuery(queryInput(listFields(docs), readViewSettings(docs, viewId)))
     },
-    row: (id) => (docs ? getRow(docs, id) : null),
+    row(id) {
+      if (!docs) return null
+      let r = rowCache.get(id)
+      if (r === undefined) rowCache.set(id, (r = getRow(docs, id)))
+      return r
+    },
     close() {
       closed = true
       cleanup?.()

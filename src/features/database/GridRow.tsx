@@ -11,6 +11,15 @@ export interface GridPos {
   fieldId: string
 }
 
+/** Row callbacks, one stable object for every row so memoized rows skip re-rendering. */
+export interface GridRowActions {
+  onCellPointer: (rowId: string, fieldId: string, e: React.PointerEvent) => void
+  onToggle: (rowId: string, fieldId: string) => void
+  onFinishEdit: (text: string | null, move?: 'down' | 'right' | 'left') => void
+  /** Gutter "+" (insert below), handle press (menu / drag / select), primary-cell "open". */
+  onRowAction: (rowId: string, action: 'insert' | 'handle' | 'open', e: React.PointerEvent | React.MouseEvent) => void
+}
+
 /** One grid row: frozen cells, a spacer, the visible window of cells, a spacer (DB-G01). */
 export const GridRow = memo(function GridRow({
   row,
@@ -18,17 +27,15 @@ export const GridRow = memo(function GridRow({
   top,
   height,
   columns,
-  colRange,
+  colFrom,
+  colTo,
   readOnly,
   activeField,
   rangeCols,
   editing,
-  onCellPointer,
-  onToggle,
-  onFinishEdit,
+  actions,
   selected,
   primaryId,
-  onRowAction,
 }: {
   row: RowSnapshot
   index: number
@@ -36,21 +43,19 @@ export const GridRow = memo(function GridRow({
   /** null: grows with wrapped content (measured by the grid, DB-G08). */
   height: number | null
   columns: Column[]
-  colRange: { from: number; to: number }
+  colFrom: number
+  colTo: number
   readOnly: boolean
   activeField: string | null
   /** "c0:c1" when this row is inside a range selection (DB-G04). */
   rangeCols: string | null
   editing: (GridPos & { initial: string }) | null
-  onCellPointer: (rowId: string, fieldId: string, e: React.PointerEvent) => void
-  onToggle: (rowId: string, fieldId: string) => void
-  onFinishEdit: (text: string | null, move?: 'down' | 'right' | 'left') => void
+  actions: GridRowActions
   selected: boolean
   primaryId: string
-  /** Gutter "+" (insert below), handle press (menu / drag / select), primary-cell "open". */
-  onRowAction: (rowId: string, action: 'insert' | 'handle' | 'open', e: React.PointerEvent | React.MouseEvent) => void
 }) {
-  const { frozen, shown, before, after } = renderedColumns(columns, colRange)
+  const { onCellPointer, onToggle, onFinishEdit, onRowAction } = actions
+  const { frozen, shown, before, after } = renderedColumns(columns, { from: colFrom, to: colTo })
   const [c0, c1] = rangeCols ? rangeCols.split(':').map(Number) : [-1, -1]
   const cell = (c: Column) => {
     const isEditing = editing?.fieldId === c.field.id

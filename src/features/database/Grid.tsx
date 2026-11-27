@@ -23,7 +23,7 @@ import { clearRect, copyRect, pasteTSV, rectOf } from './gridClipboard'
 import { RowSheet } from './RowSheet'
 import { CalcRow } from './CalcRow'
 import { GridHeader } from './GridHeader'
-import { GridRow, type GridPos as Pos } from './GridRow'
+import { GridRow, type GridPos as Pos, type GridRowActions } from './GridRow'
 import { fixedLayout, measuredLayout, visibleColumns } from './rowLayout'
 import { useScrollBox } from './useScrollBox'
 import './grid.css'
@@ -59,6 +59,14 @@ export function Grid({
   const bodyRef = useRef<HTMLDivElement>(null)
   const box = useScrollBox(scrollRef)
   const [active, setActive] = useState<Pos | null>(null)
+  // one stable callbacks object for memoized rows; it calls the handlers of the last render
+  const latest = useRef<GridRowActions | null>(null)
+  const [rowActions] = useState<GridRowActions>(() => ({
+    onCellPointer: (...a) => latest.current!.onCellPointer(...a),
+    onToggle: (...a) => latest.current!.onToggle(...a),
+    onFinishEdit: (...a) => latest.current!.onFinishEdit(...a),
+    onRowAction: (...a) => latest.current!.onRowAction(...a),
+  }))
   /** Range selection (DB-G04): from `anchor` to `active`. */
   const [anchor, setAnchor] = useState<Pos | null>(null)
   const [editing, setEditing] = useState<(Pos & { initial: string }) | null>(null)
@@ -238,11 +246,11 @@ export function Grid({
       // touch: act on a tap (no scroll in between); a tap edits right away on phones
       const x0 = e.clientX
       const y0 = e.clientY
-      const t0 = Date.now()
+      const t0 = e.timeStamp
       const again = active?.rowId === rowId && active.fieldId === fieldId
       const up = (ev: PointerEvent) => {
         window.removeEventListener('pointerup', up)
-        if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 8 || Date.now() - t0 > 600) return
+        if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 8 || ev.timeStamp - t0 > 600) return
         setActive(pos)
         setAnchor(null)
         if (phone || again) startEdit(pos)
@@ -367,6 +375,10 @@ export function Grid({
     toggle({ rowId, fieldId })
   }
 
+  useLayoutEffect(() => {
+    latest.current = { onCellPointer, onToggle, onFinishEdit: finishEdit, onRowAction }
+  })
+
   return (
     <>
       {selected.size > 0 && (
@@ -425,17 +437,15 @@ export function Grid({
                 top={layout.top(index)}
                 height={autoHeight ? null : rowH}
                 columns={columns}
-                colRange={colRange}
+                colFrom={colRange.from}
+                colTo={colRange.to}
                 readOnly={readOnly}
                 activeField={active?.rowId === id ? active.fieldId : null}
                 rangeCols={multi && rect && index >= rect.r0 && index <= rect.r1 ? rangeKey(rect) : null}
                 editing={!phone && editing?.rowId === id ? editing : null}
-                onCellPointer={onCellPointer}
-                onToggle={onToggle}
-                onFinishEdit={finishEdit}
+                actions={rowActions}
                 selected={selected.has(id)}
                 primaryId={primaryId}
-                onRowAction={onRowAction}
               />
             )
           })}

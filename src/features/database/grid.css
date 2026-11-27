@@ -425,3 +425,16 @@ textarea.dbc-editor {
     display: none !important;
   }
 }
+/* M4-14: rows and cells lay out independently (cheaper style/layout while scrolling) */
+.dbg-row {
+  contain: layout style;
+}
+.dbg-cell {
+  contain: layout style paint;
+}
+.dbg-row.is-auto .dbg-cell {
+  contain: none;
+}
+.dbg-cell.is-editing {
+  contain: none;
+}

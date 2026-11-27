@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M4 데이터베이스 I (M3 완료 — 실기기 확인은 docs/QA.md "M3"(와 M2·M1), 사용자 확인 대기. 링크 미리보기는 Worker 재배포 필요)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 14/16
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 15/16
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M4-14 성능 벤치(10k행). 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
+- **다음 할 일**: M4-15 e2e·성능 기록·실기기 QA, M5 세부화. 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -55,6 +55,8 @@
 - DB 화면 상태 (M4-04): `useDbSession(dbId, viewId)` → `{session, state}` (`state.result.rowIds`, `fields`, `view`, 셀은 `session.row(id)`). 행 변경은 `rowsVersion`으로 다시 그림. **DB 변경은 `state.docs`에 core/model/database 함수로만.**
 
 - DB 화면 구조 (M4-05): `features/database`는 **평평하게**(하위 폴더는 상위를 import할 수 없음 — `query/`, `i18n/`처럼 잎 모듈만). 그리드 `Grid.tsx`, 셀 표시 `CellView.tsx`, 편집기 `CellEditor.tsx`, 입력 해석 `cellEdit.ts`. e2e는 `openQaDatabase(page)`·`gridCell(page, row, '열 이름')`(helpers). 편집을 시작하는 pointerdown은 preventDefault해야 포커스가 그리드로 돌아가지 않음.
+
+- **DB 성능 과제 (M4-14)**: 4× 감속에서 10k행 열기 2.3s(목표 800ms) — 대부분 IndexedDB에서 Yjs 문서를 적용하는 시간(행당 Y.Map 2개). 후보: 첫 화면용 행 스냅샷 캐시(IndexedDB에 쿼리 결과·보이는 행 저장 후 문서 로드와 병행), 샤드를 점진 적용. 스크롤 31fps는 헤드리스 소프트웨어 렌더링 영향이 커서 실기기 확인 필요. 행 컴포넌트는 메모되어 있으니 **GridRow에 새 객체 prop을 넘기지 말 것**(콜백은 `rowActions`).
 
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
 - GitHub 로그인 (2026-11-27 설정 완료, 사용자가 실기기 로그인 확인): Worker `https://webnota-auth.yousungcake.workers.dev`(Actions가 배포, `/token`·`/unfurl` 동작 확인), 저장소 Variables `WEBNOTA_GITHUB_CLIENT_ID`·`WEBNOTA_AUTH_PROXY_URL`, Secrets `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`·`WEBNOTA_GITHUB_CLIENT_SECRET`. 작업 환경의 `gh`로 Actions 변수·비밀은 읽고 쓸 수 없음(403) — `gh workflow run`은 가능. Cloudflare 토큰이 만료되면 worker 작업이 실패해 Pages 배포도 멈춤.
@@ -170,3 +172,4 @@
 | 2026-11-27 | M4-11: 필드 UI(헤더 + 추가, 필드 메뉴: 이름·유형 변환·유형별 옵션·줄 바꿈·삽입·고정·숨기기·복제·삭제, 헤더 드래그 이동·폭 조절) | ba24b41 |
 | 2026-11-27 | M4-12: 설정 바(필터 AND/OR 그룹·정렬 우선순위·속성 표시·행 검색)와 계산 행 | 8ee824c |
 | 2026-11-27 | M4-13: 폰 Grid(44px 행, 탭 → 편집 시트, 고정 열 140px 제한, 카드 목록 보기, 전체 높이 설정 시트) | 47b92fc |
+| 2026-11-27 | M4-14: DB 성능 벤치(perf:db) + 행 스냅샷 캐시·메모 행·containment(4×: 열기 2.3s·31fps·편집 16ms·필터 111ms / 1×: 641ms·60fps) | HASH |
