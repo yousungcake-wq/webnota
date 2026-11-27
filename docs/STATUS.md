@@ -162,4 +162,4 @@
 | 2026-11-27 | M4-03: 쿼리 엔진 runQuery/compileQuery(필터 전 조건·AND/OR·상대 날짜, 다중 정렬·ko 콜레이터·빈 값 마지막, 계산 14종) + 전수·fast-check 속성 테스트 | 5c73b31 |
 | 2026-11-27 | M4-04: 증분 쿼리(createLiveQuery·observeRows)·워커(5,000행 이상)·DB 세션(useDbSession) + 증분=전체 재계산 속성 테스트 | ddf9ef0 |
 | 2026-11-27 | M4-05: 기본 Grid + text·number(서식·통화)·checkbox·url·만든/수정 시각·소요 시간 셀 표시·편집, DB 뷰 아이콘, QA seed-db | 11320c5 |
-| 2026-11-27 | M4-06: select/multiSelect 옵션 팝오버(검색·생성·이름·색·삭제·순서), 날짜 달력(종료일·시간·형식), 체크리스트, 선택 색 토큰 10색, 폰 시트 | HASH |
+| 2026-11-27 | M4-06: select/multiSelect 옵션 팝오버(검색·생성·이름·색·삭제·순서), 날짜 달력(종료일·시간·형식), 체크리스트, 선택 색 토큰 10색, 폰 시트 | 10a45d2 |
