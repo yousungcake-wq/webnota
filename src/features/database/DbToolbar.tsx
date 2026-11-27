@@ -1,5 +1,6 @@
 import {
   ArrowUpDown,
+  CalendarDays,
   Filter as FilterIcon,
   KanbanSquare,
   LayoutList,
@@ -13,6 +14,7 @@ import type { FilterGroup } from '@/core/model/database'
 import { useLayout } from '@/platform/layout'
 import { Overlay } from '@/ui'
 import { BoardPanel } from './BoardPanel'
+import { CalendarPanel } from './CalendarPanel'
 import { FilterPanel } from './FilterPanel'
 import { dt } from './i18n'
 import { PropsPanel } from './PropsPanel'
@@ -38,14 +40,22 @@ export function DbToolbar({
   onToggleCards?: () => void
 }) {
   const phone = useLayout().layout === 'phone'
-  const [open, setOpen] = useState<{ panel: 'filter' | 'sort' | 'props' | 'board'; anchor: HTMLElement } | null>(null)
+  const [open, setOpen] = useState<{
+    panel: 'filter' | 'sort' | 'props' | 'board' | 'calendar'
+    anchor: HTMLElement
+  } | null>(null)
   const [searching, setSearching] = useState(state.search !== '')
   const view = state.view
   if (!view) return null
   const filters = countFilters(view.filter)
   const sorts = view.sorts.length
   const hidden = state.fields.filter((f) => view.fields[f.id]?.visible === false).length
-  const button = (panel: 'filter' | 'sort' | 'props' | 'board', Icon: typeof Search, label: string, count: number) => (
+  const button = (
+    panel: 'filter' | 'sort' | 'props' | 'board' | 'calendar',
+    Icon: typeof Search,
+    label: string,
+    count: number,
+  ) => (
     <button
       type="button"
       className={`db-barbtn${count ? ' is-on' : ''}`}
@@ -62,6 +72,7 @@ export function DbToolbar({
     sort: dt('db.bar.sort'),
     props: dt('db.bar.props'),
     board: dt('db.board.settings'),
+    calendar: dt('db.cal.settings'),
   }
   return (
     <div className="db-bar" role="toolbar" aria-label={dt('db.bar.filter') + ' · ' + dt('db.bar.sort')}>
@@ -103,6 +114,7 @@ export function DbToolbar({
       {button('sort', ArrowUpDown, dt('db.bar.sort'), sorts)}
       {button('props', ListChecks, dt('db.bar.props'), hidden)}
       {view.layout === 'board' && button('board', KanbanSquare, dt('db.board.settings'), 0)}
+      {view.layout === 'calendar' && button('calendar', CalendarDays, dt('db.cal.settings'), 0)}
       {cards !== undefined && (
         <button
           type="button"
@@ -119,6 +131,8 @@ export function DbToolbar({
           <div className="db-pop db-panel">
             {open.panel === 'filter' ? (
               <FilterPanel docs={state.docs} view={view} fields={state.fields} />
+            ) : open.panel === 'calendar' ? (
+              <CalendarPanel docs={state.docs} view={view} fields={state.fields} />
             ) : open.panel === 'board' ? (
               <BoardPanel docs={state.docs} view={view} fields={state.fields} />
             ) : open.panel === 'sort' ? (

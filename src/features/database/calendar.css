@@ -1,0 +1,152 @@
+/* Calendar (M5-06, spec/05 §6) */
+.dbc-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  margin-bottom: 4px;
+}
+.dbc-month {
+  margin: 0 8px 0 0;
+  font-size: var(--fs-lg, 18px);
+  font-weight: 600;
+}
+.dbc-picker {
+  width: auto;
+  margin-left: auto;
+}
+.dbc-grid {
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.dbc-weekdays,
+.dbc-week {
+  display: grid;
+}
+.dbc-weekday,
+.dbc-weekdays .dbc-wn {
+  padding: 6px 8px;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+.dbc-week {
+  position: relative;
+  min-height: 118px;
+}
+.dbc-week + .dbc-week {
+  border-top: 1px solid var(--border);
+}
+.dbc-wn {
+  padding: 6px 4px;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.dbc-day {
+  position: relative;
+  min-width: 0;
+  padding: 4px 6px;
+  text-align: right;
+}
+.dbc-day + .dbc-day {
+  border-left: 1px solid var(--border);
+}
+.dbc-day.is-other {
+  background: var(--bg-side);
+  color: var(--text-3);
+}
+.dbc-date {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  font-size: var(--fs-sm);
+}
+.dbc-day.is-today .dbc-date {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+}
+.dbc-more {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 2px;
+  height: 18px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--fs-xs);
+  text-align: left;
+  cursor: pointer;
+}
+.dbc-more:hover {
+  background: var(--bg-hover);
+}
+.dbc-bars {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+.dbc-event {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-elev);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.dbc-event:hover {
+  border-color: var(--border-strong);
+}
+.dbc-event.is-cont-before {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left-style: dashed;
+}
+.dbc-event.is-cont-after {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right-style: dashed;
+}
+.dbc-event .db-card-title {
+  flex: 0 1 auto;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dbc-event .db-card-prop {
+  flex: 0 1 auto;
+  font-size: inherit;
+}
+.dbc-event.is-static {
+  position: static;
+  width: 100%;
+  height: 32px;
+  margin-bottom: 4px;
+}
+.dbc-daylist {
+  min-width: 240px;
+}
