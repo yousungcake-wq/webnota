@@ -402,3 +402,17 @@
   width: 100%;
   padding: 8px 0;
 }
+.db-sep {
+  height: 1px;
+  margin: 2px 0;
+  background: var(--border);
+}
+.db-typeopts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.db-option-create:disabled {
+  color: var(--text-3);
+  cursor: default;
+}

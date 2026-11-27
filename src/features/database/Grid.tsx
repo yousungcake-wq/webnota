@@ -372,7 +372,15 @@ export function Grid({
         onCut={(e) => onCopy(e, true)}
         onPaste={onPaste}
       >
-        <GridHeader columns={columns} colRange={colRange} />
+        <GridHeader
+          columns={columns}
+          colRange={colRange}
+          docs={docs}
+          fields={state.fields}
+          view={state.view}
+          primaryId={primaryId}
+          readOnly={readOnly}
+        />
         <div ref={bodyRef} className="dbg-body" style={{ width: totalWidth, height: layout.total }}>
           {rowIds.slice(start, end).map((id, k) => {
             const row = session.row(id)

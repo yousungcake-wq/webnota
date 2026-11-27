@@ -345,4 +345,101 @@ test.describe('database (M4)', () => {
     await expect(await gridCell(page, 0, 'Name')).toHaveText('')
     noErrors()
   })
+
+  test('fields: add, rename, change type (confirm + undo), insert, hide, duplicate, delete, wrap, resize, move (M4-11)', async ({
+    page,
+  }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    const headers = () => page.locator('.dbg-hcell .dbg-hname').allTextContents()
+    const grid = page.getByRole('grid')
+
+    // primary field: no type change, no delete, no hide
+    await page.getByRole('button', { name: '필드 메뉴: Name' }).click()
+    let menu = page.getByRole('dialog', { name: '필드 메뉴: Name' })
+    await expect(menu.getByRole('button', { name: /^유형/ })).toBeDisabled()
+    await expect(menu.getByRole('button', { name: '필드 삭제' })).toHaveCount(0)
+    await expect(menu.getByRole('button', { name: '숨기기' })).toHaveCount(0)
+    // wrap the primary field: rows grow to fit (DB-G08)
+    await menu.getByRole('switch', { name: '줄 바꿈' }).click()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.dbg-row.is-auto').first()).toBeVisible()
+    const name0 = await gridCell(page, 0, 'Name')
+    await name0.click()
+    await page.keyboard.press('Enter')
+    await page.keyboard.press('End')
+    await page.keyboard.press('Shift+Enter')
+    await page.keyboard.type('second line')
+    await page.keyboard.press('Enter')
+    await expect.poll(async () => (await page.locator('.dbg-row').first().boundingBox())!.height).toBeGreaterThan(45)
+
+    // add a text field from "+", it opens its menu: rename
+    await page.getByRole('button', { name: '필드 추가' }).click()
+    await page.getByRole('dialog', { name: '필드 추가' }).getByRole('option', { name: '텍스트' }).click()
+    menu = page.getByRole('dialog', { name: '필드 메뉴: 텍스트' })
+    await menu.getByLabel('필드 이름').fill('Code')
+    await page.keyboard.press('Enter')
+    await expect.poll(headers).toContain('Code')
+    // values, then convert to number: one value is lost → confirm, then undo
+    for (const [i, v] of ['12', 'abc'].entries()) {
+      const c = await gridCell(page, i, 'Code')
+      await c.click()
+      await page.keyboard.type(v)
+      await page.keyboard.press('Enter')
+    }
+    await page.getByRole('button', { name: '필드 메뉴: Code' }).click()
+    menu = page.getByRole('dialog', { name: '필드 메뉴: Code' })
+    await menu.getByRole('button', { name: /^유형/ }).click()
+    await menu.getByRole('option', { name: '숫자' }).click()
+    await expect(page.getByRole('alertdialog')).toContainText('1개 셀의 값이 사라집니다')
+    await page.getByRole('alertdialog').getByRole('button', { name: '바꾸기' }).click()
+    await expect(await gridCell(page, 0, 'Code')).toHaveText('12')
+    await expect(await gridCell(page, 1, 'Code')).toHaveText('')
+    await page.getByRole('button', { name: '실행 취소' }).click()
+    await expect(await gridCell(page, 1, 'Code')).toHaveText('abc')
+
+    // insert left, duplicate, hide, delete
+    await page.getByRole('button', { name: '필드 메뉴: Code' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: '왼쪽에 삽입' }).click()
+    await expect.poll(async () => (await headers()).slice(-2)).toEqual(['텍스트', 'Code'])
+    await page.getByRole('button', { name: '필드 메뉴: Code' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: '복제' }).click()
+    await expect.poll(headers).toContain('Code 복사본')
+    await expect(await gridCell(page, 1, 'Code 복사본')).toHaveText('abc')
+    await page.getByRole('button', { name: '필드 메뉴: Code 복사본' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: '숨기기' }).click()
+    await expect.poll(headers).not.toContain('Code 복사본')
+    await page.getByRole('button', { name: '필드 메뉴: 텍스트' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: '필드 삭제' }).click()
+    await page.getByRole('alertdialog').getByRole('button', { name: '필드 삭제' }).click()
+    await expect.poll(headers).not.toContain('텍스트')
+
+    // resize Name by its edge
+    await grid.evaluate((el) => (el.scrollLeft = 0))
+    const nameHeader = page.locator('.dbg-hcell', { hasText: 'Name' })
+    const before = (await nameHeader.boundingBox())!
+    const edge = nameHeader.getByRole('separator')
+    const eb = (await edge.boundingBox())!
+    await page.mouse.move(eb.x + 3, eb.y + 10)
+    await page.mouse.down()
+    await page.mouse.move(eb.x + 80, eb.y + 10, { steps: 5 })
+    await page.mouse.up()
+    await expect.poll(async () => (await nameHeader.boundingBox())!.width).toBeGreaterThan(before.width + 60)
+
+    // drag Done before Amount
+    const amount = page.getByRole('button', { name: '필드 메뉴: Amount' })
+    const done = page.getByRole('button', { name: '필드 메뉴: Done' })
+    const ab = (await amount.boundingBox())!
+    const db = (await done.boundingBox())!
+    await page.mouse.move(db.x + db.width / 2, db.y + 10)
+    await page.mouse.down()
+    await page.mouse.move(ab.x + 20, ab.y + 10, { steps: 6 })
+    await page.mouse.move(ab.x + 10, ab.y + 10, { steps: 2 })
+    await page.mouse.up()
+    await expect.poll(async () => (await headers()).slice(0, 3)).toEqual(['Name', 'Done', 'Amount'])
+
+    await reload(page)
+    await expect.poll(async () => (await headers()).slice(0, 3)).toEqual(['Name', 'Done', 'Amount'])
+    noErrors()
+  })
 })
