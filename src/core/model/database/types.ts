@@ -188,6 +188,34 @@ export interface ViewFieldSettings {
 
 export type DbLayout = 'grid' | 'board' | 'calendar'
 
+/** Board grouping (spec/02 §4.1, M5-02). Keys: see `group.ts`. */
+export interface GroupSettings {
+  fieldId: string
+  /** Hide the "no value" column. */
+  hideEmpty: boolean
+  /** Column order (FracKey per group key); keys without one follow in natural order. */
+  order: Record<string, string>
+  hidden: string[]
+  /** Date fields: column per day / week / month (default) / year. */
+  dateUnit?: 'day' | 'week' | 'month' | 'year'
+}
+
+/** Board options (DB-K06). */
+export interface BoardSettings {
+  /** Properties shown on cards (default: none but the title). */
+  cardFields?: string[]
+  /** Media field whose first image is the card cover (null: none). */
+  coverFieldId?: string | null
+}
+
+/** Calendar options (DB-C02, DB-C06). */
+export interface CalendarSettings {
+  dateFieldId: string | null
+  firstDayOfWeek: 0 | 1
+  showWeekends: boolean
+  showWeekNumbers: boolean
+}
+
 export interface ViewSettings {
   id: string
   layout: DbLayout
@@ -196,6 +224,9 @@ export interface ViewSettings {
   sorts: Sort[]
   calcs: Record<string, CalcType>
   frozenColumns: number
+  group: GroupSettings | null
+  board: BoardSettings
+  calendar: CalendarSettings | null
 }
 
 export interface DbMeta {

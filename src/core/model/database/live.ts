@@ -1,4 +1,4 @@
-import { calculate, compileQuery, type CompiledQuery, type QueryInput, type QueryResult } from './query'
+import { calculate, compileQuery, groupsOf, type CompiledQuery, type QueryInput, type QueryResult } from './query'
 import type { RowSnapshot } from './types'
 
 /**
@@ -79,7 +79,7 @@ export function createLiveQuery(input: QueryInput): LiveQuery {
         const field = fields.get(fieldId)
         if (field) calcs[fieldId] = calculate(calc, field, visible)
       }
-      cached = { rowIds: visible.map((r) => r.id), calcs }
+      cached = { rowIds: visible.map((r) => r.id), calcs, ...groupsOf(query, visible) }
       return cached
     },
     rowCount: () => rows.size,

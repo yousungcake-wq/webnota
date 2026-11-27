@@ -79,6 +79,9 @@ MARKS_AT_VERSION[19] = MARKS_AT_VERSION[18]
 // v20 (feedback): media layout attributes only.
 NODES_AT_VERSION[20] = NODES_AT_VERSION[19]
 MARKS_AT_VERSION[20] = MARKS_AT_VERSION[19]
+// v21 (M5-01): database view tabs, board / calendar — no editor change.
+NODES_AT_VERSION[21] = NODES_AT_VERSION[20]
+MARKS_AT_VERSION[21] = MARKS_AT_VERSION[20]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

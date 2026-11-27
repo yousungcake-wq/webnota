@@ -8,6 +8,7 @@ AppFlowy `plugins/database/{grid,board,calendar,tab_bar,widgets}`를 기준으�
 - **뷰**: 같은 데이터를 보는 방식입니다 (Grid, Board, Calendar). 뷰마다 필터, 정렬, 그룹, 필드 표시 설정이 따로 있습니다.
 - **탭 바**: 한 데이터베이스의 여러 뷰를 상단 탭으로 전환합니다 (AppFlowy `tab_bar`). 탭 추가 = 새 뷰(레이아웃 선택), 이름 바꾸기, 복제, 삭제, 순서 변경.
 - **연결된 뷰**: 사이드바나 문서 안에서 기존 데이터베이스를 새 뷰로 참조합니다 ("기존 데이터베이스 연결").
+- 구현 (M5-01, schema v21): 탭 하나 = workspace 뷰 하나. DB의 첫 뷰가 **호스트**이고, 탭 바에서 만든 뷰는 호스트의 하위 뷰(`kind: 'database'`, 같은 `databaseId`)라 사이드바에서도 DB 아래 "연결된 뷰"로 보입니다. 어느 탭을 열어도 탭 목록은 호스트 + 그 하위 뷰 중 같은 DB(형제 순서)입니다(`databaseTabs`). 탭 전환은 그 뷰로 이동(라우트). `+` → 레이아웃 선택(`createView` + `addDbView`, 이름은 레이아웃 이름), 선택된 탭을 다시 누르거나 우클릭(폰: 길게 누르기) → 이름 바꾸기·복제(설정 깊은 복사 `duplicateDbView`, 이름 "… (사본)")·삭제(휴지통, 실행 취소 토스트). **첫 탭(호스트)은 탭 바에서 삭제하지 않습니다** — DB 페이지 자체라 사이드바에서 지웁니다. 첫 탭 뒤의 탭은 가로로 끌어 순서 변경(`tabMoveIndex`: 호스트의 다른 하위 문서도 세는 `moveView` 위치). 필터·정렬·속성은 뷰마다 독립.
 - **행 페이지**: 행을 열면 속성 목록 + 문서 본문이 나옵니다. 데스크탑은 가운데 모달(전체 화면 전환 가능), 폰은 전체 화면입니다.
 
 ## 2. 쿼리 엔진 (`core/model/database/query.ts`)
@@ -137,6 +138,8 @@ AppFlowy 팔레트 10색(Purple, Pink, Light Pink, Orange, Yellow, Lime, Green, 
 | DB-K06 | 카드에 표시할 필드 선택, 카드 커버(이미지/media 필드) |
 | DB-K07 | 카드 클릭 → 행 페이지, 카드 인라인 제목 편집 |
 | DB-K08 | 필터, 정렬 (열 안 정렬 적용) |
+
+구현 (M5-02, `core/model/database/group.ts`): 뷰 설정 `group = { fieldId, hideEmpty, order, hidden, dateUnit? }`. 그룹 키: select·multi = 옵션 id(multi 행은 자기 옵션 열마다 나옴), checkbox = `'true'`/`'false'`(빈 열 없음), date = 기간 시작 `d:YYYY-MM-DD`·`w:…`(주 시작 요일)·`m:YYYY-MM`(기본)·`y:YYYY`(로컬 시각), url = 다듬은 주소, `''` = 값 없음. 열 순서: 저장된 `order`(FracKey)가 있는 키 먼저, 나머지는 기본 순서(값 없음 → 옵션 순서 / 체크 안 됨 → 체크됨 / 날짜 오래된 순 / 주소 가나다순). select 필드는 빈 옵션도 열이 있음. `runQuery`·증분 쿼리 결과의 `groups`는 필터·정렬된 행을 열로 나눈 것(열 안은 쿼리 순서), 숨긴 열도 포함(UI가 숨김 패널에 표시). 증분 결과 = 전체 재계산(속성 테스트). 열 순서 바꾸기는 모든 열 키를 다시 매김(`moveGroup`), 그룹 필드를 바꾸면 순서·숨김 초기화(`updateGroup`). 카드 값: 새 카드 `groupCellValue`, 다른 열로 옮기기 `movedCellValue`(multi는 옮긴 열의 옵션만 교체, 날짜는 시각·기간 길이 유지).
 
 ## 6. Calendar (`DB-C`, M5)
 

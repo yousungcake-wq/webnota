@@ -18,6 +18,7 @@ import { v17Math } from './017-math'
 import { v18LinkPreview } from './018-link-preview'
 import { v19Database } from './019-database'
 import { v20MediaLayout } from './020-media-layout'
+import { v21DbViews } from './021-db-views'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -53,4 +54,5 @@ export const MIGRATIONS: Migration[] = [
   v18LinkPreview, // M3-08: linkPreview block node type (version stamp only)
   v19Database, // M4-01: database views + db/dbr docs (version stamp only)
   v20MediaLayout, // feedback: image captionAlign, video align/caption/captionAlign (version stamp only)
+  v21DbViews, // M5-01: database view tabs, board / calendar layouts (version stamp only)
 ]

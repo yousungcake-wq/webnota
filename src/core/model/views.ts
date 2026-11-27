@@ -20,6 +20,8 @@ export interface ViewMeta {
   id: string
   kind: ViewKind
   layout: ViewLayout
+  /** kind=database: the database the view shows (M5-01: several views may share one). */
+  databaseId: string | null
   title: string
   icon: IconValue | null
   /** Parent view, or null when the view sits directly in a space. */
@@ -207,6 +209,7 @@ function toMeta(doc: Y.Doc, id: string, m: YMap, spaceIds: Map<string, string>, 
     id,
     kind: m.get('kind') === 'database' ? 'database' : 'document',
     layout: (str('layout') || 'document') as ViewLayout,
+    databaseId: str('databaseId') || null,
     title: str('title'),
     icon: readIcon(m.get('icon')),
     parentId: typeof parent === 'string' && viewsOf(doc).has(parent) ? parent : null,

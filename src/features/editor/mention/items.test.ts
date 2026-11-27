@@ -6,6 +6,7 @@ const view = (id: string, title: string, extra: Partial<ViewMeta> = {}): ViewMet
   id,
   kind: 'document',
   layout: 'document',
+  databaseId: null,
   title,
   icon: null,
   parentId: null,

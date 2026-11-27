@@ -13,6 +13,7 @@ import {
   selectedIds,
   timeOf,
 } from './cells'
+import { groupFieldOf, groupRows } from './group'
 import type { CalcType, FieldMeta, Filter, FilterCond, FilterGroup, RowSnapshot, Sort, ViewSettings } from './types'
 
 /**
@@ -24,7 +25,7 @@ import type { CalcType, FieldMeta, Filter, FilterCond, FilterGroup, RowSnapshot,
 export interface QueryInput {
   fields: FieldMeta[]
   rows: RowSnapshot[]
-  view: Pick<ViewSettings, 'filter' | 'sorts'> & Partial<Pick<ViewSettings, 'calcs'>>
+  view: Pick<ViewSettings, 'filter' | 'sorts'> & Partial<Pick<ViewSettings, 'calcs' | 'group'>>
   /** "Now" for relative dates (today, this week …). */
   now: number
   /** Current user (person filters, M9). */
@@ -386,5 +387,14 @@ export function runQuery(input: QueryInput): QueryResult {
     const field = fields.get(fieldId)
     if (field) calcs[fieldId] = calculate(calc, field, visible)
   }
-  return { rowIds: visible.map((r) => r.id), calcs }
+  return { rowIds: visible.map((r) => r.id), calcs, ...groupsOf(input, visible) }
+}
+
+/** Board columns of the visible rows when the view groups (M5-02). */
+export function groupsOf(
+  input: Omit<QueryInput, 'rows'>,
+  visible: readonly RowSnapshot[],
+): Pick<QueryResult, 'groups'> {
+  const field = groupFieldOf(input.fields, input.view.group)
+  return field ? { groups: groupRows(visible, field, input.view.group!, input.weekStart) } : {}
 }

@@ -19,7 +19,7 @@ import {
 } from './index'
 import { createLiveQuery } from './live'
 import { runQuery } from './query'
-import type { CellValue, FieldMeta, FilterGroup, RowSnapshot, Sort } from './types'
+import type { CellValue, FieldMeta, FilterGroup, GroupSettings, RowSnapshot, Sort } from './types'
 
 const choices = [
   { id: 'o1', name: 'A', color: 'gray' },
@@ -82,6 +82,12 @@ const arbSorts = fc.constantFrom<Sort[]>(
   ],
 )
 
+const arbGroup = fc.constantFrom<GroupSettings | null>(
+  null,
+  { fieldId: 'sel', hideEmpty: false, order: {}, hidden: [] },
+  { fieldId: 'sel', hideEmpty: true, order: { o2: 'a0', o1: 'a1' }, hidden: ['o1'] },
+)
+
 describe('incremental query (spec/05 §2, M4-04)', () => {
   it('after any sequence of row changes the result equals a full recompute', () => {
     fc.assert(
@@ -90,8 +96,10 @@ describe('incremental query (spec/05 §2, M4-04)', () => {
         fc.array(arbOp, { maxLength: 25 }),
         arbFilter,
         arbSorts,
-        (initial, ops, filter, sorts) => {
-          const view = { filter, sorts, calcs: { num: 'sum' as const, text: 'countEmpty' as const } }
+        arbGroup,
+        (initial, ops, filter, sorts, group) => {
+          // M5-02: board groups follow incrementally too
+          const view = { filter, sorts, group, calcs: { num: 'sum' as const, text: 'countEmpty' as const } }
           const live = createLiveQuery({ fields: FIELDS, rows: initial, view, now: NOW })
           const rows = new Map(initial.map((r) => [r.id, r]))
           for (const op of ops) {

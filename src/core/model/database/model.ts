@@ -11,7 +11,10 @@ import type {
   DbMeta,
   FieldMeta,
   FieldOptions,
+  BoardSettings,
+  CalendarSettings,
   FieldType,
+  GroupSettings,
   FilterGroup,
   RowSnapshot,
   Sort,
@@ -157,6 +160,28 @@ export function addDbView(db: DbDocs, viewId: string, layout: DbLayout) {
   )
 }
 
+/**
+ * Copies a view's settings (fields, filter, sorts, group, calcs, layout options) to a new
+ * view id (M5-01 duplicate tab).
+ */
+export function duplicateDbView(db: DbDocs, fromId: string, toId: string) {
+  assertWritable()
+  const src = dbViewsOf(db).get(fromId)
+  if (!src) return false
+  db.schema.transact(() => {
+    const m = new Y.Map<unknown>()
+    for (const [k, v] of src.entries()) m.set(k, v instanceof Y.Map ? cloneMap(v as YMap) : structuredClone(v))
+    dbViewsOf(db).set(toId, m)
+  })
+  return true
+}
+
+function cloneMap(src: YMap): YMap {
+  const m = new Y.Map<unknown>()
+  for (const [k, v] of src.entries()) m.set(k, v instanceof Y.Map ? cloneMap(v as YMap) : structuredClone(v))
+  return m
+}
+
 // ---------- read ----------
 
 export function readDbMeta(db: DbDocs): DbMeta {
@@ -254,6 +279,43 @@ export function readViewSettings(db: DbDocs, viewId: string): ViewSettings | nul
     sorts: Array.isArray(m.get('sorts')) ? (m.get('sorts') as Sort[]) : [],
     calcs: calcs instanceof Y.Map ? (calcs.toJSON() as Record<string, CalcType>) : {},
     frozenColumns: typeof m.get('frozenColumns') === 'number' ? (m.get('frozenColumns') as number) : 1,
+    group: readGroup(toPlain(m.get('group'))),
+    board: readBoard(toPlain(m.get('board'))),
+    calendar: readCalendar(toPlain(m.get('calendar'))),
+  }
+}
+
+const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v)
+
+function readGroup(v: unknown): GroupSettings | null {
+  if (!isObj(v) || typeof v.fieldId !== 'string') return null
+  const order: Record<string, string> = {}
+  if (isObj(v.order)) for (const [k, o] of Object.entries(v.order)) if (typeof o === 'string') order[k] = o
+  const unit = v.dateUnit
+  return {
+    fieldId: v.fieldId,
+    hideEmpty: v.hideEmpty === true,
+    order,
+    hidden: Array.isArray(v.hidden) ? v.hidden.filter((x): x is string => typeof x === 'string') : [],
+    ...(unit === 'day' || unit === 'week' || unit === 'month' || unit === 'year' ? { dateUnit: unit } : {}),
+  }
+}
+
+function readBoard(v: unknown): BoardSettings {
+  if (!isObj(v)) return {}
+  const out: BoardSettings = {}
+  if (Array.isArray(v.cardFields)) out.cardFields = v.cardFields.filter((x): x is string => typeof x === 'string')
+  if (typeof v.coverFieldId === 'string' || v.coverFieldId === null) out.coverFieldId = v.coverFieldId
+  return out
+}
+
+function readCalendar(v: unknown): CalendarSettings | null {
+  if (!isObj(v)) return null
+  return {
+    dateFieldId: typeof v.dateFieldId === 'string' ? v.dateFieldId : null,
+    firstDayOfWeek: v.firstDayOfWeek === 1 ? 1 : 0,
+    showWeekends: v.showWeekends !== false,
+    showWeekNumbers: v.showWeekNumbers === true,
   }
 }
 
@@ -420,7 +482,45 @@ export function moveViewField(db: DbDocs, viewId: string, fieldId: string, index
   setViewField(db, viewId, fieldId, { order: keyBetween(keyOf(rest[i - 1]), keyOf(rest[i])) })
 }
 
-type ViewPatch = Partial<{ filter: FilterGroup | null; sorts: Sort[]; frozenColumns: number; layout: DbLayout }>
+type ViewPatch = Partial<{
+  filter: FilterGroup | null
+  sorts: Sort[]
+  frozenColumns: number
+  layout: DbLayout
+  group: GroupSettings | null
+  board: BoardSettings
+  calendar: CalendarSettings | null
+}>
+
+/** Changes a view's board grouping (M5-02); the other group settings stay. */
+export function updateGroup(db: DbDocs, viewId: string, patch: Partial<GroupSettings>) {
+  const cur = readViewSettings(db, viewId)?.group
+  const base: GroupSettings = cur ?? { fieldId: '', hideEmpty: false, order: {}, hidden: [] }
+  // a new group field starts with fresh column order and visibility
+  const reset = patch.fieldId !== undefined && patch.fieldId !== base.fieldId
+  updateDbView(db, viewId, {
+    group: { ...base, ...(reset ? { order: {}, hidden: [], hideEmpty: false } : {}), ...patch },
+  })
+}
+
+/** Moves column `key` to `index` among `keys` (the current column order, DB-K04). */
+export function moveGroup(db: DbDocs, viewId: string, keys: string[], key: string, index: number) {
+  const rest = keys.filter((k) => k !== key)
+  rest.splice(Math.max(0, Math.min(index, rest.length)), 0, key)
+  const fk = generateNKeysBetween(null, null, rest.length)
+  const order = Object.fromEntries(rest.map((k, i) => [k, fk[i]!]))
+  updateGroup(db, viewId, { order })
+}
+
+/** Hides or shows a column (DB-K05). */
+export function setGroupHidden(db: DbDocs, viewId: string, key: string, hidden: boolean) {
+  const cur = readViewSettings(db, viewId)?.group
+  if (!cur) return
+  const set = new Set(cur.hidden)
+  if (hidden) set.add(key)
+  else set.delete(key)
+  updateGroup(db, viewId, { hidden: [...set] })
+}
 
 /** Replaces whole small JSON settings (LWW, spec/02 §4.1). */
 export function updateDbView(db: DbDocs, viewId: string, patch: ViewPatch) {
