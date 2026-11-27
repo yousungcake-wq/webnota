@@ -13,6 +13,7 @@ import { ImageWithView } from './ImageBlock'
 import { FileWithView } from './FileBlock'
 import { EmbedWithView, VideoWithView } from './EmbedBlock'
 import { InlineMathWithView, MathBlockWithView } from './mathNodes'
+import { LinkPreviewWithView } from './LinkPreviewBlock'
 import { FileDrop } from './fileDrop'
 import { BlockFlash } from './blockFlash'
 import { BlockSelection } from './blockSelection'
@@ -100,6 +101,7 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
     embed: EmbedWithView,
     mathBlock: MathBlockWithView,
     inlineMath: InlineMathWithView,
+    linkPreview: LinkPreviewWithView,
   }
   return [
     ...schemaExtensions().map((e) => withViews[e.name] ?? e),

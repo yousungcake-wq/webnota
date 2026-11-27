@@ -70,6 +70,9 @@ MARKS_AT_VERSION[16] = MARKS_AT_VERSION[15]
 // v17 (M3-07): math block and inline math.
 NODES_AT_VERSION[17] = [...NODES_AT_VERSION[16]!, 'inlineMath', 'mathBlock'].sort()
 MARKS_AT_VERSION[17] = MARKS_AT_VERSION[16]
+// v18 (M3-08): link preview block.
+NODES_AT_VERSION[18] = [...NODES_AT_VERSION[17]!, 'linkPreview'].sort()
+MARKS_AT_VERSION[18] = MARKS_AT_VERSION[17]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

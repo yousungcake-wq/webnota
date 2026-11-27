@@ -27,6 +27,8 @@ const BUDGETS = {
   // KaTeX + its CSS (spec/10: ≤120KB), when a page shows or edits math
   math: { kb: 120, entry: 'node_modules/katex/dist/katex.mjs', after: 'editor' },
   mathEditor: { kb: 4, entry: 'src/features/editor/MathEditor.tsx', after: 'editor' },
+  linkPreview: { kb: 4, entry: 'src/features/editor/LinkPreviewView.tsx', after: 'editor' },
+  pasteUrlMenu: { kb: 4, entry: 'src/features/editor/PasteUrlMenu.tsx', after: 'editor' },
   fileCache: { kb: 6, entry: 'src/core/files/cache.ts' },
   upload: { kb: 8, entry: 'src/core/files/ingest.ts' },
   // Add as features land: database: { kb: 120, entry: 'src/features/database/index.ts' }, …

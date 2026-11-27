@@ -15,6 +15,7 @@ import { v14Image } from './014-image'
 import { v15File } from './015-file'
 import { v16VideoEmbed } from './016-video-embed'
 import { v17Math } from './017-math'
+import { v18LinkPreview } from './018-link-preview'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -47,4 +48,5 @@ export const MIGRATIONS: Migration[] = [
   v15File, // M3-05: file attachment block node type (version stamp only)
   v16VideoEmbed, // M3-06: video / embed block node types (version stamp only)
   v17Math, // M3-07: mathBlock / inlineMath node types (version stamp only)
+  v18LinkPreview, // M3-08: linkPreview block node type (version stamp only)
 ]

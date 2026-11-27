@@ -33,7 +33,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-B18 | 목차 | `outline` (제목에서 자동 생성, 클릭 이동) | | P1 | ✅ M2-12. 다단·토글 안의 제목 포함, 실시간 갱신 |
 | ED-B19 | 하위 페이지 | `subPage` (viewId) — 생성 시 자식 뷰 생성, 블록 삭제 시 휴지통 이동 | | P0 | ✅ M2-10 (schema v8). `/페이지`로 생성 후 자식 페이지로 이동. 블록을 붙여넣으면 휴지통에서 자동 복원, 실행 취소·원격 변경으로 돌아온 블록은 "휴지통에서 복원" 버튼 표시 |
 | ED-B20 | 인라인 데이터베이스 | `database` (databaseId, viewId, layout) | | P0 | M5 |
-| ED-B21 | 링크 미리보기 (북마크) | `linkPreview` (url, title, desc, image 캐시) | URL 붙여넣기 → 선택 | P1 | M3 |
+| ED-B21 | 링크 미리보기 (북마크) | `linkPreview` (url, title, desc, image 캐시) | URL 붙여넣기 → 선택 | P1 | ✅ M3-08 (schema v18: `url`, `title`, `description`, `image`, `siteName`). 새 카드는 Worker `/unfurl`로 한 번 받아 블록에 저장(다른 기기는 저장된 값 표시, 새로 고침 버튼). Worker가 없거나 실패하면 호스트 이름만. 제3자 파비콘 서비스는 쓰지 않음(방문 도메인 노출). 도구 모음: 열기·새로 고침·링크 바꾸기·링크로 바꾸기·삭제. `/미리보기` |
 | ED-B22 | 임베드 | `embed` (iframe 허용 목록: YouTube, Figma, Google Maps …) | | P2 | ✅ M3-06 (schema v16, `height` px). 허용 목록: YouTube, Vimeo, Figma, Google 지도(`/maps/embed?pb=`), CodePen, Spotify, Loom — https만, 주소에서 id만 뽑아 iframe 주소를 다시 만듦(임의 iframe 불가, 단위 테스트). iframe은 `sandbox`(scripts·same-origin·popups·presentation·forms, 상위 이동 불가)·`loading=lazy`. 선택 전에는 투명 보호막이 클릭을 받아 블록을 선택. 크기: 작게 300 / 보통(서비스 기본) / 크게 640 |
 | ED-B23 | 지원되지 않는 블록 | 원본 보존 + 페이지 읽기 전용 (아래) | | P0 | M0 ✅ |
 
@@ -62,7 +62,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-F03 | 블록 메뉴 | 블록 바꾸기, 복제, 삭제, 색상(글자/배경), 블록 링크 복사, 정렬(왼/가운데/오른쪽), 위/아래로 이동 | ✅ M2-13 (schema v11). 다단 블록은 단 추가·마지막 단 합치기(내용 유지). 목록의 색은 각 항목에 적용. 폰은 길게 누르기·도구 모음 버튼(M2-20) |
 | ED-F04 | 다중 블록 선택 | 드래그 선택, Shift+클릭, Esc로 블록 선택 모드, 일괄 삭제·이동·바꾸기 | ✅ M2-14. Esc = 현재 블록 선택, Shift+↑↓·Shift+클릭 = 확장, 여백 드래그 = 범위 선택, Backspace·⌘C/⌘X 그대로 동작, 핸들 메뉴는 선택한 블록 전체에 적용(바꾸기·색·복제·삭제). 폰은 M2-20 블록 시트에서 |
 | ED-F05 | 서식 도구 모음 (선택 시) | 굵게…코드, 링크, 색상, 블록 바꾸기, 정렬 | ✅ / 확장 M2 |
-| ED-F06 | 복사 / 붙여넣기 | HTML ↔ 블록, Markdown 텍스트 감지 후 변환, 이미지 붙여넣기 → 업로드, URL 붙여넣기 → 링크/미리보기/임베드 선택 | ✅ 텍스트 M2-15 (Markdown은 `marked` 지연 로드, 코드 편집기 HTML은 일반 텍스트로, 빈 선택에 URL → 링크, 선택 위 URL → 선택을 링크로) / 이미지 파일 붙여넣기·끌어 놓기 ✅ M3-04 (텍스트가 함께 있는 클립보드는 텍스트 우선) / 미리보기·임베드 M3 |
+| ED-F06 | 복사 / 붙여넣기 | HTML ↔ 블록, Markdown 텍스트 감지 후 변환, 이미지 붙여넣기 → 업로드, URL 붙여넣기 → 링크/미리보기/임베드 선택 | ✅ 텍스트 M2-15 (Markdown은 `marked` 지연 로드, 코드 편집기 HTML은 일반 텍스트로, 빈 선택에 URL → 링크, 선택 위 URL → 선택을 링크로) / 이미지 파일 붙여넣기·끌어 놓기 ✅ M3-04 (텍스트가 함께 있는 클립보드는 텍스트 우선) / URL 붙여넣기 선택 ✅ M3-08: 빈 줄에 URL만 붙여넣으면 링크로 넣은 뒤 메뉴(링크로 두기·미리보기 카드·동영상 또는 임베드·이미지 — 맞는 것만), 닫으면 링크 유지, 글 중간에는 메뉴 없음 |
 | ED-F07 | 찾기 / 바꾸기 | `⌘F` (브라우저 찾기 대신), 대소문자, 모두 바꾸기 | ✅ M2-16. 폰은 페이지 더보기 메뉴의 "페이지에서 찾기". 모두 바꾸기는 실행 취소 한 번으로 복구 |
 | ED-F08 | 실행 취소 / 다시 실행 | Yjs UndoManager, 묶음 간격 조정, 원격 변경은 되돌리지 않음 | ✅ (M2-16: 500ms 묶음 + 새 문단·Tab·붙여넣기·잘라내기·놓기·바꾸기에서 끊음) |
 | ED-F09 | 들여쓰기 | Tab/Shift+Tab (목록, 할 일, 토글 하위) | ✅ M2-17: 토글 바로 뒤 블록 → 토글 안, 목록 바로 뒤 블록 → 마지막 항목의 하위, Shift+Tab으로 꺼냄. Tab은 에디터 밖으로 포커스를 옮기지 않음. 폰 도구 모음 버튼도 같음 |

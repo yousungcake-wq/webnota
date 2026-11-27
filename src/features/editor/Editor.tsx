@@ -28,6 +28,7 @@ import { findUnknownContent } from './unknown'
 import { CalloutPicker } from './CalloutPicker'
 import { KeyboardToolbar } from './KeyboardToolbar'
 import type { MathEditRequest } from './mathNodes'
+import type { UrlPasteRequest } from './pasteRules'
 import { ColorPicker } from './ColorPicker'
 import { LinkBubble, LinkSheet, promptLink } from './LinkBubble'
 import { openHref } from './link'
@@ -42,6 +43,7 @@ import { t } from '@/core/i18n'
 const MathEditor = lazy(() => import('./MathEditor'))
 // Opened by a click or shortcut: not part of the editor chunk (spec/10 §1.1).
 const BlockMenu = lazy(() => import('./BlockMenu').then((m) => ({ default: m.BlockMenu })))
+const PasteUrlMenu = lazy(() => import('./PasteUrlMenu'))
 const FindBar = lazy(() => import('./FindBar').then((m) => ({ default: m.FindBar })))
 
 interface Props {
@@ -127,6 +129,16 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
     const onEdit = (e: Event) => editor.isEditable && setMathEdit((e as CustomEvent<MathEditRequest>).detail)
     wrap.addEventListener('wn-math-edit', onEdit)
     return () => wrap.removeEventListener('wn-math-edit', onEdit)
+  }, [editor])
+
+  // A URL pasted on its own line (pasteRules.ts): offer preview / embed / video / image.
+  const [urlPaste, setUrlPaste] = useState<UrlPasteRequest | null>(null)
+  useEffect(() => {
+    const wrap = wrapRef.current
+    if (!wrap || !editor) return
+    const onPaste = (e: Event) => setUrlPaste((e as CustomEvent<UrlPasteRequest>).detail)
+    wrap.addEventListener('wn-url-paste', onPaste)
+    return () => wrap.removeEventListener('wn-url-paste', onPaste)
   }, [editor])
 
   // Block link target (ED-F15): scroll to it and flash it. y-sync fills the editor a tick
@@ -373,6 +385,17 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
           anchor={calloutPick.anchor}
           onClose={() => setCalloutPick(null)}
         />
+      )}
+      {urlPaste && (
+        <Suspense fallback={null}>
+          <PasteUrlMenu
+            key={`${urlPaste.pos}:${urlPaste.url}`}
+            editor={editor}
+            url={urlPaste.url}
+            pos={urlPaste.pos}
+            onClose={() => setUrlPaste(null)}
+          />
+        </Suspense>
       )}
       {mathEdit && (
         <Suspense fallback={null}>

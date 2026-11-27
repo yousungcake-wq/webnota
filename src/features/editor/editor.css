@@ -1256,3 +1256,18 @@
   border-radius: var(--r-sm);
   cursor: pointer;
 }
+/* link preview box while LinkPreviewView loads */
+.wn-editor .link-preview-block {
+  margin: var(--sp-2) 0;
+}
+.wn-editor .link-card.is-loading {
+  min-height: 88px;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

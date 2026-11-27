@@ -17,6 +17,7 @@ import { Image } from './nodes/image'
 import { FileAttachment } from './nodes/file'
 import { Embed, Video } from './nodes/video'
 import { InlineMath, MathBlock } from './nodes/math'
+import { LinkPreview } from './nodes/linkPreview'
 import { BlockAttrs } from './nodes/blockAttrs'
 import { Toggle, ToggleContent, ToggleSummary } from './nodes/toggle'
 
@@ -62,6 +63,7 @@ export function schemaExtensions(): Extensions {
     Embed,
     MathBlock,
     InlineMath,
+    LinkPreview,
     BlockAttrs,
   ]
 }

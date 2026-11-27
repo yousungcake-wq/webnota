@@ -1,0 +1,96 @@
+/* ED-B21 link preview card (loaded with LinkPreviewView) */
+.wn-editor .link-card-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.wn-editor .link-card {
+  display: flex;
+  width: 100%;
+  min-height: 88px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-elev);
+  color: var(--text);
+  text-decoration: none;
+}
+.wn-editor .link-card:hover {
+  background: var(--bg-hover);
+}
+.wn-editor .link-preview-block.is-selected .link-card {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.wn-editor .link-preview-block.ProseMirror-selectednode {
+  outline: none;
+}
+.wn-editor .link-card-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-3) var(--sp-4);
+}
+.wn-editor .link-card-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wn-editor .link-card-desc {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wn-editor .link-card-site {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-top: auto;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+.wn-editor .link-card-image {
+  flex: none;
+  width: 30%;
+  max-width: 220px;
+  object-fit: cover;
+  border-left: 1px solid var(--border);
+}
+@media (max-width: 600px) {
+  .wn-editor .link-card-image {
+    width: 96px;
+  }
+}
+.wn-editor .link-card.is-empty {
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg-hover);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.wn-editor .link-card-toolbar {
+  display: flex;
+  gap: 2px;
+  margin-top: var(--sp-1);
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-elev);
+  box-shadow: var(--shadow-sm);
+}
+.wn-editor .link-card-toolbar a.icon-btn {
+  color: inherit;
+}
+@media (pointer: coarse) {
+  .wn-editor .link-card-toolbar .icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

@@ -18,5 +18,5 @@
     "outDir": "node_modules/.tmp/node",
     "jsx": "react-jsx"
   },
-  "include": ["tests", "scripts", "playwright.config.ts", "vite.config.ts"]
+  "include": ["tests", "scripts", "playwright.config.ts", "vite.config.ts", "worker/src/unfurl.ts"]
 }

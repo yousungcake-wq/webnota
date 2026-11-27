@@ -31,6 +31,7 @@ export const LINKABLE = [
   'video',
   'embed',
   'mathBlock',
+  'linkPreview',
 ]
 export const COLORABLE = ['paragraph', 'heading', 'blockquote', 'listItem', 'taskItem']
 export const ALIGNABLE = ['paragraph', 'heading']
