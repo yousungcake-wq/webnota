@@ -26,22 +26,23 @@ import { useLayout } from '@/platform/layout'
 import { docSchema, editorExtensions } from './extensions'
 import { findUnknownContent } from './unknown'
 import { CalloutPicker } from './CalloutPicker'
+import { KeyboardToolbar } from './KeyboardToolbar'
 import type { MathEditRequest } from './mathNodes'
 import { ColorPicker } from './ColorPicker'
 import { LinkBubble, LinkSheet, promptLink } from './LinkBubble'
 import { openHref } from './link'
-import { BlockMenu } from './BlockMenu'
-import { FindBar } from './FindBar'
 import { useCaretAutoScroll, useLongPressBlock } from './mobileHooks'
 import { findBlock } from './blockOps'
 import { blockRangeOf, blockRangePositions, selectedBlockPositions } from './blockSelection'
-import { KeyboardToolbar } from './KeyboardToolbar'
 import { hasTable, isCellSelection, loadTableKit, TableMenu } from './TableMenu'
 import './editor.css'
 import { t } from '@/core/i18n'
 
 // LaTeX editor for math nodes: loads with the first formula edit.
 const MathEditor = lazy(() => import('./MathEditor'))
+// Opened by a click or shortcut: not part of the editor chunk (spec/10 §1.1).
+const BlockMenu = lazy(() => import('./BlockMenu').then((m) => ({ default: m.BlockMenu })))
+const FindBar = lazy(() => import('./FindBar').then((m) => ({ default: m.FindBar })))
 
 interface Props {
   doc: Y.Doc
@@ -336,16 +337,22 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
       {!coarse && !readOnly && <FormatBubble editor={editor} onColor={() => setColorPick(true)} />}
       {!coarse && !readOnly && <LinkBubble editor={editor} />}
       {!readOnly && <TableMenu editor={editor} />}
-      {finding && <FindBar editor={editor} onClose={() => setFinding(false)} />}
+      {finding && (
+        <Suspense fallback={null}>
+          <FindBar editor={editor} onClose={() => setFinding(false)} />
+        </Suspense>
+      )}
       {blockMenu && (
-        <BlockMenu
-          editor={editor}
-          pos={blockMenu.pos}
-          pageId={pageId}
-          anchor={blockMenu.anchor}
-          selection={blockMenu.selection}
-          onClose={() => setBlockMenu(null)}
-        />
+        <Suspense fallback={null}>
+          <BlockMenu
+            editor={editor}
+            pos={blockMenu.pos}
+            pageId={pageId}
+            anchor={blockMenu.anchor}
+            selection={blockMenu.selection}
+            onClose={() => setBlockMenu(null)}
+          />
+        </Suspense>
       )}
       {colorPick && (
         <ColorPicker editor={editor} anchor={selectionAnchor(editor)} onClose={() => setColorPick(false)} />
