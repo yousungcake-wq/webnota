@@ -29,6 +29,7 @@ workspace (Y.Doc)
 ├─ spaces: Y.Map<spaceId, Y.Map>
 │   name, icon: IconValue, color: string, order: FracKey,
 │   visibility: 'shared' | 'private', ownerLogin: string | null, createdAt
+│   repo?: string | null            // (M9 계획, §2.1) 공유 스페이스의 저장소 "owner/name". 없으면 홈 저장소
 ├─ views: Y.Map<viewId, Y.Map>
 │   kind: 'document' | 'database'
 │   layout: 'document' | 'grid' | 'board' | 'calendar'
@@ -62,6 +63,22 @@ type FracKey = string // fractional-indexing 키 ("a0", "a0V" …)
 - 계층 순환(A→B→A)이 병합으로 생기면 렌더링 시 순환을 끊고 루트로 표시합니다 (`isAlive`처럼 방문 집합 사용).
 - **휴지통**: `deletedAt` 설정. 하위 뷰는 조상이 삭제되면 숨겨집니다. **영구 삭제**는 뷰 항목을 제거하고 동기화 엔진이 고아 파일을 정리합니다.
 - **즐겨찾기**를 사용자별로 두는 이유: 공유 워크스페이스에서 남의 즐겨찾기가 섞이면 안 됩니다. "최근 항목"은 기기별(localStorage)입니다.
+
+### 2.1 공유 스페이스의 `space` 문서 (M9 계획 — spec/07 SH-00, DECISIONS 021)
+
+공유 스페이스 저장소는 자기 완결적이어야 하므로 그 스페이스의 뷰 트리를 홈 `workspace` 문서가 아니라 저장소 안 `data/space.yjs`에 둡니다.
+
+```ts
+space (Y.Doc)  // 공유 스페이스 저장소의 data/space.yjs
+├─ meta: Y.Map   schemaVersion, id(spaceId), name, icon, color, createdAt
+├─ views: Y.Map<viewId, Y.Map>   // workspace.views와 같은 필드. parentId는 spaceId 또는 이 문서의 viewId
+├─ users: Y.Map<login, Y.Map>    // 사용자별 상태(즐겨찾기 등)
+└─ trash/기타: workspace와 같은 규칙
+```
+
+- 홈 `workspace.spaces[id].repo`가 있으면 그 스페이스의 뷰는 `space` 문서에서 읽고, 홈 `workspace.views`에는 두지 않습니다. 사이드바·검색·라우터는 두 출처를 합쳐 봅니다(`core/model/views`가 출처를 숨기는 읽기 계층 제공).
+- 문서·DB·파일 경로는 그 저장소 안에서 지금과 같습니다(`data/docs/…`, `data/dbs/…`, `files/…`).
+- 이 변경은 **schemaVersion 증가 + 마이그레이션 없음(기존 스페이스는 repo 없음 = 홈)** 으로 시작하고, 구버전 앱은 읽기 전용이 됩니다. `space` 문서도 자체 `meta.schemaVersion`을 가지며 같은 게이트 규칙을 따릅니다.
 
 ## 3. `doc/<viewId>` 문서
 
