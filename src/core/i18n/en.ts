@@ -203,6 +203,8 @@ export const en: Record<MessageKey, string> = {
   'emoji.search': 'Search emoji',
   'emoji.searchIcon': 'Search icons',
   'emoji.random': 'Random',
+  'emoji.clear': 'Clear',
+  'emoji.pin': 'Keep open',
   'emoji.skinTone': 'Skin tone',
   'emoji.recent': 'Recent',
   'emoji.suggest': 'Emoji suggestions',

@@ -1,8 +1,8 @@
-import { Search, Shuffle } from 'lucide-react'
+import { Eraser, Search, Shuffle } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { t, type MessageKey } from '@/core/i18n'
 import type { IconValue } from '@/core/model/views'
-import { Button, Segmented } from '@/ui'
+import { Button, IconButton, Segmented } from '@/ui'
 import { filterEmoji, loadEmoji, SKIN_TONES, withSkin, type EmojiRow } from './data'
 import { ICON_COLORS, ICONS } from './icons'
 import './emoji.css'
@@ -44,9 +44,15 @@ const writeJSON = (key: string, v: unknown) => {
 export default function EmojiPicker({
   current,
   onPick,
+  simple = false,
+  extra,
 }: {
   current: IconValue | null
   onPick: (icon: IconValue | null) => void
+  /** Callouts (feedback 2-6): no search, no random pick; "clear" instead of "remove icon". */
+  simple?: boolean
+  /** More controls in the top row (the callout picker's "keep open"). */
+  extra?: React.ReactNode
 }) {
   const [tab, setTab] = useState<'emoji' | 'icon'>(current?.type === 'icon' ? 'icon' : 'emoji')
   return (
@@ -61,18 +67,29 @@ export default function EmojiPicker({
             { value: 'icon', label: t('emoji.tab.icon') },
           ]}
         />
-        {current && (
-          <Button size="sm" variant="ghost" onClick={() => onPick(null)}>
-            {t('page.removeIcon')}
-          </Button>
-        )}
+        <span className="emoji-picker-actions">
+          {extra}
+          {simple ? (
+            <IconButton size="sm" icon={Eraser} label={t('emoji.clear')} onClick={() => onPick(null)} />
+          ) : (
+            current && (
+              <Button size="sm" variant="ghost" onClick={() => onPick(null)}>
+                {t('page.removeIcon')}
+              </Button>
+            )
+          )}
+        </span>
       </div>
-      {tab === 'emoji' ? <EmojiTab onPick={onPick} /> : <IconTab current={current} onPick={onPick} />}
+      {tab === 'emoji' ? (
+        <EmojiTab onPick={onPick} simple={simple} />
+      ) : (
+        <IconTab current={current} onPick={onPick} simple={simple} />
+      )}
     </div>
   )
 }
 
-function EmojiTab({ onPick }: { onPick: (icon: IconValue) => void }) {
+function EmojiTab({ onPick, simple }: { onPick: (icon: IconValue) => void; simple: boolean }) {
   const [rows, setRows] = useState<EmojiRow[] | null>(null)
   const [q, setQ] = useState('')
   const [tone, setTone] = useState<number>(() => readJSON(SKIN_KEY, 0))
@@ -98,30 +115,34 @@ function EmojiTab({ onPick }: { onPick: (icon: IconValue) => void }) {
   return (
     <>
       <div className="emoji-search-row">
-        <label className="search-box">
-          <Search size={16} />
-          <input
-            data-autofocus
-            type="search"
-            placeholder={t('emoji.search')}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-        </label>
-        <button
-          type="button"
-          className="emoji-btn"
-          aria-label={t('emoji.random')}
-          title={t('emoji.random')}
-          disabled={!rows}
-          onClick={() => {
-            if (!rows) return
-            const r = rows[Math.floor(Math.random() * rows.length)]!
-            pick(withSkin(r[0], tone, r[3]))
-          }}
-        >
-          <Shuffle size={16} />
-        </button>
+        {!simple && (
+          <label className="search-box">
+            <Search size={16} />
+            <input
+              data-autofocus
+              type="search"
+              placeholder={t('emoji.search')}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </label>
+        )}
+        {!simple && (
+          <button
+            type="button"
+            className="emoji-btn"
+            aria-label={t('emoji.random')}
+            title={t('emoji.random')}
+            disabled={!rows}
+            onClick={() => {
+              if (!rows) return
+              const r = rows[Math.floor(Math.random() * rows.length)]!
+              pick(withSkin(r[0], tone, r[3]))
+            }}
+          >
+            <Shuffle size={16} />
+          </button>
+        )}
         <select
           className="emoji-skin"
           aria-label={t('emoji.skinTone')}
@@ -172,24 +193,34 @@ function EmojiTab({ onPick }: { onPick: (icon: IconValue) => void }) {
   )
 }
 
-function IconTab({ current, onPick }: { current: IconValue | null; onPick: (icon: IconValue) => void }) {
+function IconTab({
+  current,
+  onPick,
+  simple,
+}: {
+  current: IconValue | null
+  onPick: (icon: IconValue) => void
+  simple: boolean
+}) {
   const [q, setQ] = useState('')
   const [color, setColor] = useState(current?.type === 'icon' ? (current.color ?? '') : '')
   const names = Object.keys(ICONS).filter((n) => n.includes(q.trim().toLowerCase()))
   return (
     <>
-      <div className="emoji-search-row">
-        <label className="search-box">
-          <Search size={16} />
-          <input
-            data-autofocus
-            type="search"
-            placeholder={t('emoji.searchIcon')}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-        </label>
-      </div>
+      {!simple && (
+        <div className="emoji-search-row">
+          <label className="search-box">
+            <Search size={16} />
+            <input
+              data-autofocus
+              type="search"
+              placeholder={t('emoji.searchIcon')}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </label>
+        </div>
+      )}
       <div className="icon-colors" role="radiogroup" aria-label={t('space.color')}>
         {ICON_COLORS.map((c) => (
           <button

@@ -485,6 +485,30 @@
 .wn-editor .callout-icon:hover {
   background: var(--bg-hover);
 }
+.wn-editor .callout-icon {
+  display: grid;
+  place-items: center;
+}
+/* no icon (cleared): a faint "+" on hover to add one again */
+.wn-editor .callout-icon.is-empty {
+  width: 20px;
+  color: var(--text-3);
+}
+.wn-editor .callout-icon.is-empty::before {
+  content: '+';
+  font-size: 16px;
+  opacity: 0;
+}
+.wn-editor .callout:hover .callout-icon.is-empty::before {
+  opacity: 1;
+}
+.callout-picker .emoji-picker {
+  width: 100%;
+}
+.callout-pin.is-on {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
 .wn-editor .callout-body {
   flex: 1;
   min-width: 0;

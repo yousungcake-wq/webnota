@@ -207,6 +207,8 @@ export const ko = {
   'emoji.search': '이모지 검색 (한/영)',
   'emoji.searchIcon': '아이콘 검색 (영문 이름)',
   'emoji.random': '무작위',
+  'emoji.clear': '비우기',
+  'emoji.pin': '열어 두기',
   'emoji.skinTone': '피부색',
   'emoji.recent': '최근 사용',
   'emoji.suggest': '이모지 제안',

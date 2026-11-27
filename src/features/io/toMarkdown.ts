@@ -122,8 +122,12 @@ function block(n: PMNode, ctx: MarkdownContext): string | null {
       const body = content ? blocks(content.content, ctx) : ''
       return `- ${head}` + (body ? '\n' + indent(body, '  ') : '')
     }
-    case 'callout':
-      return `<aside>\n${String(a.icon ?? '💡')} ${blocks(n.content, ctx)}\n</aside>`
+    case 'callout': {
+      // a named icon (`icon:…`) has no Markdown form: Notion gets the default emoji
+      const icon = String(a.icon ?? '💡')
+      const emoji = icon.startsWith('icon:') ? '💡' : icon
+      return `<aside>\n${emoji ? `${emoji} ` : ''}${blocks(n.content, ctx)}\n</aside>`
+    }
     case 'image': {
       const src = String(a.src ?? '')
       if (!src) return null

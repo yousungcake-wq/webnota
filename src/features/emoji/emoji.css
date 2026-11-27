@@ -13,8 +13,14 @@
   justify-content: space-between;
   gap: var(--sp-2);
 }
+.emoji-picker-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 .emoji-search-row {
   display: flex;
+  justify-content: flex-end;
   gap: 6px;
   align-items: center;
 }
@@ -50,6 +56,8 @@
 .emoji-scroll .emoji-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  /* the page's 8-column grid has a max width: the picker fills its own width (feedback 2-6) */
+  max-width: none;
 }
 .icon-colors {
   display: flex;

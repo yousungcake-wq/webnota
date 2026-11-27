@@ -27,6 +27,8 @@ import { useLayout } from '@/platform/layout'
 import { docSchema, editorExtensions } from './extensions'
 import { findUnknownContent } from './unknown'
 import { CalloutPicker } from './CalloutPicker'
+import { renderCalloutIcon } from './calloutIcon'
+import { setCalloutIconRenderer } from './nodes/callout'
 import { KeyboardToolbar } from './KeyboardToolbar'
 import type { MathEditRequest } from './mathNodes'
 import type { UrlPasteRequest } from './pasteRules'
@@ -62,6 +64,9 @@ interface Props {
  * Drag targets: top-level blocks and blocks directly inside a column (feedback 3) — not the
  * column itself, not list items or other nested blocks (they move with their block).
  */
+// callouts with a named icon draw it with React (feedback 2-6)
+setCalloutIconRenderer(renderCalloutIcon)
+
 const NESTED = {
   // no edge detection: near a column's left edge the target used to become the whole columns
   // block, so the handle jumped away on the way to it (feedback 2-3). The columns block is
