@@ -76,6 +76,12 @@ export async function openQaDatabase(page: Page) {
   })
   await page.goto('/')
   await expect(page.locator('.dbg-row').first()).toBeVisible()
+  await dbLive(page)
+}
+
+/** Waits until a database view shows live data, not its read-only first-screen cache (M5-00). */
+export async function dbLive(page: Page) {
+  await expect(page.locator('.db-view').first()).not.toHaveAttribute('data-preview', /.*/)
 }
 
 /** A grid cell by row index (0-based, in view order) and column header name. */

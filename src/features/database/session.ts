@@ -16,6 +16,8 @@ import {
 } from '@/core/model/database'
 import { getCurrentUser } from '@/core/model/views'
 import { createStore, type Store } from '@/core/store/createStore'
+import * as Y from 'yjs'
+import { makeFirstScreen, readFirstScreen, screenKey, writeFirstScreen } from './firstScreen'
 import { createQueryRunner, type QueryRunner } from './query/runner'
 
 export interface DbState {
@@ -27,7 +29,26 @@ export interface DbState {
   /** Bumped on every row change: cells read with `getRow` are fresh after it. */
   rowsVersion: number
   search: string
+  /**
+   * Showing the first-screen cache while the docs load (M5-00): `docs` are empty
+   * placeholders and the view must be read-only until the live state replaces it.
+   */
+  preview?: boolean
 }
+
+/** Placeholder docs for a preview state; nothing written to them is kept. */
+const previewDocs = (): DbDocs => ({ schema: new Y.Doc(), shards: [] })
+
+/** Resolves after the next frame was painted (rAF + task), or soon in a hidden tab. */
+const afterPaint = () =>
+  new Promise<void>((resolve) => {
+    const done = () => setTimeout(resolve, 0)
+    if (typeof requestAnimationFrame !== 'function' || document.hidden) return done()
+    requestAnimationFrame(done)
+  })
+
+/** Debounce of first-screen cache writes after the result or rows change. */
+const SCREEN_SAVE_MS = 1500
 
 /**
  * One open database view (M4-04): owns the docs (retained), the schema/row observers and
@@ -50,6 +71,20 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
   let runner: QueryRunner | null = null
   /** Row snapshots by id, stable until the row changes (memoized grid rows, M4-14). */
   const rowCache = new Map<string, RowSnapshot | null>()
+  const key = screenKey(dbId, viewId)
+  let saveTimer: ReturnType<typeof setTimeout> | undefined
+  const saveScreen = () => {
+    clearTimeout(saveTimer)
+    saveTimer = undefined
+    const s = store.get()
+    // searches are transient: keep the unsearched screen
+    if (!s || s.preview || s.search) return
+    void writeFirstScreen(makeFirstScreen(key, s, (id) => rowCache.get(id) ?? (docs ? getRow(docs, id) : null)))
+  }
+  const scheduleSave = () => {
+    clearTimeout(saveTimer)
+    saveTimer = setTimeout(saveScreen, SCREEN_SAVE_MS)
+  }
 
   const queryInput = (fields: FieldMeta[], view: ViewSettings | null) => ({
     fields,
@@ -63,52 +98,85 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
     if (!docs || !runner) return
     const fields = listFields(docs)
     const view = readViewSettings(docs, viewId)
-    store.set((s) => s && { ...s, fields, view, meta: readDbMeta(docs!) })
+    store.set((s) => (s && !s.preview ? { ...s, fields, view, meta: readDbMeta(docs!) } : s))
     runner.setQuery(queryInput(fields, view))
   }
 
   // phases of opening, for tests/perf/database.mjs (performance marks are cheap)
   performance.mark('db:open')
-  void openDatabase(dbId).then(({ docs: d, release }) => {
-    if (closed) return release()
-    performance.mark('db:docs')
-    docs = d
-    const fields = listFields(d)
-    const view = readViewSettings(d, viewId)
-    const onResult = (result: QueryResult) => {
-      if (!store.get()) performance.mark('db:query')
-      store.set((s) =>
-        s
-          ? { ...s, result, rowsVersion: s.rowsVersion + 1 }
-          : { docs: d, meta: readDbMeta(d), fields, view, result, rowsVersion: 0, search },
-      )
-    }
-    const all = listRows(d)
-    for (const r of all) rowCache.set(r.id, r)
-    performance.mark('db:rows')
-    runner = createQueryRunner({ ...queryInput(fields, view), rows: all }, onResult)
-    const offRows = observeRows(d, (ids) => {
-      const upserts: RowSnapshot[] = []
-      const deletes: string[] = []
-      for (const id of ids) {
-        const r = getRow(d, id)
-        rowCache.set(id, r)
-        if (r) upserts.push(r)
-        else deletes.push(id)
-      }
-      // repaint the changed cells now; order and filter follow when the query answers (worker)
-      store.set((s) => s && { ...s, rowsVersion: s.rowsVersion + 1 })
-      runner!.apply({ upserts, deletes })
+  // The cached screen goes first and gets painted before the docs load: applying them is
+  // one long main-thread task that would otherwise hold the preview back.
+  const preview = readFirstScreen(key).then((c) => {
+    if (closed || !c || store.get()) return false
+    for (const r of c.rows) rowCache.set(r.id, r)
+    performance.mark('db:preview')
+    store.set({
+      docs: previewDocs(),
+      meta: c.meta,
+      fields: c.fields,
+      view: c.view,
+      result: c.result,
+      rowsVersion: 0,
+      search: '',
+      preview: true,
     })
-    const offSchema = observeSchema(d, refreshSchema)
-    const r = runner
-    cleanup = () => {
-      offRows()
-      offSchema()
-      r.dispose()
-      release()
-    }
+    return true
   })
+  void preview
+    .then((shown) => (shown ? afterPaint() : undefined))
+    .then(() => openDatabase(dbId))
+    .then(({ docs: d, release }) => {
+      if (closed) return release()
+      performance.mark('db:docs')
+      docs = d
+      const fields = listFields(d)
+      const view = readViewSettings(d, viewId)
+      const onResult = (result: QueryResult) => {
+        const s = store.get()
+        if (!s || s.preview) performance.mark('db:query')
+        store.set(
+          s && !s.preview
+            ? { ...s, result, rowsVersion: s.rowsVersion + 1 }
+            : {
+                docs: d,
+                meta: readDbMeta(d),
+                // fresh: the schema may have changed while a worker answered the first query
+                fields: listFields(d),
+                view: readViewSettings(d, viewId),
+                result,
+                rowsVersion: (s?.rowsVersion ?? 0) + 1,
+                search,
+              },
+        )
+        scheduleSave()
+      }
+      const all = listRows(d)
+      rowCache.clear()
+      for (const r of all) rowCache.set(r.id, r)
+      performance.mark('db:rows')
+      runner = createQueryRunner({ ...queryInput(fields, view), rows: all }, onResult)
+      const offRows = observeRows(d, (ids) => {
+        const upserts: RowSnapshot[] = []
+        const deletes: string[] = []
+        for (const id of ids) {
+          const r = getRow(d, id)
+          rowCache.set(id, r)
+          if (r) upserts.push(r)
+          else deletes.push(id)
+        }
+        // repaint the changed cells now; order and filter follow when the query answers (worker)
+        store.set((s) => (s && !s.preview ? { ...s, rowsVersion: s.rowsVersion + 1 } : s))
+        runner!.apply({ upserts, deletes })
+      })
+      const offSchema = observeSchema(d, refreshSchema)
+      const r = runner
+      cleanup = () => {
+        offRows()
+        offSchema()
+        r.dispose()
+        release()
+      }
+    })
 
   return {
     store,
@@ -119,12 +187,14 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
       if (docs && runner) runner.setQuery(queryInput(listFields(docs), readViewSettings(docs, viewId)))
     },
     row(id) {
-      if (!docs) return null
       let r = rowCache.get(id)
-      if (r === undefined) rowCache.set(id, (r = getRow(docs, id)))
+      if (r !== undefined) return r
+      if (!docs) return null // preview: only the cached first rows
+      rowCache.set(id, (r = getRow(docs, id)))
       return r
     },
     close() {
+      if (saveTimer !== undefined) saveScreen()
       closed = true
       cleanup?.()
       cleanup = null

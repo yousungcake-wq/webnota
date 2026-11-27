@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
-import { cellOf, readDbMeta, type FieldMeta } from '@/core/model/database'
-import { CellView } from './CellView'
+import { readDbMeta } from '@/core/model/database'
+import { CardBody } from './CardBody'
 import { columnsOf } from './gridColumns'
 import { dt } from './i18n'
 import { RowSheet } from './RowSheet'
@@ -49,7 +49,6 @@ export function CardList({
         {rowIds.slice(start, end).map((id, k) => {
           const row = session.row(id)
           if (!row) return null
-          const name = primaryField ? String(cellOf(primaryField, row) ?? '') : ''
           return (
             <button
               key={id}
@@ -59,13 +58,7 @@ export function CardList({
               style={{ top: layout.top(start + k), height: CARD_HEIGHT - 8 }}
               onClick={() => setOpen(id)}
             >
-              <span className="db-card-title">{name || dt('db.row.untitled')}</span>
-              {fields.map((f: FieldMeta) => (
-                <span key={f.id} className="db-card-prop">
-                  <span className="db-card-name">{f.name}</span>
-                  <CellView field={f} value={cellOf(f, row)} wrap={false} readOnly onToggle={() => {}} />
-                </span>
-              ))}
+              <CardBody row={row} primary={primaryField} fields={fields} labels />
             </button>
           )
         })}

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { makeImage } from './media'
-import { enableDatabase, failOnConsoleErrors, gridCell, openApp, openQaDatabase, reload } from './helpers'
+import { dbLive, enableDatabase, failOnConsoleErrors, gridCell, openApp, openQaDatabase, reload } from './helpers'
 
 test.describe('database (M4)', () => {
   test('without the flag, "+" creates a document directly', async ({ page }) => {
@@ -81,6 +81,7 @@ test.describe('database (M4)', () => {
     await expect(page.locator('.dbc-editor')).toHaveCount(0)
 
     await reload(page)
+    await dbLive(page) // not the cached first screen
     await expect(await gridCell(page, 0, 'Name')).toHaveText('첫 행')
     await expect(await gridCell(page, 0, 'Amount')).toHaveText('₩15,000')
     noErrors()
@@ -149,6 +150,7 @@ test.describe('database (M4)', () => {
     await expect(tasks).toContainText(/\d+\/4/)
 
     await reload(page)
+    await dbLive(page) // not the cached first screen
     await expect(await gridCell(page, 0, 'Status')).toHaveText('리뷰')
     await expect(await gridCell(page, 0, 'Due')).toHaveText(/15 → .*18$/)
     noErrors()
@@ -287,6 +289,7 @@ test.describe('database (M4)', () => {
     await page.keyboard.press('Escape')
     await expect.poll(names).toEqual(['D', 'A!', 'B', 'C'])
     await reload(page)
+    await dbLive(page) // not the cached first screen
     await expect.poll(names).toEqual(['D', 'A!', 'B', 'C'])
     noErrors()
   })
@@ -439,6 +442,7 @@ test.describe('database (M4)', () => {
     await expect.poll(async () => (await headers()).slice(0, 3)).toEqual(['Name', 'Done', 'Amount'])
 
     await reload(page)
+    await dbLive(page) // not the cached first screen
     await expect.poll(async () => (await headers()).slice(0, 3)).toEqual(['Name', 'Done', 'Amount'])
     noErrors()
   })
@@ -537,8 +541,29 @@ test.describe('database (M4)', () => {
     await page.getByRole('menuitemcheckbox', { name: '개수' }).click()
     await expect(page.locator('.dbg-calc[data-field-id]').first()).toContainText('51')
     await reload(page)
+    await dbLive(page) // not the cached first screen
     await expect(page.locator('.dbg-calc').first()).toContainText('51')
     await expect(page.getByRole('button', { name: '정렬 1' })).toBeVisible()
+    noErrors()
+  })
+
+  test('reopening shows the cached first screen read-only, then the live grid (M5-00)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await expect(await gridCell(page, 0, 'Name')).not.toBeEmpty()
+    // the screen is cached 1.5s after the last change; leaving saves it right away
+    await page.waitForTimeout(2000)
+    await page.addInitScript(() => {
+      const w = window as unknown as { sawPreview: boolean }
+      w.sawPreview = false
+      new MutationObserver(() => {
+        if (document.querySelector('.db-view[data-preview]')) w.sawPreview = true
+      }).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-preview'] })
+    })
+    await reload(page)
+    await dbLive(page)
+    expect(await page.evaluate(() => (window as unknown as { sawPreview: boolean }).sawPreview)).toBe(true)
+    await expect(page.locator('.dbg-row')).not.toHaveCount(0)
     noErrors()
   })
 })

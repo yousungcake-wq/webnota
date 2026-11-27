@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, gridCell, openQaDatabase, reload } from './helpers'
+import { dbLive, failOnConsoleErrors, gridCell, openQaDatabase, reload } from './helpers'
 
 test.describe('database on phones (M4-13)', () => {
   test('44px rows, tap edits in a sheet, popovers are sheets, card list', async ({ page }) => {
@@ -60,6 +60,7 @@ test.describe('database on phones (M4-13)', () => {
     await expect(page.locator('.sheet .db-rowsheet')).toBeVisible()
     await page.goBack()
     await reload(page)
+    await dbLive(page) // not the cached first screen
     await expect(page.locator('.db-card').first()).toBeVisible() // remembered per device
     await page.getByRole('button', { name: '표 보기' }).tap()
     await expect(page.getByRole('grid')).toBeVisible()

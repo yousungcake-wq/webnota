@@ -64,6 +64,8 @@
 
 - **초기 번들 (피드백 7)**: 페이지 화면(`loadPageView`, 앱 시작 시 바로 받음)과 폰 홈(`loadHome`)은 지연 청크 — 122.4/125KB. 에디터 예산은 `after: 'pageView'`. 사이드바는 `SpaceSections`(스페이스마다 `PageTree`), 목록 끌기는 `beginListDrag(e, list, onDrop, 'space-id')`.
 
+- **DB 첫 화면 캐시 (M5-00)**: 뷰를 열면 `wn:<wsId>:$dbscreen`의 캐시로 먼저 읽기 전용 미리보기(`state.preview`, `.db-view[data-preview]`, docs는 빈 자리 표시)를 그림. 레이아웃 컴포넌트는 `LayoutProps.readOnly`를 따르면 됨(미리보기 포함). **e2e에서 새로 고침 뒤 DB 값을 확인·편집할 때는 `dbLive(page)`** 먼저(캐시만 보고 통과하지 않게). Board·Calendar는 `BoardView.tsx`·`CalendarView.tsx`(별도 청크 `dbBoard`·`dbCalendar`), 카드 내용은 `CardBody`.
+
 - 기본 i18n 사전 7.9/8KB(99%): 새 문자열은 기능별 지연 사전(addMessages)에 넣을 것
 
 - 공유(M9)는 B안: 공유 스페이스마다 별도 저장소, 한 워크스페이스가 여러 저장소와 동기화(SY-08). M5~M8에서 새 문서·파일 경로를 만들 때 '어느 저장소(스페이스)에 속하는지'로 라우팅할 수 있게 스페이스 단위로 찾을 수 있도록 설계할 것 (spec/02 §2.1)

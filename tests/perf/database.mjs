@@ -43,10 +43,15 @@ for (let i = 0; i < RUNS; i++) {
         new Promise((resolve) => {
           const link = [...document.querySelectorAll('.tree-link')].find((a) => a.textContent.includes('QA database'))
           const t0 = performance.now()
+          let first = 0
+          // first screen (M5-00: the cached preview), then the live, editable grid
           const check = () => {
             const rows = document.querySelectorAll('.dbg-row').length
             const grid = document.querySelector('.dbg')
-            if (rows > 5 && grid?.getAttribute('aria-rowcount') === '10001') resolve(Math.round(performance.now() - t0))
+            const shown = rows > 5 && grid?.getAttribute('aria-rowcount') === '10001'
+            if (shown && !first) first = Math.round(performance.now() - t0)
+            if (shown && !document.querySelector('.db-view[data-preview]'))
+              resolve([first, Math.round(performance.now() - t0)])
             else requestAnimationFrame(check)
           }
           link.click()
@@ -55,12 +60,14 @@ for (let i = 0; i < RUNS; i++) {
     ),
   )
 }
-results.openGrid10kMs = median(open)
+results.openGrid10kMs = median(open.map((o) => o[0]))
+results.openLive10kMs = median(open.map((o) => o[1]))
 // phases of the last open (performance marks in session.ts)
 results.openPhases = await page.evaluate(() => {
   const at = (n) => performance.getEntriesByName(n).at(-1)?.startTime ?? 0
   const o = at('db:open')
   return {
+    preview: Math.round(at('db:preview') - o),
     docs: Math.round(at('db:docs') - o),
     rows: Math.round(at('db:rows') - o),
     query: Math.round(at('db:query') - o),

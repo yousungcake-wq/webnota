@@ -45,6 +45,13 @@ export interface CalcResult {
 export interface QueryResult {
   rowIds: string[]
   calcs: Record<string, CalcResult>
+  /** Board (M5-02): the visible rows split by the view's group field, in column order. */
+  groups?: QueryGroup[]
+}
+
+export interface QueryGroup {
+  key: string
+  rowIds: string[]
 }
 
 export interface CompiledQuery {

@@ -35,6 +35,8 @@ const BUDGETS = {
   upload: { kb: 8, entry: 'src/core/files/ingest.ts' },
   // M4–M5 database (spec/05): views, field editors and the query engine, when a database opens
   database: { kb: 120, entry: 'src/features/database/DatabaseView.tsx' },
+  dbBoard: { kb: 30, entry: 'src/features/database/BoardView.tsx', after: 'database' },
+  dbCalendar: { kb: 30, entry: 'src/features/database/CalendarView.tsx', after: 'database' },
   // feedback 11: import / export (fflate, Notion Markdown & CSV), from Settings only
   ioSection: { kb: 8, entry: 'src/features/io/IoSection.tsx' },
   importer: { kb: 40, entry: 'src/features/io/importer.ts' },
