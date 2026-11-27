@@ -13,6 +13,7 @@ import { schemaStore } from '@/core/schema'
 import { useStore } from '@/core/store/useStore'
 import { goBack, href, navigate, useRoute } from '@/core/store/router'
 import { loadEditor } from '@/features/editor'
+import { loadDatabase } from '@/features/database'
 import * as Y from 'yjs'
 import { setCover } from '@/core/model/page'
 import { coverBackground, usePageMeta } from './pageMeta'
@@ -27,6 +28,8 @@ import { t } from '@/core/i18n'
 
 // The editor (Tiptap + ProseMirror) is the biggest chunk; load it only when a page opens.
 const Editor = lazy(() => loadEditor().then((m) => ({ default: m.Editor })))
+// Database views (spec/05) are their own lazy chunk.
+const DatabaseView = lazy(() => loadDatabase().then((m) => ({ default: m.DatabaseView })))
 const PageCover = lazy(() => import('./PageCover').then((m) => ({ default: m.PageCover })))
 const PageStylePanel = lazy(() => import('./pageStyleViews').then((m) => ({ default: m.PageStylePanel })))
 /** Stand-in until the page document is loaded (hooks need a doc). */
@@ -53,7 +56,9 @@ export function PageView({
     editorRef.current = e
   }, [])
 
+  const isDb = page?.kind === 'database'
   useEffect(() => {
+    if (isDb) return // a database keeps its data in db/<id> (spec/02 §4), not a page doc
     let alive = true
     const release = retainDoc(pageDocName(id)) // keep it loaded while visible (SY-01 LRU)
     void openDoc(pageDocName(id)).then((d) => alive && setLoaded({ id, doc: d }))
@@ -61,7 +66,7 @@ export function PageView({
       alive = false
       release()
     }
-  }, [id])
+  }, [id, isDb])
 
   const inTrash = page ? trashedSelfOrAncestor(pages, page) : false
   const parentId = page?.parentId ?? null
@@ -186,7 +191,7 @@ export function PageView({
         )}
         {/* Keyed by page so the whole subtree (editor DOM managed by ProseMirror included) is replaced in one piece. */}
         <div
-          className={`page-body${style.fullWidth ? ' is-full' : ''}`}
+          className={`page-body${style.fullWidth || isDb ? ' is-full' : ''}`}
           key={id}
           data-font={style.font}
           data-size={style.fontSize}
@@ -206,7 +211,13 @@ export function PageView({
               ed.commands.focus('start')
             }}
           />
-          {doc ? (
+          {isDb ? (
+            <Suspense fallback={<Skeleton className="editor-loading" />}>
+              <ErrorBoundary key={id} title={t('error.database')}>
+                <DatabaseView key={id} view={page} readOnly={readOnly} />
+              </ErrorBoundary>
+            </Suspense>
+          ) : doc ? (
             <Suspense fallback={<Skeleton className="editor-loading" />}>
               <ErrorBoundary key={id} title={t('error.editor')}>
                 <Editor

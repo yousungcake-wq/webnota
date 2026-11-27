@@ -11,7 +11,8 @@ test('settings → advanced: developer option toggles and persists per device (S
   await expect(sw).toHaveAttribute('aria-checked', 'true')
   await reload(page)
   await expect(page.getByRole('switch', { name: /디버그 로그/ })).toHaveAttribute('aria-checked', 'true')
-  await expect(page.getByText('지금은 실험 중인 기능이 없습니다.')).toBeVisible()
+  // experimental features (M4: database) are listed with their own switches
+  await expect(page.getByRole('switch', { name: /데이터베이스 \(개발 중\)/ })).toHaveAttribute('aria-checked', 'false')
   noErrors()
 })
 

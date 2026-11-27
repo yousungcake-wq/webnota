@@ -113,7 +113,7 @@
 
 ## M4 데이터베이스 I: 엔진 + Grid
 > 규칙: 스키마는 spec/02 §4. DB 코드는 전부 지연 청크 `features/database`(예산 120KB, `check-size.mjs` 등록), 초기 번들 122.9/125KB·에디터 204.9/210KB라 정적 import 금지. 미완성 UI는 기능 플래그 `database` 뒤에. 쿼리 엔진은 React 없는 `core/model/database`. **파일을 참조하는 새 위치(media 필드, 행 커버)는 `core/files/refs.ts`에 추가** (빠지면 저장소 정리가 지움, M3-10).
-- [ ] M4-00 사전 정리: 기능 플래그 `database`, `features/database` 지연 청크 골격 + 예산 등록, `fast-check` 추가, 새 뷰 메뉴의 Grid 항목을 플래그로 노출 (spec/10 §1.1)
+- [x] M4-00 사전 정리: 기능 플래그 `database`, `features/database` 지연 청크 골격 + 예산 등록, `fast-check` 추가, 새 뷰 메뉴의 Grid 항목을 플래그로 노출 (spec/10 §1.1) — DB 문자열은 지연 사전(`features/database/i18n`, `dt()`) — HASH00
 - [ ] M4-01 DB 데이터 모델: `db/<id>`(meta·fields·views), `dbr/<id>/<shard>`(샤드 8개, `hash(rowId) % 8`), `createDatabase`(workspace 뷰 kind=database·layout=grid, 기본 필드 text), 필드·행·셀 CRUD(셀 LWW, 행 order FracKey) — workspace에 새 뷰 종류가 생기므로 **schema 증가**(구버전은 읽기 전용) (spec/02 §4, DB-F05)
 - [ ] M4-02 DB 문서 수명·동기화: 레지스트리 LRU/retain(DB 열람 중 스키마+샤드 8개 유지), 탭 중계, 영구 삭제 시 `data/dbs/<id>/` 파일 삭제(엔진), 첫 연결 시 DB 문서 더티 표시, 엔진 테스트 (SY-02a)
 - [ ] M4-03 쿼리 엔진 `runQuery`: 필터(타입별 조건 전부, AND/OR 2단계, 상대 날짜), 정렬(여러 조건, `Intl.Collator('ko', {numeric})`, 빈 값 마지막, 안정 정렬), 계산 14종 — 조건 × 타입 전수 단위 테스트 + fast-check 속성 테스트 (spec/05 §2, §4.1~4.2, spec/02 §4.4)

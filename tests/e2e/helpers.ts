@@ -62,3 +62,8 @@ export async function reload(page: Page) {
   })
   await page.reload()
 }
+
+/** Turns on the `database` feature flag (M4–M5) before the app boots. */
+export async function enableDatabase(page: Page) {
+  await page.addInitScript(() => localStorage.setItem('webnota:flags', JSON.stringify({ database: true })))
+}

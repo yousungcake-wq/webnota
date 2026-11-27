@@ -5,8 +5,13 @@ import { join, relative } from 'node:path'
 import { expect, it } from 'vitest'
 
 const SRC = join(import.meta.dirname, '../../src')
-/** Files allowed to contain Korean: the dictionary, the language picker names, bilingual seed content. */
-const ALLOW = new Set(['core/i18n/ko.ts', 'core/i18n/index.ts', 'features/editor/seed.ts'])
+/** Files allowed to contain Korean: the dictionaries, the language picker names, bilingual seed content. */
+const ALLOW = new Set([
+  'core/i18n/ko.ts',
+  'core/i18n/index.ts',
+  'features/editor/seed.ts',
+  'features/database/i18n/ko.ts', // lazy feature dictionary (M4-00)
+])
 
 function files(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>

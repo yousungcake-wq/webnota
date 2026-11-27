@@ -31,7 +31,8 @@ const BUDGETS = {
   pasteUrlMenu: { kb: 4, entry: 'src/features/editor/PasteUrlMenu.tsx', after: 'editor' },
   fileCache: { kb: 6, entry: 'src/core/files/cache.ts' },
   upload: { kb: 8, entry: 'src/core/files/ingest.ts' },
-  // Add as features land: database: { kb: 120, entry: 'src/features/database/index.ts' }, …
+  // M4–M5 database (spec/05): views, field editors and the query engine, when a database opens
+  database: { kb: 120, entry: 'src/features/database/DatabaseView.tsx' },
 }
 
 const manifest = JSON.parse(readFileSync(join(DIST, '.vite/manifest.json'), 'utf8'))

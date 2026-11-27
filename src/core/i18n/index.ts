@@ -59,8 +59,24 @@ const PARAM = /\{(\w+)\}/g
 
 /** Translate `key`, replacing `{name}` with `params.name`. Falls back to the key before `initI18n`. */
 export function t(key: MessageKey, params?: Record<string, string | number>): string {
-  const msg = dict?.[key] ?? key
+  return format(dict?.[key] ?? key, params)
+}
+
+function format(msg: string, params?: Record<string, string | number>) {
   return params ? msg.replace(PARAM, (m, name: string) => (name in params ? String(params[name]) : m)) : msg
+}
+
+/**
+ * Feature dictionaries loaded with their lazy chunk (e.g. the database's `db.*` strings),
+ * so the boot dictionary stays within its budget. Features wrap `tFeature` in a typed
+ * helper (`dt` in features/database).
+ */
+const featureDict = new Map<string, string>()
+export function addMessages(messages: Record<string, string>) {
+  for (const [k, v] of Object.entries(messages)) featureDict.set(k, v)
+}
+export function tFeature(key: string, params?: Record<string, string | number>): string {
+  return format(featureDict.get(key) ?? key, params)
 }
 
 /**

@@ -14,7 +14,7 @@
 | GitHub 동기화 (엔진 + 클라이언트) | ≤ 12 KB | 4.1 KB (M3-00: 연결·실행 `session.ts` 포함) | 계정 연결 후 첫 동기화 |
 | CSS 전체 | ≤ 25 KB | 6.3 KB | 즉시 |
 | 에디터 코어 | ≤ 210 KB | 199.3 KB (M3-00. M2-15 192.9KB. 표의 prosemirror-tables는 bubble-menu가 정적으로 가져와 여기에 포함) | 페이지 열 때 (유휴 시간 프리로드) |
-| 데이터베이스 | ≤ 120 KB | — | DB 뷰 열 때 |
+| 데이터베이스 | ≤ 120 KB | 0.4 KB (M4-00 골격. `db.*` 문자열 사전 포함 — 부팅 사전 i18n 8KB 예산이 거의 차서 기능 사전은 그 기능 청크와 함께 로드, `addMessages`) | DB 뷰 열 때 |
 | 수식 (KaTeX + CSS) | ≤ 120 KB | 75.0 KB + CSS 1.5 KB (M3-07, 폰트 제외 — 프리캐시하지 않고 쓸 때 캐시) | 수식이 보이거나 편집할 때 |
 | 코드 하이라이트 | 코어 ≤ 15 KB + 언어당 ≤ 5 KB | 8.6 KB (lowlight 코어, `lowlight` 진입점 대신 lib/index.js 별칭) | 코드 블록이 있을 때 |
 | Markdown 붙여넣기 (`marked`) | ≤ 15 KB | 11.5 KB | Markdown 텍스트를 붙여넣을 때 |

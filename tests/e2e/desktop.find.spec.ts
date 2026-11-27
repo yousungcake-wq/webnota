@@ -35,6 +35,8 @@ test('⌘F finds, steps, matches case, replaces one and all; one undo restores (
   await bar.getByRole('button', { name: '닫기' }).click()
   await expect(bar).toHaveCount(0)
   await expect(ed.locator('.find-match')).toHaveCount(0)
+  // closing the bar hands focus back to the editor; undo only after it arrived
+  await page.waitForFunction(() => !!document.activeElement?.closest('.wn-editor'))
   await page.keyboard.press('ControlOrMeta+z')
   await expect(ed.locator('p').first()).toHaveText('Cat cat')
   await expect(ed.locator('p').nth(1)).toHaveText('catalog CAT')

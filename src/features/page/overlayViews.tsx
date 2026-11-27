@@ -24,7 +24,7 @@ export default function OverlayViews({ open, close }: { open: Open; close: () =>
         onClose={close}
         items={VIEW_LAYOUTS.map((l) => ({
           label: t(l.label),
-          disabled: !l.available,
+          disabled: !l.available(),
           onSelect: () => addPage(open.parentId, open.spaceId, l.layout),
         }))}
       />
