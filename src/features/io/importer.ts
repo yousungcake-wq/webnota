@@ -10,7 +10,7 @@ import { loadDocIO, loadMarkdown } from '@/features/editor'
 import type { WebnotaExport } from './exporter'
 import { EXPORT_FORMAT } from './format'
 import { it } from './i18n'
-import { attachmentsOf, planNotionImport, rewriteNotionMarkdown } from './notion'
+import { attachmentsOf, linkParents, planNotionImport, rewriteNotionMarkdown } from './notion'
 
 /**
  * Import (feedback 11): a WebNota export zip (its `webnota.json` restores everything
@@ -169,7 +169,7 @@ export function stripNotionProperties(md: string): string {
 }
 
 async function importNotion(zip: Map<string, Uint8Array>): Promise<ImportResult> {
-  const plan = planNotionImport([...zip.keys()])
+  const plan = linkParents(planNotionImport([...zip.keys()]), (p) => strFromU8(zip.get(p)!))
   if (!plan.length) throw new Error(it('io.nothing'))
   const [io, { markdownToHtml }] = await Promise.all([loadDocIO(), loadMarkdown()])
   const day = new Date().toISOString().slice(0, 10)
@@ -256,6 +256,10 @@ async function importNotion(zip: Map<string, Uint8Array>): Promise<ImportResult>
         dir,
         page: (p) => viewOf.get(p) ?? null,
         file: (p) => fileIds.get(p) ?? null,
+        child: (p) => {
+          const target = plan.find((x) => x.path === p || x.path === p.replace(/(?<!_all)\.csv$/i, '_all.csv'))
+          return target?.parent === item.path
+        },
       }),
     )
     await withDoc(pageDocName(viewId), (doc) => io.htmlIntoDoc(doc, html))

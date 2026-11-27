@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { attachmentsOf, notionTitle, planNotionImport, resolveRelative, rewriteNotionMarkdown } from './notion'
+import {
+  attachmentsOf,
+  linkParents,
+  notionTitle,
+  planNotionImport,
+  resolveRelative,
+  rewriteNotionMarkdown,
+} from './notion'
 
 const H = '0123456789abcdef0123456789abcdef'
 
@@ -59,5 +66,40 @@ describe('Notion Markdown → editor HTML', () => {
     expect(rewriteNotionMarkdown('<aside>\n💡 Remember this\n</aside>', 'x', ctx)).toBe(
       '<div data-type="callout" data-icon="💡"><p>Remember this</p></div>',
     )
+  })
+})
+
+describe('Notion exports with other layouts (feedback 2-10)', () => {
+  it('finds sub-pages in folders named without the id', () => {
+    const plan = planNotionImport([`Home ${H}.md`, `Home/Child ${H}.md`, `Home/Child/Deep ${H}.md`])
+    expect(plan.map((i) => [i.title, i.parent && plan.find((x) => x.path === i.parent)!.title])).toEqual([
+      ['Home', null],
+      ['Child', 'Home'],
+      ['Deep', 'Child'],
+    ])
+  })
+  it('flat exports: the page that links to a page on its own line is its parent', () => {
+    const files: Record<string, string> = {
+      [`Home ${H}.md`]: `# Home\n\nintro [inline](Other%20${H}.md)\n\n[Child](Child%20${H}.md)\n`,
+      [`Child ${H}.md`]: `# Child\n\n<aside>\n[Grand](Grand%20${H}.md)\n</aside>\n`,
+      [`Grand ${H}.md`]: '# Grand\n',
+      [`Other ${H}.md`]: '# Other\n',
+    }
+    const plan = linkParents(planNotionImport(Object.keys(files)), (p) => files[p]!)
+    const parent = (t: string) => {
+      const i = plan.find((x) => x.title === t)!
+      return i.parent && plan.find((x) => x.path === i.parent)!.title
+    }
+    expect([parent('Home'), parent('Child'), parent('Grand'), parent('Other')]).toEqual([null, 'Home', 'Child', null])
+  })
+  it('child page links become sub-page blocks, an <aside> around page links is not a callout', () => {
+    const ctx = {
+      dir: '',
+      page: (p: string) => (p.startsWith('Child') ? 'c1' : null),
+      file: () => null,
+      child: () => true,
+    }
+    const out = rewriteNotionMarkdown(`# T\n\n<aside>\n📄 [Child](Child%20${H}.md)\n</aside>\n`, 'T', ctx)
+    expect(out.trim()).toBe('<div data-sub-page data-view-id="c1"></div>')
   })
 })

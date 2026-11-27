@@ -43,11 +43,69 @@ export function planNotionImport(paths: string[]): NotionItem[] {
     items.push({ path: p, title: notionTitle(nameOf(p)), kind: 'page', folder: p.slice(0, -3), parent: null })
   for (const [key, p] of dbs)
     items.push({ path: p, title: notionTitle(nameOf(p)), kind: 'database', folder: key.slice(0, -4), parent: null })
-  const byFolder = new Map(items.map((i) => [i.folder, i]))
-  for (const i of items) i.parent = byFolder.get(dirOf(i.path))?.path ?? null
+  // the sub-page folder is "Title <id>/" or, in newer exports, just "Title/"
+  const byFolder = new Map<string, NotionItem>()
+  for (const i of items) {
+    const bare = `${dirOf(i.folder) ? dirOf(i.folder) + '/' : ''}${notionTitle(nameOf(i.folder) + '.md')}`
+    if (!byFolder.has(bare)) byFolder.set(bare, i)
+  }
+  for (const i of items) byFolder.set(i.folder, i)
+  const parentOf = (dir: string): NotionItem | undefined => {
+    const direct = byFolder.get(dir)
+    if (direct) return direct
+    // a parent folder whose own name lost its id: "A/B" for "A <id>/B <id>"
+    const parts = dir.split('/')
+    const bare = parts.map((x) => notionTitle(x + '.md')).join('/')
+    return [...byFolder.entries()].find(
+      ([k]) =>
+        k
+          .split('/')
+          .map((x) => notionTitle(x + '.md'))
+          .join('/') === bare,
+    )?.[1]
+  }
+  for (const i of items) i.parent = parentOf(dirOf(i.path))?.path ?? null
   // parents first (depth order), then by path for a stable order
   const depth = (i: NotionItem): number => (i.parent ? 1 + depth(items.find((x) => x.path === i.parent)!) : 0)
   return items.sort((a, b) => depth(a) - depth(b) || a.path.localeCompare(b.path))
+}
+
+const isAncestor = (items: NotionItem[], a: string, of: string): boolean => {
+  for (let p: string | null = of; p; p = items.find((x) => x.path === p)?.parent ?? null) if (p === a) return true
+  return false
+}
+
+/**
+ * Exports without sub-page folders ("Create folders for subpages" off) are flat: a page's
+ * parent is the page that links to it on a line of its own (Notion's child-page block).
+ * Fills in `parent` for items that have none, then re-sorts parents first.
+ */
+export function linkParents(items: NotionItem[], read: (path: string) => string): NotionItem[] {
+  const target = new Map<string, NotionItem>()
+  for (const i of items) {
+    target.set(i.path, i)
+    if (i.kind === 'database') {
+      target.set(i.path.replace(/_all\.csv$/i, '.csv'), i)
+      target.set(i.path.replace(/(?<!_all)\.csv$/i, '_all.csv'), i)
+    }
+  }
+  for (const page of items.filter((i) => i.kind === 'page')) {
+    for (const href of childLinks(read(page.path))) {
+      const child = target.get(resolveRelative(dirOf(page.path), href) ?? '')
+      if (!child || child.parent || child === page || isAncestor(items, child.path, page.path)) continue
+      child.parent = page.path
+    }
+  }
+  const depth = (i: NotionItem): number => (i.parent ? 1 + depth(items.find((x) => x.path === i.parent)!) : 0)
+  return items.sort((a, b) => depth(a) - depth(b) || a.path.localeCompare(b.path))
+}
+
+/** Links alone on their line (optionally inside an <aside> with nothing else): child pages. */
+export function childLinks(md: string): string[] {
+  const out: string[] = []
+  for (const m of md.matchAll(/^\s*(?:<aside>\s*)?\[[^\]]*\]\(([^)\s]+\.(?:md|csv))\)\s*(?:<\/aside>)?\s*$/gim))
+    out.push(m[1]!)
+  return out
 }
 
 /** A relative link in a file at `fromDir`, resolved to a zip path (URL-decoded, `..` handled). */
@@ -78,6 +136,8 @@ export interface RewriteContext {
   page(path: string): string | null
   /** Workspace file id for an attachment at this zip path (already stored). */
   file(path: string): string | null
+  /** True when the page at this path is a child of the page being converted (→ sub-page block). */
+  child?(path: string): boolean
 }
 
 /** Attachment paths a page's Markdown refers to (to store them before rewriting). */
@@ -99,6 +159,22 @@ export function rewriteNotionMarkdown(md: string, title: string, ctx: RewriteCon
   let s = md.replace(/^\uFEFF/, '')
   const firstLine = s.match(/^#\s+(.*)\n?/)
   if (firstLine && firstLine[1]!.trim() === title.trim()) s = s.slice(firstLine[0].length)
+  // an <aside> that only wraps page links is not a callout: unwrap it
+  s = s.replace(
+    /<aside>\s*((?:\p{Extended_Pictographic}\uFE0F?\s*)?(?:\[[^\]]*\]\([^)\s]+\.(?:md|csv)\)\s*)+)<\/aside>/gu,
+    (_a, body: string) =>
+      body
+        .replace(/^\p{Extended_Pictographic}\uFE0F?\s*/u, '')
+        .trim()
+        .split(/\s*\n\s*/)
+        .join('\n\n'),
+  )
+  // child pages: a link alone on its line → sub-page block
+  s = s.replace(/^\[[^\]]*\]\(([^)\s]+\.(?:md|csv))\)\s*$/gm, (all, href: string) => {
+    const path = resolveRelative(ctx.dir, href)
+    const view = path && ctx.child?.(path) ? ctx.page(path) : null
+    return view ? `<div data-sub-page data-view-id="${view}"></div>` : all
+  })
   // images on their own line → image blocks
   s = s.replace(/^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)\s*$/gm, (all, alt: string, href: string) => {
     if (/^https?:/i.test(href)) return all

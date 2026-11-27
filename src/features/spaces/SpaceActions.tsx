@@ -1,8 +1,11 @@
-import { MoreHorizontal, Plus, Settings2 } from 'lucide-react'
+import { MoreHorizontal, Plus, Settings2, Trash2 } from 'lucide-react'
 import { lazy, Suspense, useState } from 'react'
 import { t } from '@/core/i18n'
 import { afterMenuClosed } from '@/features/page'
+import { ws } from '@/core/docs/workspace'
+import { listSpaces } from '@/core/model/views'
 import { IconButton, Menu } from '@/ui'
+import { confirmDeleteSpace } from './deleteSpace'
 
 const SpaceDialog = lazy(() => import('./SpaceDialog'))
 
@@ -27,6 +30,17 @@ export function SpaceActions({ spaceId }: { spaceId: string }) {
           items={[
             { label: t('space.settings'), icon: Settings2, onSelect: () => open(spaceId) },
             { label: t('space.new'), icon: Plus, onSelect: () => open(null) },
+            ...(listSpaces(ws()).length > 1
+              ? [
+                  'separator' as const,
+                  {
+                    label: t('space.delete'),
+                    icon: Trash2,
+                    danger: true,
+                    onSelect: () => void afterMenuClosed().then(() => confirmDeleteSpace(spaceId)),
+                  },
+                ]
+              : []),
           ]}
         />
       )}
