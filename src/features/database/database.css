@@ -338,3 +338,67 @@
   max-width: 160px;
   min-width: 0;
 }
+
+/* row properties sheet (DB-G05 until M5-04) */
+.db-rowsheet {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: min(520px, 80vw);
+}
+.db-prop {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 40px;
+}
+.db-prop-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 140px;
+  min-height: 40px;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.db-prop-value {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+}
+.db-prop-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 40px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+.db-prop-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.db-prop-empty {
+  color: var(--text-3);
+}
+.db-rowsheet-input {
+  position: relative;
+  width: 100%;
+  min-height: 40px;
+}
+.db-prop-value > .db-select,
+.db-prop-value > .db-date,
+.db-prop-value > .db-checklist,
+.db-prop-value > .db-media {
+  width: 100%;
+  padding: 8px 0;
+}

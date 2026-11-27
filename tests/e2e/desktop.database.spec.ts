@@ -197,4 +197,97 @@ test.describe('database (M4)', () => {
     await grid.evaluate((el) => (el.scrollTop = el.scrollHeight))
     await expect(page.locator('.dbg-row', { hasText: 'Item 50' })).toBeVisible()
   })
+
+  test('rows: new, insert below, menu (duplicate, delete + undo), multi-delete, drag, open (M4-09)', async ({
+    page,
+  }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await enableDatabase(page)
+    await openApp(page)
+    await page.click('.sidebar-bottom >> text=새 페이지')
+    await page.getByRole('menuitem', { name: '표 (Grid)' }).click()
+    const rows = page.locator('.dbg-row')
+    const names = () => page.locator('.dbg-row [data-type="text"] .dbc-text').allTextContents()
+    await expect(rows).toHaveCount(3)
+    // bottom "+ 새 행": the new row's first cell becomes active; type a name
+    await page.getByRole('button', { name: '새 행' }).click()
+    await expect(rows).toHaveCount(4)
+    await page.keyboard.type('D')
+    await page.keyboard.press('Enter')
+    for (const [i, n] of ['A', 'B', 'C'].entries()) {
+      const cell = await gridCell(page, i, '이름')
+      await cell.click()
+      await page.keyboard.type(n)
+      await page.keyboard.press('Enter')
+    }
+    await expect.poll(names).toEqual(['A', 'B', 'C', 'D'])
+
+    // hover "+" inserts below
+    await rows.nth(0).hover()
+    await rows.nth(0).getByRole('button', { name: '아래에 행 추가' }).click()
+    await page.keyboard.type('A2')
+    await page.keyboard.press('Enter')
+    await expect.poll(names).toEqual(['A', 'A2', 'B', 'C', 'D'])
+
+    // handle press → menu: duplicate, delete, undo
+    await rows.nth(2).hover()
+    await rows
+      .nth(2)
+      .getByRole('button', { name: /행 메뉴/ })
+      .click()
+    await page.getByRole('menuitem', { name: '복제' }).click()
+    await expect.poll(names).toEqual(['A', 'A2', 'B', 'B', 'C', 'D'])
+    await rows.nth(3).hover()
+    await rows
+      .nth(3)
+      .getByRole('button', { name: /행 메뉴/ })
+      .click()
+    await page.getByRole('menuitem', { name: '삭제' }).click()
+    await expect.poll(names).toEqual(['A', 'A2', 'B', 'C', 'D'])
+    await page.getByRole('button', { name: '실행 취소' }).click()
+    await expect.poll(names).toEqual(['A', 'A2', 'B', 'B', 'C', 'D'])
+
+    // multi-select with Ctrl+click on handles, delete the selection
+    await rows.nth(1).hover()
+    await rows
+      .nth(1)
+      .getByRole('button', { name: /행 메뉴/ })
+      .click({ modifiers: ['Control'] })
+    await rows.nth(3).hover()
+    await rows
+      .nth(3)
+      .getByRole('button', { name: /행 메뉴/ })
+      .click({ modifiers: ['Control'] })
+    await expect(page.getByText('2개 행 선택됨')).toBeVisible()
+    await page.getByRole('toolbar').getByRole('button', { name: '삭제' }).click()
+    await expect.poll(names).toEqual(['A', 'B', 'C', 'D'])
+
+    // drag D above A by its handle
+    const handle = rows.nth(3).getByRole('button', { name: /행 메뉴/ })
+    await rows.nth(3).hover()
+    const hb = (await handle.boundingBox())!
+    const top = (await rows.nth(0).boundingBox())!
+    await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(hb.x + hb.width / 2, top.y + 20, { steps: 8 })
+    await page.mouse.move(hb.x + hb.width / 2, top.y + 6, { steps: 4 })
+    await expect(page.locator('.dbg-drop')).toBeVisible()
+    await page.mouse.up()
+    await expect.poll(names).toEqual(['D', 'A', 'B', 'C'])
+
+    // open → properties dialog, edit the name there
+    await rows.nth(1).hover()
+    await rows.nth(1).getByRole('button', { name: '열기' }).click()
+    const dialog = page.getByRole('dialog', { name: 'A' })
+    await dialog.getByRole('button', { name: '이름' }).click()
+    await page.keyboard.press('End')
+    await page.keyboard.type('!')
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('dialog', { name: 'A!' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect.poll(names).toEqual(['D', 'A!', 'B', 'C'])
+    await reload(page)
+    await expect.poll(names).toEqual(['D', 'A!', 'B', 'C'])
+    noErrors()
+  })
 })

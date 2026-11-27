@@ -76,6 +76,20 @@ export const ko = {
   'db.media.open': '{name} 열기',
   'db.media.tooLarge': '{name}: {max}MB보다 큰 파일은 올릴 수 없습니다',
   'db.media.hideNames': '파일 이름 숨기기',
+  'db.row.new': '새 행',
+  'db.row.insertBelow': '아래에 행 추가',
+  'db.row.insertAbove': '위에 행 추가',
+  'db.row.duplicate': '복제',
+  'db.row.delete': '삭제',
+  'db.row.open': '열기',
+  'db.row.menu': '행 메뉴 (끌어서 옮기기)',
+  'db.row.deleted': '행 {count}개를 삭제했습니다',
+  'db.row.selected': '{count}개 행 선택됨',
+  'db.row.clearSelection': '선택 해제',
+  'db.row.sorted': '정렬 중에는 행을 끌어서 옮길 수 없습니다. 정렬을 지우면 직접 순서를 바꿀 수 있습니다.',
+  'db.row.untitled': '제목 없음',
+  'db.row.properties': '속성',
+  'db.row.empty': '비어 있음',
 }
 
 export type DbKey = keyof typeof ko

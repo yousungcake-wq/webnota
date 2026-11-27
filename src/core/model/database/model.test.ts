@@ -20,6 +20,7 @@ import {
   readDbMeta,
   readViewSettings,
   renameField,
+  restoreRows,
   rowsOf,
   setCell,
   setFieldOptions,
@@ -155,8 +156,11 @@ describe('rows and cells', () => {
     expect(listRows(db).map((r) => r.id)).toEqual([a, b, c, z])
     const d = duplicateRow(db, a)!
     expect(listRows(db).map((r) => r.id)).toEqual([a, d, b, c, z])
+    const removed = [getRow(db, b)!, getRow(db, c)!]
     deleteRows(db, [b, c])
     expect(listRows(db).map((r) => r.id)).toEqual([a, d, z])
+    restoreRows(db, removed)
+    expect(listRows(db).map((r) => r.id)).toEqual([a, d, b, c, z])
   })
   it('appends many rows at once in order (bulk)', () => {
     const { db, primary } = setup(1)

@@ -1,10 +1,10 @@
 import { FIELD_TYPE_INFO } from './fieldTypes'
-import { HEADER_HEIGHT, renderedColumns, type Column } from './gridColumns'
+import { GUTTER, HEADER_HEIGHT, renderedColumns, type Column } from './gridColumns'
 
 /** Sticky header row (DB-G01). Field menus, resizing and dragging arrive with M4-11. */
 export function GridHeader({ columns, colRange }: { columns: Column[]; colRange: { from: number; to: number } }) {
   const { frozen, shown, before, after } = renderedColumns(columns, colRange)
-  const totalWidth = columns.reduce((n, c) => n + c.width, 0)
+  const totalWidth = GUTTER + columns.reduce((n, c) => n + c.width, 0)
   const cell = (c: Column) => {
     const Icon = FIELD_TYPE_INFO[c.field.type]?.icon
     return (
@@ -14,7 +14,7 @@ export function GridHeader({ columns, colRange }: { columns: Column[]; colRange:
         role="columnheader"
         aria-colindex={columns.indexOf(c) + 1}
         data-field-id={c.field.id}
-        style={{ width: c.width, left: c.frozen ? c.left : undefined }}
+        style={{ width: c.width, left: c.frozen ? c.left + GUTTER : undefined }}
       >
         {Icon && <Icon size={14} aria-hidden className="dbg-hicon" />}
         <span className="dbg-hname">{c.field.name}</span>
@@ -23,6 +23,7 @@ export function GridHeader({ columns, colRange }: { columns: Column[]; colRange:
   }
   return (
     <div className="dbg-header" role="row" aria-rowindex={1} style={{ width: totalWidth, height: HEADER_HEIGHT }}>
+      <div className="dbg-gutter" style={{ width: GUTTER }} />
       {frozen.map(cell)}
       {before > 0 && <div className="dbg-spacer" style={{ width: before }} />}
       {shown.map(cell)}

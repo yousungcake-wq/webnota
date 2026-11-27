@@ -192,3 +192,107 @@ textarea.dbc-editor {
   white-space: normal;
   overflow-wrap: anywhere;
 }
+.dbg-gutter {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  flex: none;
+  background: var(--bg);
+}
+.dbg-header .dbg-gutter {
+  z-index: 5;
+}
+.dbg-row:hover .dbg-gutter {
+  background: var(--bg-hover);
+}
+.dbg-gbtn {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-3);
+  opacity: 0;
+  cursor: pointer;
+}
+.dbg-gbtn.is-grip {
+  cursor: grab;
+  touch-action: none;
+}
+.dbg-row:hover .dbg-gbtn,
+.dbg-row.is-selected .dbg-gbtn,
+.dbg-gbtn:focus-visible {
+  opacity: 1;
+}
+.dbg-gbtn:hover {
+  background: var(--bg-active);
+  color: var(--text);
+}
+.dbg-row.is-selected,
+.dbg-row.is-selected .dbg-cell.is-frozen,
+.dbg-row.is-selected .dbg-gutter {
+  background: var(--accent-soft);
+}
+.dbg-open {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-elev);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+.dbg-row:hover .dbg-open {
+  display: inline-flex;
+}
+.dbg-drop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--accent);
+  z-index: 3;
+  pointer-events: none;
+}
+.dbg-newrow {
+  position: sticky;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 100%;
+  height: 36px;
+  padding: 0 0 0 52px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-2);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.dbg-newrow:hover {
+  background: var(--bg-hover);
+}
+.dbg-selbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  color: var(--text-2);
+}

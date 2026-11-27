@@ -589,6 +589,35 @@ export function deleteRows(db: DbDocs, ids: string[]) {
   for (const [shard, list] of byShard) shard.transact(() => list.forEach((id) => rowsOf(shard).delete(id)))
 }
 
+/** Puts deleted rows back as they were (same ids, order, cells): undo of `deleteRows`. */
+export function restoreRows(db: DbDocs, rows: RowSnapshot[]) {
+  assertWritable()
+  const byShard = new Map<Y.Doc, RowSnapshot[]>()
+  for (const r of rows) {
+    const s = shardFor(db, r.id)
+    byShard.set(s, [...(byShard.get(s) ?? []), r])
+  }
+  for (const [shard, list] of byShard)
+    shard.transact(() => {
+      for (const r of list) {
+        if (rowsOf(shard).has(r.id)) continue
+        const m = new Y.Map<unknown>()
+        m.set('order', r.order)
+        const cells = new Y.Map<unknown>()
+        for (const [k, v] of Object.entries(r.cells)) cells.set(k, v)
+        m.set('cells', cells)
+        m.set('icon', r.icon)
+        m.set('cover', r.cover)
+        m.set('hasDoc', r.hasDoc)
+        m.set('createdAt', r.createdAt)
+        m.set('createdBy', r.createdBy)
+        m.set('updatedAt', r.updatedAt)
+        m.set('updatedBy', r.updatedBy)
+        rowsOf(shard).set(r.id, m)
+      }
+    })
+}
+
 /** Moves a row in manual order (DB-G03). */
 export function moveRow(db: DbDocs, rowId: string, to: { afterId?: string; beforeId?: string }) {
   assertWritable()

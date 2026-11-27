@@ -2,6 +2,8 @@ import { orderedFields, type FieldMeta, type ViewSettings } from '@/core/model/d
 
 export const ROW_HEIGHT = 36
 export const HEADER_HEIGHT = 36
+/** Left gutter with the row's "+" and drag/menu handle (DB-G02). */
+export const GUTTER = 44
 
 export interface Column {
   field: FieldMeta

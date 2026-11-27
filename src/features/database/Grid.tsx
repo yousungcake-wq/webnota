@@ -1,10 +1,14 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
-import { cellOf, setCell, type FieldMeta } from '@/core/model/database'
+import { Copy, Maximize2, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react'
+import { cellOf, duplicateRow, moveRow, readDbMeta, setCell, type FieldMeta } from '@/core/model/database'
+import { Button, Menu, toast } from '@/ui'
 import type { DbSession, DbState } from './session'
 import { dt } from './i18n'
 import { CellPopover, POPOVER_EDITED } from './CellPopover'
 import { editText, parseEdit, TEXT_EDITED } from './cellEdit'
-import { columnsOf, HEADER_HEIGHT, ROW_HEIGHT } from './gridColumns'
+import { columnsOf, GUTTER, HEADER_HEIGHT, ROW_HEIGHT } from './gridColumns'
+import { deleteRowsWithUndo, newRow } from './rowActions'
+import { RowSheet } from './RowSheet'
 import { GridHeader } from './GridHeader'
 import { GridRow, type GridPos as Pos } from './GridRow'
 import { fixedLayout, measuredLayout, visibleColumns } from './rowLayout'
@@ -34,8 +38,13 @@ export function Grid({
   const [active, setActive] = useState<Pos | null>(null)
   const [editing, setEditing] = useState<(Pos & { initial: string }) | null>(null)
   const [popover, setPopover] = useState<Pos | null>(null)
-  const totalWidth = columns.reduce((n, c) => n + c.width, 0)
+  const totalWidth = GUTTER + columns.reduce((n, c) => n + c.width, 0)
   const docs = state.docs
+  const primaryId = state.meta.primaryFieldId || readDbMeta(docs).primaryFieldId
+  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
+  const [rowMenu, setRowMenu] = useState<{ rowId: string; anchor: HTMLElement } | null>(null)
+  const [sheetRow, setSheetRow] = useState<string | null>(null)
+  const [drag, setDrag] = useState<{ rowId: string; drop: number } | null>(null)
 
   // DB-G08: wrapped columns make rows grow; their heights are measured after render.
   const autoHeight = columns.some((c) => c.wrap)
@@ -47,7 +56,7 @@ export function Grid({
   const viewTop = Math.max(0, box.top - HEADER_HEIGHT)
   const start = rowIds.length ? Math.max(0, layout.indexAt(viewTop) - OVERSCAN_ROWS) : 0
   const end = rowIds.length ? Math.min(rowIds.length, layout.indexAt(viewTop + box.height) + OVERSCAN_ROWS + 1) : 0
-  const colRange = visibleColumns(columns, box.left, box.width)
+  const colRange = visibleColumns(columns, box.left, box.width - GUTTER)
 
   useLayoutEffect(() => {
     if (!autoHeight) return
@@ -121,8 +130,11 @@ export function Grid({
       Tab: () => move(0, e.shiftKey ? -1 : 1),
       Enter: () => active && (startEdit(active) || toggle(active)),
       ' ': () => active && toggle(active),
-      Escape: () => setActive(null),
-      Delete: () => active && canEdit(fieldById(active.fieldId)) && setCell(docs, active.rowId, active.fieldId, null),
+      Escape: () => (selected.size ? setSelected(new Set()) : setActive(null)),
+      Delete: () =>
+        selected.size && !readOnly
+          ? (deleteRowsWithUndo(docs, [...selected]), setSelected(new Set()))
+          : active && canEdit(fieldById(active.fieldId)) && setCell(docs, active.rowId, active.fieldId, null),
       Backspace: () =>
         active && canEdit(fieldById(active.fieldId)) && setCell(docs, active.rowId, active.fieldId, null),
     }
@@ -157,60 +169,223 @@ export function Grid({
       if (startEdit(pos)) e.preventDefault()
     } else setActive(pos)
   }
+  const addRowAt = (where: { afterId?: string; beforeId?: string }) => {
+    const id = newRow(docs, state.fields, state.view, where)
+    const first = columns[0]
+    if (first) setActive({ rowId: id, fieldId: first.field.id })
+    // keys go to the grid next (typing fills the new row's first cell)
+    scrollRef.current?.focus({ preventScroll: true })
+    return id
+  }
+
+  /** Drag a row by its handle (DB-G03); a press without moving opens the row menu. */
+  const startHandle = (rowId: string, e: React.PointerEvent) => {
+    if (e.button !== 0) return
+    e.preventDefault()
+    if (e.shiftKey || e.metaKey || e.ctrlKey) {
+      // multi-select (DB-G02)
+      setSelected((prev) => {
+        const next = new Set(prev)
+        if (e.shiftKey && prev.size) {
+          const last = [...prev].at(-1)!
+          const [a, b] = [rowIds.indexOf(last), rowIds.indexOf(rowId)].sort((x, y) => x - y)
+          rowIds.slice(a, b! + 1).forEach((id) => next.add(id))
+        } else if (next.has(rowId)) next.delete(rowId)
+        else next.add(rowId)
+        return next
+      })
+      return
+    }
+    const anchor = e.currentTarget as HTMLElement
+    const y0 = e.clientY
+    let dragging = false
+    let drop = rowIds.indexOf(rowId)
+    const bodyTop = () => bodyRef.current!.getBoundingClientRect().top
+    const onMove = (ev: PointerEvent) => {
+      if (!dragging && Math.abs(ev.clientY - y0) < 5) return
+      if (!dragging) {
+        if (state.view?.sorts.length) {
+          toast(dt('db.row.sorted'))
+          cleanup()
+          return
+        }
+        dragging = true
+      }
+      const y = ev.clientY - bodyTop()
+      const i = layout.indexAt(y)
+      drop = y > layout.top(i) + layout.height(i) / 2 ? i + 1 : i
+      setDrag({ rowId, drop })
+      const el = scrollRef.current!
+      const r = el.getBoundingClientRect()
+      if (ev.clientY < r.top + HEADER_HEIGHT + 24) el.scrollTop -= 12
+      else if (ev.clientY > r.bottom - 24) el.scrollTop += 12
+    }
+    const onUp = () => {
+      cleanup()
+      if (!dragging) return setRowMenu({ rowId, anchor })
+      setDrag(null)
+      const from = rowIds.indexOf(rowId)
+      if (drop === from || drop === from + 1) return
+      const before = rowIds[drop]
+      if (before) moveRow(docs, rowId, { beforeId: before })
+      else moveRow(docs, rowId, { afterId: rowIds.at(-1)! })
+    }
+    const cleanup = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', cleanupDrag)
+    }
+    const cleanupDrag = () => {
+      cleanup()
+      setDrag(null)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', cleanupDrag)
+  }
+
+  const onRowAction = (
+    rowId: string,
+    action: 'insert' | 'handle' | 'open',
+    e: React.PointerEvent | React.MouseEvent,
+  ) => {
+    if (action === 'insert') addRowAt({ afterId: rowId })
+    else if (action === 'open') setSheetRow(rowId)
+    else startHandle(rowId, e as React.PointerEvent)
+  }
+
   const onToggle = (rowId: string, fieldId: string) => {
     setActive({ rowId, fieldId })
     toggle({ rowId, fieldId })
   }
 
   return (
-    <div
-      ref={scrollRef}
-      className="dbg"
-      role="grid"
-      aria-label={dt('db.grid.label', { title })}
-      aria-rowcount={rowIds.length + 1}
-      aria-colcount={columns.length}
-      tabIndex={0}
-      onKeyDown={onKeyDown}
-    >
-      <GridHeader columns={columns} colRange={colRange} />
-      <div ref={bodyRef} className="dbg-body" style={{ width: totalWidth, height: layout.total }}>
-        {rowIds.slice(start, end).map((id, k) => {
-          const row = session.row(id)
-          if (!row) return null
-          const index = start + k
-          return (
-            <GridRow
-              key={id}
-              row={row}
-              index={index}
-              top={layout.top(index)}
-              height={autoHeight ? null : ROW_HEIGHT}
-              columns={columns}
-              colRange={colRange}
-              readOnly={readOnly}
-              activeField={active?.rowId === id ? active.fieldId : null}
-              editing={editing?.rowId === id ? editing : null}
-              onCellPointer={onCellPointer}
-              onToggle={onToggle}
-              onFinishEdit={finishEdit}
-            />
-          )
-        })}
-      </div>
-      {popover && (
-        <GridPopover
-          pos={popover}
-          session={session}
-          state={state}
-          readOnly={readOnly}
-          onClose={() => {
-            setPopover(null)
-            scrollRef.current?.focus({ preventScroll: true })
-          }}
-        />
+    <>
+      {selected.size > 0 && (
+        <div className="dbg-selbar" role="toolbar" aria-label={dt('db.row.selected', { count: selected.size })}>
+          <span>{dt('db.row.selected', { count: selected.size })}</span>
+          {!readOnly && (
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() => {
+                deleteRowsWithUndo(docs, [...selected])
+                setSelected(new Set())
+              }}
+            >
+              <Trash2 size={14} aria-hidden /> {dt('db.row.delete')}
+            </Button>
+          )}
+          <Button size="sm" onClick={() => setSelected(new Set())}>
+            {dt('db.row.clearSelection')}
+          </Button>
+        </div>
       )}
-    </div>
+      <div
+        ref={scrollRef}
+        className="dbg"
+        role="grid"
+        aria-label={dt('db.grid.label', { title })}
+        aria-rowcount={rowIds.length + 1}
+        aria-colcount={columns.length}
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+      >
+        <GridHeader columns={columns} colRange={colRange} />
+        <div ref={bodyRef} className="dbg-body" style={{ width: totalWidth, height: layout.total }}>
+          {rowIds.slice(start, end).map((id, k) => {
+            const row = session.row(id)
+            if (!row) return null
+            const index = start + k
+            return (
+              <GridRow
+                key={id}
+                row={row}
+                index={index}
+                top={layout.top(index)}
+                height={autoHeight ? null : ROW_HEIGHT}
+                columns={columns}
+                colRange={colRange}
+                readOnly={readOnly}
+                activeField={active?.rowId === id ? active.fieldId : null}
+                editing={editing?.rowId === id ? editing : null}
+                onCellPointer={onCellPointer}
+                onToggle={onToggle}
+                onFinishEdit={finishEdit}
+                selected={selected.has(id)}
+                primaryId={primaryId}
+                onRowAction={onRowAction}
+              />
+            )
+          })}
+          {drag && (
+            <div
+              className="dbg-drop"
+              style={{ top: drag.drop < rowIds.length ? layout.top(drag.drop) : layout.total }}
+              aria-hidden
+            />
+          )}
+        </div>
+        {!readOnly && (
+          <button type="button" className="dbg-newrow" style={{ width: totalWidth }} onClick={() => addRowAt({})}>
+            <Plus size={14} aria-hidden /> {dt('db.row.new')}
+          </button>
+        )}
+        {popover && (
+          <GridPopover
+            pos={popover}
+            session={session}
+            state={state}
+            readOnly={readOnly}
+            onClose={() => {
+              setPopover(null)
+              scrollRef.current?.focus({ preventScroll: true })
+            }}
+          />
+        )}
+        {rowMenu && (
+          <Menu
+            anchor={rowMenu.anchor}
+            title={dt('db.row.menu')}
+            onClose={() => setRowMenu(null)}
+            items={[
+              { label: dt('db.row.open'), icon: Maximize2, onSelect: () => setSheetRow(rowMenu.rowId) },
+              ...(readOnly
+                ? []
+                : [
+                    {
+                      label: dt('db.row.insertAbove'),
+                      icon: ArrowUp,
+                      onSelect: () => addRowAt({ beforeId: rowMenu.rowId }),
+                    },
+                    {
+                      label: dt('db.row.insertBelow'),
+                      icon: ArrowDown,
+                      onSelect: () => addRowAt({ afterId: rowMenu.rowId }),
+                    },
+                    { label: dt('db.row.duplicate'), icon: Copy, onSelect: () => duplicateRow(docs, rowMenu.rowId) },
+                    'separator' as const,
+                    {
+                      label: dt('db.row.delete'),
+                      icon: Trash2,
+                      danger: true,
+                      onSelect: () => deleteRowsWithUndo(docs, [rowMenu.rowId]),
+                    },
+                  ]),
+            ]}
+          />
+        )}
+        {sheetRow && (
+          <RowSheet
+            session={session}
+            state={state}
+            rowId={sheetRow}
+            readOnly={readOnly}
+            onClose={() => setSheetRow(null)}
+          />
+        )}
+      </div>
+    </>
   )
 }
 
