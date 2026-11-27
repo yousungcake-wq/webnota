@@ -106,7 +106,7 @@
 - [x] M3-05 파일 블록 `file`(fileId, name, size) — 업로드 진행 표시, 내려받기 (ED-B14) — schema 증가 — b1ced84
 - [x] M3-06 동영상 `video`(YouTube/Vimeo/직접 URL) + 임베드 `embed`(iframe 허용 목록) (ED-B13, ED-B22) — schema 증가 — 4571767
 - [x] M3-07 수식 블록 `mathBlock` + 인라인 수식 `inlineMath` (KaTeX 지연 로드, `$$`·`$…$`, 편집 팝오버/폰 시트) (ED-B15, ED-I06) — schema 증가 — 78c1a68
-- [ ] M3-08 Worker `/unfurl`(OG 메타, 허용 출처, 캐시) + 링크 미리보기 블록 `linkPreview` + URL 붙여넣기 시 링크/미리보기/임베드 선택 (ED-B21, ED-F06) — schema 증가
+- [x] M3-08 Worker `/unfurl`(OG 메타, 허용 출처, 캐시) + 링크 미리보기 블록 `linkPreview` + URL 붙여넣기 시 링크/미리보기/임베드 선택 (ED-B21, ED-F06) — schema 증가 — 84d5e11
 - [ ] M3-09 커버·페이지 아이콘 이미지 업로드 (ED-F11, ED-F12)
 - [ ] M3-10 저장소 정리: 참조되지 않는 `files/` 스캔·삭제(설정에서 수동 실행) (SY-04)
 - [ ] M3-11 e2e(데스크탑·폰) + 성능 기록 + 실기기 QA
