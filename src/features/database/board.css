@@ -215,3 +215,42 @@
   cursor: grab;
   touch-action: pan-y;
 }
+
+/* column management (M5-05) */
+.dbk-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 0 220px;
+  padding: 6px;
+}
+.dbk-side-title {
+  padding: 8px 4px 4px;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+.dbk-hidden {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 4px;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+}
+.dbk-hidden:hover {
+  background: var(--bg-hover);
+}
+.dbk-show {
+  margin-left: auto;
+}
+.dbk-handle:focus-visible {
+  outline: 2px solid var(--accent);
+  border-radius: var(--r-sm);
+}
+@media (pointer: coarse) {
+  .dbk-hidden,
+  .dbk-handle {
+    min-height: 44px;
+  }
+}

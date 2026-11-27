@@ -98,6 +98,13 @@ test.describe('database on phones (M4-13)', () => {
     expect((await col.locator('.dbk-new').boundingBox())!.height).toBeGreaterThanOrEqual(44)
     await col.locator('.dbk-card-body').first().tap()
     await expect(page.locator('.sheet')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.sheet')).toHaveCount(0)
+    // column menu is a bottom sheet (M5-05)
+    expect((await col.locator('.dbk-handle').boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    await col.locator('.dbk-handle').tap()
+    await page.locator('.sheet').getByRole('menuitem', { name: '열 숨기기' }).tap()
+    await expect(page.locator('.dbk-col')).toHaveCount(4)
     noErrors()
   })
 

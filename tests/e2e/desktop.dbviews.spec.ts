@@ -199,4 +199,75 @@ test.describe('database views (M5)', () => {
     await expect.poll(async () => (await titles('Done'))[0]).toBe(moved)
     noErrors()
   })
+
+  test('board columns: rename, colour, hide + hidden panel, new group, delete option, sort inside columns (M5-05)', async ({
+    page,
+  }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.setViewportSize({ width: 1900, height: 900 })
+    await page.getByRole('button', { name: '보기 추가' }).click()
+    await page.getByRole('menuitem', { name: '보드' }).click()
+    const heads = () => page.locator('.dbk-col').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')))
+    const col = (name: string) => page.locator(`.dbk-col[aria-label="${name}"]`)
+    await expect(page.locator('.dbk-col')).toHaveCount(5)
+
+    // rename Todo → 할 일 (the option itself)
+    await col('Todo').locator('.dbk-handle').click()
+    await page.getByRole('menuitem', { name: '열 이름 바꾸기' }).click()
+    const dialog = page.getByRole('dialog', { name: '열 이름 바꾸기' })
+    await dialog.getByLabel('옵션 이름').fill('할 일')
+    await dialog.getByRole('button', { name: '확인' }).click()
+    await expect(col('할 일')).toBeVisible()
+
+    // colour
+    await col('할 일').locator('.dbk-handle').click()
+    await page.getByRole('menuitem', { name: '색' }).click()
+    await page.getByRole('menuitemcheckbox', { name: '초록' }).click()
+    await expect(col('할 일').locator('.db-chip')).toHaveAttribute('style', /--sel-green/)
+
+    // hide Blocked and the empty column → hidden panel → show again
+    await col('Blocked').locator('.dbk-handle').click()
+    await page.getByRole('menuitem', { name: '열 숨기기' }).click()
+    await col('Status 없음').locator('.dbk-handle').click()
+    await page.getByRole('menuitem', { name: '열 숨기기' }).click()
+    await expect(page.locator('.dbk-col')).toHaveCount(3)
+    const side = page.getByRole('complementary', { name: '숨긴 그룹' })
+    await expect(side.locator('.dbk-hidden')).toHaveCount(2)
+    await side.locator('.dbk-hidden', { hasText: 'Blocked' }).getByRole('button', { name: '보이기' }).click()
+    await expect(page.locator('.dbk-col')).toHaveCount(4)
+
+    // new group
+    await side.getByRole('button', { name: '새 그룹' }).click()
+    const add = page.getByRole('dialog', { name: '새 그룹' })
+    await add.getByLabel('옵션 이름').fill('검토')
+    await add.getByRole('button', { name: '확인' }).click()
+    await expect(col('검토')).toBeVisible()
+    await expect(col('검토').locator('.dbk-count')).toHaveText('0')
+
+    // delete an option: its cards go to the (hidden) empty column
+    const blocked = Number(await col('Blocked').locator('.dbk-count').innerText())
+    const emptyBefore = Number(
+      await side.locator('.dbk-hidden', { hasText: 'Status 없음' }).locator('.dbk-count').innerText(),
+    )
+    await col('Blocked').locator('.dbk-handle').click()
+    await page.getByRole('menuitem', { name: '옵션 삭제' }).click()
+    await page.getByRole('alertdialog').getByRole('button', { name: '옵션 삭제' }).click()
+    await expect(col('Blocked')).toHaveCount(0)
+    await expect(side.locator('.dbk-hidden', { hasText: 'Status 없음' }).locator('.dbk-count')).toHaveText(
+      String(emptyBefore + blocked),
+    )
+
+    // sort applies inside columns
+    await page.getByRole('button', { name: '정렬', exact: true }).click()
+    const sort = page.getByRole('dialog', { name: '정렬' })
+    await sort.getByRole('button', { name: '정렬 추가' }).click()
+    await sort.getByLabel('필드').first().selectOption({ label: 'Name' })
+    await sort.getByLabel('정렬 방향').first().selectOption('desc')
+    await page.keyboard.press('Escape')
+    const names = await col('Doing').locator('.db-card-title').allInnerTexts()
+    expect(names).toEqual([...names].sort((a, b) => b.localeCompare(a, 'ko', { numeric: true })))
+    expect(await heads()).toEqual(['할 일', 'Doing', 'Done', '검토'])
+    noErrors()
+  })
 })

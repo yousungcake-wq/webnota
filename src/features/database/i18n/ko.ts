@@ -229,6 +229,14 @@ export const ko = {
   'db.board.hideEmpty': '값 없음 열 숨기기',
   'db.board.cover': '카드 커버',
   'db.board.noCover': '없음',
+  'db.board.hideGroup': '열 숨기기',
+  'db.board.showGroup': '보이기',
+  'db.board.renameGroup': '열 이름 바꾸기',
+  'db.board.color': '색',
+  'db.board.deleteGroup': "'{name}' 옵션을 삭제할까요?",
+  'db.board.deleteGroupHint': "이 열의 카드는 '값 없음' 열로 옮겨집니다. 다른 보기에서도 옵션이 사라집니다.",
+  'db.board.addGroup': '새 그룹',
+  'db.board.hiddenGroups': '숨긴 그룹',
 }
 
 export type DbKey = keyof typeof ko

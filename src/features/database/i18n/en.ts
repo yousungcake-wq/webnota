@@ -230,4 +230,12 @@ export const en: Record<DbKey, string> = {
   'db.board.hideEmpty': 'Hide the empty column',
   'db.board.cover': 'Card cover',
   'db.board.noCover': 'None',
+  'db.board.hideGroup': 'Hide column',
+  'db.board.showGroup': 'Show',
+  'db.board.renameGroup': 'Rename column',
+  'db.board.color': 'Color',
+  'db.board.deleteGroup': "Delete the option '{name}'?",
+  'db.board.deleteGroupHint': 'Its cards move to the empty column. The option disappears from every view.',
+  'db.board.addGroup': 'New group',
+  'db.board.hiddenGroups': 'Hidden groups',
 }

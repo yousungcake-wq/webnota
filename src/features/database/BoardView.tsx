@@ -8,6 +8,7 @@ import {
   groupFieldOf,
   moveGroup,
   moveRow,
+  setGroupHidden,
   movedCellValue,
   isEmptyCell,
   NO_VALUE,
@@ -19,10 +20,11 @@ import {
   type RowSnapshot,
 } from '@/core/model/database'
 import { useImageSrc } from '@/features/files'
-import { Button, EmptyState, toast } from '@/ui'
+import { Button, EmptyState, Menu, toast } from '@/ui'
 import { CardBody } from './CardBody'
 import { addStatusField } from './create'
 import { blockTouchScroll, useCardDrag, type CardDrag } from './boardDrag'
+import { addGroup, columnMenu, HiddenGroups } from './boardColumns'
 import { GroupLabel, groupName } from './GroupLabel'
 import { dt } from './i18n'
 import type { LayoutProps } from './layoutProps'
@@ -62,6 +64,7 @@ export default function BoardView({ session, state, title, readOnly }: LayoutPro
   const coverField = state.fields.find((f) => f.id === view?.board.coverFieldId && f.type === 'media') ?? null
   const [open, setOpen] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
+  const [colMenu, setColMenu] = useState<{ key: string; anchor: HTMLElement } | null>(null)
   const boardRef = useRef<HTMLDivElement>(null)
   const attachBoard = useCallback((el: HTMLDivElement | null) => {
     boardRef.current = el
@@ -128,6 +131,8 @@ export default function BoardView({ session, state, title, readOnly }: LayoutPro
     )
   }
   const drag = cardDrag.drag
+  const hidden = groups.filter((g) => !columns.includes(g))
+  const canAddGroup = !readOnly && (field.type === 'select' || field.type === 'multiSelect')
   const dragTitle = drag && primary ? String(cellOf(primary, session.row(drag.rowId)!) ?? '') : ''
   const addCard = (key: string) => {
     const id = newRow(state.docs, state.fields, view)
@@ -158,12 +163,35 @@ export default function BoardView({ session, state, title, readOnly }: LayoutPro
           onOpen={setOpen}
           onEdit={setEditing}
           onAdd={addCard}
+          onMenu={readOnly ? undefined : (key, anchor) => setColMenu({ key, anchor })}
           onRename={(rowId, text) => {
             if (primary && text !== null) setCell(state.docs, rowId, primary.id, text)
             setEditing(null)
           }}
         />
       ))}
+      {(hidden.length > 0 || canAddGroup) && (
+        <HiddenGroups
+          field={field}
+          groups={hidden}
+          readOnly={readOnly}
+          canAdd={canAddGroup}
+          onShow={(key) =>
+            key === NO_VALUE && group?.hideEmpty
+              ? updateGroup(state.docs, view.id, { hideEmpty: false })
+              : setGroupHidden(state.docs, view.id, key, false)
+          }
+          onAdd={() => void addGroup(state.docs, field)}
+        />
+      )}
+      {colMenu && (
+        <Menu
+          anchor={colMenu.anchor}
+          title={groupName(field, colMenu.key)}
+          items={columnMenu(state.docs, view.id, field, colMenu.key, !!group?.hideEmpty)}
+          onClose={() => setColMenu(null)}
+        />
+      )}
       {open && (
         <RowSheet session={session} state={state} rowId={open} readOnly={readOnly} onClose={() => setOpen(null)} />
       )}
@@ -206,6 +234,7 @@ function BoardColumn({
   onOpen,
   onEdit,
   onAdd,
+  onMenu,
   onRename,
 }: {
   group: QueryGroup
@@ -226,6 +255,7 @@ function BoardColumn({
   onOpen: (id: string) => void
   onEdit: (id: string | null) => void
   onAdd: (key: string) => void
+  onMenu: ((key: string, anchor: HTMLElement) => void) | undefined
   onRename: (rowId: string, text: string | null) => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -266,8 +296,17 @@ function BoardColumn({
         <span
           className="dbk-handle"
           {...headHandle}
-          onClick={() => {
-            if (wasColumnDrag()) return
+          role={onMenu ? 'button' : undefined}
+          tabIndex={onMenu ? 0 : undefined}
+          aria-haspopup={onMenu ? 'menu' : undefined}
+          onClick={(e) => {
+            if (!wasColumnDrag()) onMenu?.(group.key, e.currentTarget)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              onMenu?.(group.key, e.currentTarget)
+            }
           }}
         >
           <GroupLabel field={field} groupKey={group.key} />
