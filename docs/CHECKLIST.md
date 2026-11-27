@@ -132,7 +132,7 @@
 
 ## M5 데이터베이스 II: Board, Calendar, 행 페이지, 인라인 DB
 > 규칙: M4와 같음 — DB 코드는 지연 청크 `features/database`(32.6/120KB), 초기 번들 123.8/125KB라 페이지·사이드바 쪽 추가는 최소로. 새 뷰 종류·새 블록 타입(`database`)·행 페이지 문서 `row/<db>/<row>`는 **schema 증가**(spec/02 §6). 행 페이지 본문은 에디터 청크 재사용(`loadEditor`), 행 페이지·커버의 파일 참조는 `core/files/refs.ts`(행 커버는 M4-07에 이미 있음, `row/` 문서 본문 추가). 행 컴포넌트는 메모되므로 새 객체 prop 금지(STATUS). Board·Calendar가 끝나면 **기능 플래그 `database` 제거**.
-- [x] M5-00 사전 정리: DB 첫 화면 속도(M4-14 과제: 행 스냅샷 캐시 또는 샤드 점진 적용 검토, 4× 감속 10k 열기 목표 접근), `GridRow`·카드 공통 셀 표시 정리, 뷰 레이아웃 전환 골격(`DatabaseView`가 layout별 지연 컴포넌트) (spec/10, spec/05 §11)
+- [x] M5-00 사전 정리: DB 첫 화면 속도(M4-14 과제: 행 스냅샷 캐시 또는 샤드 점진 적용 검토, 4× 감속 10k 열기 목표 접근), `GridRow`·카드 공통 셀 표시 정리, 뷰 레이아웃 전환 골격(`DatabaseView`가 layout별 지연 컴포넌트) (spec/10, spec/05 §11) — a5a8101
 - [ ] M5-01 탭 바와 다중 뷰: 탭 추가(레이아웃 선택 → `addDbView` + workspace 뷰 `embedded`/형제), 이름 바꾸기, 복제(설정 복사), 삭제(마지막 뷰는 불가), 순서 끌기, 뷰마다 필터·정렬·속성 독립. 사이드바의 DB 아래 "연결된 뷰" — workspace 뷰 구조 결정 + **schema 증가**(필요 시) (spec/05 §1, DB-L)
 - [ ] M5-02 Board 데이터: 그룹 키 계산(select·multi·checkbox·date 일/주/월/년·url), `runQuery`의 `groups`, 그룹 순서·숨김(`group.order`/`hidden`), "값 없음" 그룹 — 전수 테스트 + 증분 갱신 속성 테스트 (DB-K01, DB-K05, spec/05 §2)
 - [ ] M5-03 Board UI: 열 가로 스크롤 + 열 안 세로 가상 스크롤, 카드(표시 필드 선택·커버 이미지/media), 카드 클릭 → 행 페이지, 카드 제목 인라인 편집, 열에 카드 추가 (DB-K02, DB-K06, DB-K07)
