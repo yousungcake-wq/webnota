@@ -193,7 +193,7 @@ test.describe('database (M4)', () => {
     await expect(name).toBeVisible()
     const box = await name.boundingBox()
     const gridBox = await grid.boundingBox()
-    expect(Math.abs(box!.x - gridBox!.x)).toBeLessThan(2) // sticky at the left edge
+    expect(Math.abs(box!.x - gridBox!.x - 44)).toBeLessThan(2) // sticky right of the row gutter
     await grid.evaluate((el) => (el.scrollTop = el.scrollHeight))
     await expect(page.locator('.dbg-row', { hasText: 'Item 50' })).toBeVisible()
   })

@@ -256,6 +256,9 @@ textarea.dbc-editor {
   font-size: var(--fs-xs);
   cursor: pointer;
 }
+.dbg-open::after {
+  content: attr(data-label); /* label outside the cell's text content */
+}
 .dbg-row:hover .dbg-open {
   display: inline-flex;
 }

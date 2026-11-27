@@ -79,8 +79,15 @@ export const GridRow = memo(function GridRow({
           />
         )}
         {c.field.id === primaryId && !isEditing && (
-          <button type="button" className="dbg-open" tabIndex={-1} onClick={(e) => onRowAction(row.id, 'open', e)}>
-            <Maximize2 size={12} aria-hidden /> {dt('db.row.open')}
+          <button
+            type="button"
+            className="dbg-open"
+            tabIndex={-1}
+            aria-label={dt('db.row.open')}
+            data-label={dt('db.row.open')}
+            onClick={(e) => onRowAction(row.id, 'open', e)}
+          >
+            <Maximize2 size={12} aria-hidden />
           </button>
         )}
       </div>
