@@ -1,5 +1,5 @@
-/* feedback 4–5: image and video share a box with the toolbar at its top-left corner, and a
-   caption that spans the column with its own alignment */
+/* feedback 4–5, 2-4/2-5: image and video share a box with the toolbar at its top-right
+   corner, side resize handles, and a caption that spans the column with its own alignment */
 .wn-editor .media-box {
   position: relative;
   max-width: 100%;
@@ -7,13 +7,12 @@
 .wn-editor .media-tools {
   position: absolute;
   top: 8px;
-  left: 8px;
-  z-index: 2;
+  right: 8px;
+  z-index: 3;
   display: flex;
   gap: 2px;
-  max-width: calc(100% - 16px);
-  overflow-x: auto;
-  scrollbar-width: none;
+  /* one row; on a small image it reaches past the image's edge instead of hiding buttons */
+  width: max-content;
   padding: 2px;
   border: 1px solid var(--border);
   border-radius: var(--r);
@@ -62,5 +61,72 @@
   .wn-editor .media-tools a.icon-btn {
     min-width: 44px;
     min-height: 44px;
+  }
+}
+
+/* narrower than the toolbar (is-narrow, MediaToolbar): a left-aligned image: the toolbar grows to the right so it stays on screen;
+   centred: it stays centred over the image */
+.wn-editor [data-align='left'] .media-tools.is-narrow {
+  right: auto;
+  left: 8px;
+}
+.wn-editor [data-align='center'] .media-tools.is-narrow {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* side handles: drag to resize (mouse and finger) */
+.wn-editor .media-handle {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  width: 8px;
+  height: 48px;
+  max-height: 40%;
+  transform: translateY(-50%);
+  border-radius: 4px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-sm);
+  cursor: ew-resize;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease);
+  touch-action: none;
+}
+/* a wider invisible grip area around the visible bar */
+.wn-editor .media-handle::before {
+  content: '';
+  position: absolute;
+  inset: -12px -14px;
+}
+.wn-editor .media-handle.is-left {
+  left: 6px;
+}
+.wn-editor .media-handle.is-right {
+  right: 6px;
+}
+.wn-editor .media-box:hover .media-handle,
+.wn-editor .is-selected .media-handle,
+.wn-editor .media-box:focus-within .media-handle {
+  opacity: 1;
+}
+/* bottom-left: the toolbar is at the top-right */
+.wn-editor .media-size-badge {
+  position: absolute;
+  left: var(--sp-2);
+  bottom: var(--sp-2);
+  z-index: 3;
+  padding: 2px 6px;
+  border-radius: var(--r-sm);
+  background: var(--bg-overlay);
+  color: var(--text-on-accent);
+  font-size: var(--fs-xs);
+  pointer-events: none;
+}
+@media (pointer: coarse) {
+  .wn-editor .media-handle {
+    width: 10px;
+    height: 56px;
   }
 }

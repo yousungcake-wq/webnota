@@ -1,12 +1,11 @@
 import type { ReactNodeViewProps } from '@tiptap/react'
 import { ImagePlus, Link2, RefreshCw, Upload } from 'lucide-react'
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useRef, useState } from 'react'
 import { t } from '@/core/i18n'
 import { fileStatusKey, useFile } from '@/features/files'
-import { useLayout } from '@/platform/layout'
 import { Button, promptDialog, toast } from '@/ui'
 import { imageBoxStyle } from './ImageBlock'
-import { MediaCaption, MediaToolbar } from './MediaToolbar'
+import { MediaCaption, MediaToolbar, useMediaResize } from './MediaToolbar'
 import { isImageSrc, type ImageAlign } from './nodes/image'
 import './image.css'
 
@@ -143,47 +142,18 @@ function Figure({
   const status = isFile(src) ? file.status : 'ready'
   const caption = attrs.caption as string
   const [editingCaption, setEditingCaption] = useState(false)
-  const [drag, setDrag] = useState<number | null>(null)
-  const frame = useRef<HTMLDivElement>(null)
-  const phone = useLayout().layout === 'phone'
+  const boxRef = useRef<HTMLDivElement>(null)
   const [failed, setFailed] = useState(false)
+  const { drag, handles } = useMediaResize(boxRef, attrs.align as ImageAlign, (width) => updateAttributes({ width }))
 
   const box = imageBoxStyle(attrs)
   const style = drag !== null ? { ...box, width: `${drag}%` } : box
 
-  /** Drag a side handle: width as a percent of the text column (10–100). */
-  const startResize = (e: ReactPointerEvent, side: 1 | -1) => {
-    const el = frame.current
-    const column = el?.parentElement?.parentElement
-    if (!el || !column) return
-    e.preventDefault()
-    e.stopPropagation()
-    const startX = e.clientX
-    const startW = el.getBoundingClientRect().width
-    const full = column.getBoundingClientRect().width
-    // a centered image grows on both sides
-    const k = (attrs.align as ImageAlign) === 'center' ? 2 : 1
-    let pct = (startW / full) * 100
-    const move = (ev: PointerEvent) => {
-      const w = startW + (ev.clientX - startX) * side * k
-      pct = Math.round(Math.min(100, Math.max(10, (w / full) * 100)))
-      setDrag(pct)
-    }
-    const up = () => {
-      window.removeEventListener('pointermove', move)
-      window.removeEventListener('pointerup', up)
-      setDrag(null)
-      updateAttributes({ width: pct })
-    }
-    window.addEventListener('pointermove', move)
-    window.addEventListener('pointerup', up)
-  }
-
   const showCaption = editingCaption || !!caption
   return (
     <figure className="image-figure" contentEditable={false}>
-      <div className="media-box" style={style}>
-        <div ref={frame} className={`image-frame${url && !failed ? '' : ' is-placeholder'}`}>
+      <div className="media-box" style={style} ref={boxRef}>
+        <div className={`image-frame${url && !failed ? '' : ' is-placeholder'}`}>
           {url && !failed ? (
             <img
               src={url}
@@ -217,21 +187,17 @@ function Figure({
               )}
             </div>
           )}
-          {editable && !phone && url && (
-            <>
-              <span className="image-handle is-left" onPointerDown={(e) => startResize(e, -1)} aria-hidden />
-              <span className="image-handle is-right" onPointerDown={(e) => startResize(e, 1)} aria-hidden />
-            </>
-          )}
-          {drag !== null && <span className="image-size-badge">{drag}%</span>}
         </div>
+        {editable && url && handles}
         {editable && (
           <MediaToolbar
             kind="image"
             attrs={attrs}
             update={updateAttributes}
-            sizes={[25, 50, 75, 100, null]}
-            download={url ? { href: url, name: downloadName(src, caption) } : null}
+            captionShown={showCaption}
+            download={
+              !url ? null : isFile(src) ? { fileId: src, name: downloadName(src, caption) } : { url: src, name: '' }
+            }
             onCaption={() => setEditingCaption(true)}
             onClear={onClear}
             onDuplicate={onDuplicate}
@@ -248,6 +214,10 @@ function Figure({
           onCommit={(v) => {
             setEditingCaption(false)
             if (v !== caption) updateAttributes({ caption: v })
+          }}
+          onRemove={() => {
+            setEditingCaption(false)
+            if (caption) updateAttributes({ caption: '' })
           }}
         />
       )}

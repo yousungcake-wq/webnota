@@ -26,7 +26,9 @@ async function insert(page: Page, query: string, url: string) {
 const attrsOf = async (page: Page, type: string) =>
   (await editorJson(page)).content.filter((n) => n.type === type).map((n) => n.attrs!)
 
-test('video block: YouTube link → privacy-enhanced player, width menu (ED-B13)', async ({ page }) => {
+test('video block: YouTube link → privacy-enhanced player, resize handles, image tools (ED-B13, feedback 2-5)', async ({
+  page,
+}) => {
   const check = failOnConsoleErrors(page)
   await insert(page, '동영상', 'https://youtu.be/dQw4w9WgXcQ?t=42')
   const frame = page.locator('.wn-editor .video-block iframe')
@@ -40,10 +42,18 @@ test('video block: YouTube link → privacy-enhanced player, width menu (ED-B13)
   const bar = page.locator('.video-block').getByRole('toolbar', { name: '미디어 도구' })
   await expect(bar).toBeVisible()
   await expect(page.locator('.wn-editor .video-block .media-shield')).toHaveCount(0)
-  // same tools as images (feedback 5): align + size, caption
-  await bar.getByRole('button', { name: '동영상 정렬' }).click()
-  await page.getByRole('menuitemcheckbox', { name: '크기 50%' }).click()
-  await expect.poll(async () => (await attrsOf(page, 'video'))[0]!.width).toBe(50)
+  // the toolbar is at the top-right; side handles resize like images (feedback 2-5)
+  const box = page.locator('.wn-editor .video-block .media-box')
+  const vb = (await box.boundingBox())!
+  const tb = (await bar.boundingBox())!
+  expect(vb.x + vb.width - (tb.x + tb.width)).toBeLessThan(16)
+  await box.hover()
+  const hb = (await page.locator('.video-block .media-handle.is-right').boundingBox())!
+  await page.mouse.move(hb.x + 4, hb.y + 10)
+  await page.mouse.down()
+  await page.mouse.move(hb.x - 120, hb.y + 10, { steps: 5 })
+  await page.mouse.up()
+  await expect.poll(async () => (await attrsOf(page, 'video'))[0]!.width as number).toBeLessThan(90)
   await bar.getByRole('button', { name: '동영상 정렬' }).click()
   await page.getByRole('menuitemcheckbox', { name: '오른쪽' }).click()
   await expect(page.locator('.wn-editor .video-block')).toHaveAttribute('data-align', 'right')

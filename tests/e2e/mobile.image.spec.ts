@@ -2,7 +2,9 @@ import { expect, test } from '@playwright/test'
 import { failOnConsoleErrors, openApp } from './helpers'
 import { imageAttrs, makeImage } from './media'
 
-test('phone: image from the block panel, photo picker, size sheet, caption (ED-B12, MB)', async ({ page }) => {
+test('phone: image from the block panel, photo picker, drag to resize, caption (ED-B12, MB, feedback 2-4)', async ({
+  page,
+}) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
   await page.locator('.wn-editor p').first().tap()
@@ -22,19 +24,38 @@ test('phone: image from the block panel, photo picker, size sheet, caption (ED-B
 
   const img = page.locator('.wn-editor .image-frame img')
   await expect(img).toHaveAttribute('src', /^blob:/)
-  // no resize handles on phones; the toolbar has 44px targets and a size sheet
+  // phones resize by dragging the side handles too (feedback 2-4); the toolbar has 44px targets
   await img.tap()
   const bar = page.getByRole('toolbar', { name: '미디어 도구' })
   await expect(bar).toBeVisible()
-  await expect(page.locator('.image-handle')).toHaveCount(0)
+  const handle = page.locator('.wn-editor .media-handle.is-right')
+  await expect(handle).toBeVisible()
+  const hb = (await handle.boundingBox())!
+  // a finger drag (touch pointer events)
+  const cdp = await page.context().newCDPSession(page)
+  const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', x: number) =>
+    cdp.send('Input.dispatchTouchEvent', {
+      type,
+      touchPoints: type === 'touchEnd' ? [] : [{ x, y: hb.y + hb.height / 2 }],
+    })
+  await touch('touchStart', hb.x + hb.width / 2)
+  for (let i = 1; i <= 6; i++) await touch('touchMove', hb.x + hb.width / 2 - i * 15)
+  await touch('touchEnd', 0)
+  await expect.poll(async () => (await imageAttrs(page))[0]?.width as number).toBeLessThan(95)
+  // a small image is mostly toolbar: tap its bottom-left corner
+  const corner = async () => {
+    const b = (await img.boundingBox())!
+    await img.tap({ position: { x: 12, y: b.height - 12 } })
+  }
+  await corner()
   const alignBtn = bar.getByRole('button', { name: '이미지 정렬' })
   expect((await alignBtn.boundingBox())!.height).toBeGreaterThanOrEqual(44)
   await alignBtn.tap()
   await expect(page.locator('.sheet')).toBeVisible()
-  await page.getByRole('menuitemcheckbox', { name: '크기 75%' }).tap()
-  await expect.poll(async () => (await imageAttrs(page))[0]?.width).toBe(75)
+  await page.getByRole('menuitemcheckbox', { name: '오른쪽' }).tap()
+  await expect.poll(async () => (await imageAttrs(page))[0]?.align).toBe('right')
 
-  await img.tap()
+  await corner()
   await page.getByRole('toolbar', { name: '미디어 도구' }).getByRole('button', { name: '캡션', exact: true }).tap()
   await page.getByRole('textbox', { name: '캡션' }).fill('폰 사진')
   await page.getByRole('textbox', { name: '캡션' }).press('Enter')

@@ -1,11 +1,11 @@
 import type { ReactNodeViewProps } from '@tiptap/react'
 import { ExternalLink, Film, Link2, Maximize2, MonitorPlay, Trash2, Upload } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { t } from '@/core/i18n'
 import { fileStatusKey, useFile } from '@/features/files'
 import { Button, IconButton, Menu, promptDialog, toast } from '@/ui'
 import { embedSource, videoSource } from './nodes/embedUrls'
-import { MediaCaption, MediaToolbar } from './MediaToolbar'
+import { MediaCaption, MediaToolbar, useMediaResize, type MediaDownload } from './MediaToolbar'
 import './embed.css'
 
 /** iframe permissions: players need scripts + their own origin; no top navigation. */
@@ -27,7 +27,6 @@ export default function EmbedView({
   const [menu, setMenu] = useState<HTMLElement | null>(null)
   const input = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
-  const [editingCaption, setEditingCaption] = useState(false)
 
   const askLink = async () => {
     const url = await promptDialog({
@@ -128,48 +127,35 @@ export default function EmbedView({
   } else body = <div className="media-empty">{t(isVideo ? 'video.unsupported' : 'embed.unsupported')}</div>
 
   if (isVideo) {
-    const caption = (node.attrs.caption as string) ?? ''
-    const showCaption = editingCaption || !!caption
     const fileSrc = video?.kind === 'file' && !/^https?:/i.test(src) ? src : null
+    const caption = (node.attrs.caption as string) ?? ''
     return (
-      <figure className="media-figure" contentEditable={false}>
-        <div className="media-box" style={{ width: width ? `${width}%` : '100%' }}>
-          {body}
-          {editable && (
-            <MediaToolbar
-              kind="video"
-              attrs={node.attrs}
-              update={updateAttributes}
-              sizes={[50, 75, null]}
-              download={fileSrc ? { href: '', name: '' } : null}
-              fileId={fileSrc}
-              onCaption={() => setEditingCaption(true)}
-              onClear={() => updateAttributes({ src: null })}
-              onDuplicate={() => {
-                const pos = getPos()
-                if (typeof pos === 'number')
-                  editor
-                    .chain()
-                    .insertContentAt(pos + node.nodeSize, node.toJSON())
-                    .run()
-              }}
-              onDelete={deleteNode}
-            />
-          )}
-        </div>
-        {showCaption && (
-          <MediaCaption
-            value={caption}
-            align={node.attrs.captionAlign as string}
-            editable={editable}
-            autoFocus={editingCaption}
-            onCommit={(v) => {
-              setEditingCaption(false)
-              if (v !== caption) updateAttributes({ caption: v })
-            }}
-          />
-        )}
-      </figure>
+      <VideoFigure
+        body={body}
+        attrs={node.attrs}
+        editable={editable}
+        update={updateAttributes}
+        download={
+          fileSrc
+            ? {
+                fileId: fileSrc,
+                name: `${(caption || 'video').replace(/[\\/:*?"<>|]/g, '_')}${fileSrc.slice(fileSrc.lastIndexOf('.'))}`,
+              }
+            : video?.kind === 'file'
+              ? { url: src, name: '' }
+              : null
+        }
+        onClear={() => updateAttributes({ src: null })}
+        onDuplicate={() => {
+          const pos = getPos()
+          if (typeof pos === 'number')
+            editor
+              .chain()
+              .insertContentAt(pos + node.nodeSize, node.toJSON())
+              .run()
+        }}
+        onDelete={deleteNode}
+      />
     )
   }
 
@@ -220,6 +206,71 @@ export default function EmbedView({
             />
           )}
         </div>
+      )}
+    </figure>
+  )
+}
+
+/** A video with the image toolbar, side resize handles and a caption (feedback 2-5). */
+function VideoFigure({
+  body,
+  attrs,
+  editable,
+  update,
+  download,
+  onClear,
+  onDuplicate,
+  onDelete,
+}: {
+  body: ReactNode
+  attrs: Record<string, unknown>
+  editable: boolean
+  update: (a: Record<string, unknown>) => void
+  download: MediaDownload | null
+  onClear: () => void
+  onDuplicate: () => void
+  onDelete: () => void
+}) {
+  const [editingCaption, setEditingCaption] = useState(false)
+  const boxRef = useRef<HTMLDivElement>(null)
+  const { drag, handles } = useMediaResize(boxRef, attrs.align as string, (width) => update({ width }))
+  const caption = (attrs.caption as string) ?? ''
+  const width = drag ?? (attrs.width as number | null)
+  const showCaption = editingCaption || !!caption
+  return (
+    <figure className="media-figure" contentEditable={false}>
+      <div className="media-box" style={{ width: width ? `${width}%` : '100%' }} ref={boxRef}>
+        {body}
+        {editable && handles}
+        {editable && (
+          <MediaToolbar
+            kind="video"
+            attrs={attrs}
+            update={update}
+            captionShown={showCaption}
+            download={download}
+            onCaption={() => setEditingCaption(true)}
+            onClear={onClear}
+            onDuplicate={onDuplicate}
+            onDelete={onDelete}
+          />
+        )}
+      </div>
+      {showCaption && (
+        <MediaCaption
+          value={caption}
+          align={attrs.captionAlign as string}
+          editable={editable}
+          autoFocus={editingCaption}
+          onCommit={(v) => {
+            setEditingCaption(false)
+            if (v !== caption) update({ caption: v })
+          }}
+          onRemove={() => {
+            setEditingCaption(false)
+            if (caption) update({ caption: '' })
+          }}
+        />
       )}
     </figure>
   )

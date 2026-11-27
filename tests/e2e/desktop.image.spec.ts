@@ -68,7 +68,7 @@ test('paste and drop an image file insert image blocks (ED-F06)', async ({ page 
   check()
 })
 
-test('toolbar at the top-left: align (+size), caption, caption align, duplicate, clear, delete (ED-B12, feedback 4)', async ({
+test('toolbar at the top-right: align, caption → caption align, download, duplicate, clear, delete (ED-B12, feedback 2-4)', async ({
   page,
 }) => {
   const check = failOnConsoleErrors(page)
@@ -78,19 +78,35 @@ test('toolbar at the top-left: align (+size), caption, caption align, duplicate,
   await block.locator('img').click()
   const bar = block.getByRole('toolbar', { name: '미디어 도구' })
   await expect(bar).toBeVisible()
-  // the toolbar sits on the image's top-left corner, not under it
+  // the toolbar sits on the image's top-right corner, not under it
   const ib = (await block.locator('.image-frame').boundingBox())!
   const tb = (await bar.boundingBox())!
-  expect(tb.x - ib.x).toBeLessThan(16)
+  expect(ib.x + ib.width - (tb.x + tb.width)).toBeLessThan(16)
   expect(tb.y - ib.y).toBeLessThan(16)
+  // download works on desktop (a file of the workspace)
+  const download = page.waitForEvent('download')
+  await bar.getByRole('button', { name: '다운로드' }).click()
+  expect((await download).suggestedFilename()).toMatch(/\.png$/)
   await bar.getByRole('button', { name: '이미지 정렬' }).click()
   await page.getByRole('menuitemcheckbox', { name: '오른쪽' }).click()
   await expect(block).toHaveAttribute('data-align', 'right')
+  // no size presets in the align menu: the size is set by dragging the side handles
   await bar.getByRole('button', { name: '이미지 정렬' }).click()
-  await page.getByRole('menuitemcheckbox', { name: '크기 50%' }).click()
-  await expect(block.locator('.media-box')).toHaveAttribute('style', /width: 50%/)
+  await expect(page.getByRole('menuitemcheckbox')).toHaveCount(3)
+  await page.keyboard.press('Escape')
+  // a new caption takes the caret; Backspace in an empty caption removes it
   await bar.getByRole('button', { name: '캡션', exact: true }).click()
-  await page.getByRole('textbox', { name: '캡션' }).fill('바다 사진')
+  const captionBox = page.getByRole('textbox', { name: '캡션' })
+  await expect(captionBox).toBeFocused()
+  await page.keyboard.press('Backspace')
+  await expect(captionBox).toHaveCount(0)
+  await expect(bar.getByRole('button', { name: '캡션', exact: true })).toBeVisible()
+  await bar.getByRole('button', { name: '캡션', exact: true }).click()
+  // while there is a caption, the caption button is "caption alignment"
+  await expect(bar.getByRole('button', { name: '캡션 정렬' })).toBeVisible()
+  await expect(bar.getByRole('button', { name: '캡션', exact: true })).toHaveCount(0)
+  await expect(captionBox).toBeFocused()
+  await page.keyboard.type('바다 사진')
   await page.keyboard.press('Enter')
   // the caption keeps its own alignment (left) while the image is on the right
   await expect(block.locator('.media-caption')).toHaveCSS('text-align', 'left')
@@ -100,22 +116,29 @@ test('toolbar at the top-left: align (+size), caption, caption align, duplicate,
   await expect(block.locator('.media-caption')).toHaveCSS('text-align', 'center')
   await expect
     .poll(async () => (await imageAttrs(page))[0])
-    .toMatchObject({ align: 'right', width: 50, caption: '바다 사진', captionAlign: 'center' })
+    .toMatchObject({ align: 'right', caption: '바다 사진', captionAlign: 'center' })
 
   await reload(page)
   const again = page.locator('.wn-editor .image-block')
   await expect(again).toHaveAttribute('data-align', 'right')
   await expect(again.locator('.media-caption input')).toHaveValue('바다 사진')
 
-  // drag the left handle (right-aligned image grows to the left)
+  // drag the left handle inwards (a right-aligned image shrinks from the left); the size
+  // shows at the bottom-left while dragging
   await again.locator('img').hover()
-  const handle = again.locator('.image-handle.is-left')
+  const handle = again.locator('.media-handle.is-left')
   const hb = (await handle.boundingBox())!
   await page.mouse.move(hb.x + 3, hb.y + 10)
   await page.mouse.down()
-  await page.mouse.move(hb.x - 120, hb.y + 10, { steps: 5 })
+  await page.mouse.move(hb.x + 80, hb.y + 10, { steps: 5 })
+  const badge = again.locator('.media-size-badge')
+  await expect(badge).toBeVisible()
+  const bb = (await badge.boundingBox())!
+  const fb = (await again.locator('.media-box').boundingBox())!
+  expect(bb.x - fb.x).toBeLessThan(16)
+  expect(fb.y + fb.height - (bb.y + bb.height)).toBeLessThan(16)
   await page.mouse.up()
-  await expect.poll(async () => (await imageAttrs(page))[0]!.width as number).toBeGreaterThan(55)
+  await expect.poll(async () => (await imageAttrs(page))[0]!.width as number).toBeLessThan(95)
 
   // an external image by link
   await page.locator('.wn-editor').press('End')
