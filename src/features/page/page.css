@@ -287,30 +287,6 @@
   font-size: var(--fs-sm);
   color: var(--text-2);
 }
-.segmented {
-  display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  overflow: hidden;
-}
-.segmented button {
-  border: 0;
-  background: var(--bg);
-  color: var(--text);
-  font: inherit;
-  font-size: var(--fs-sm);
-  padding: 6px 12px;
-  min-height: 32px;
-  cursor: pointer;
-}
-.segmented button + button {
-  border-left: 1px solid var(--border);
-}
-.segmented button.is-active {
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 600;
-}
 .segmented button[data-font='serif'] {
   font-family: var(--font-serif);
 }
@@ -320,11 +296,6 @@
 .page-style-check input {
   width: 20px;
   height: 20px;
-}
-@media (pointer: coarse) {
-  .segmented button {
-    min-height: 44px;
-  }
 }
 
 /* ED-F11 cover */

@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react'
+import { Check, type LucideIcon } from 'lucide-react'
 import { useId, useRef, type InputHTMLAttributes, type KeyboardEvent, type ReactNode } from 'react'
 import './controls.css'
 
@@ -105,7 +105,7 @@ export function Segmented<T extends string>({
           className={value === v ? 'is-on' : ''}
           onClick={() => onChange(v)}
         >
-          {Icon && <Icon size={16} />} {l}
+          {value === v ? <Check size={16} aria-hidden /> : Icon && <Icon size={16} />} {l}
         </button>
       ))}
     </div>

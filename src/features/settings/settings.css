@@ -61,3 +61,8 @@
 .sync-log li.is-error span {
   color: var(--danger);
 }
+.settings-now {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}

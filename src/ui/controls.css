@@ -43,8 +43,10 @@
   color: var(--text-2);
 }
 .segmented button.is-on {
-  background: var(--bg-elev);
-  color: var(--text);
+  /* filled with the accent so the choice reads at a glance in light and dark themes */
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font-weight: 600;
   box-shadow: var(--shadow-sm);
 }
 .empty-icon {
@@ -152,4 +154,9 @@
 }
 .error-boundary.compact .empty-state {
   padding: var(--sp-4) var(--sp-2);
+}
+@media (pointer: coarse) {
+  .segmented button {
+    height: 44px;
+  }
 }

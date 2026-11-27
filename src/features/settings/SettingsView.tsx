@@ -1,5 +1,5 @@
 import { LogOut, Monitor, Moon, RefreshCw, Sun, Trash2 } from 'lucide-react'
-import { Fragment, lazy, Suspense, useState, type ReactNode } from 'react'
+import { Fragment, lazy, Suspense, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { oauthAvailable, startLogin } from '@/core/auth/auth'
 import { FLAGS, setFlag, type FlagName } from '@/core/flags'
 import { useFlag } from '@/core/store/flags'
@@ -12,6 +12,15 @@ import { SyncBadge } from '@/features/sync'
 import { Button, confirmDialog, Input, LinkButton, Segmented, Switch, ViewHeader } from '@/ui'
 import { loadWorkspaceSettings } from '@/features/workspaces'
 import './settings.css'
+
+const darkQuery = () => window.matchMedia('(prefers-color-scheme: dark)')
+const subscribeScheme = (cb: () => void) => {
+  const q = darkQuery()
+  q.addEventListener('change', cb)
+  return () => q.removeEventListener('change', cb)
+}
+/** The OS light/dark setting, live (shown next to the "system" theme choice). */
+const useSystemTheme = () => useSyncExternalStore(subscribeScheme, () => (darkQuery().matches ? 'dark' : 'light'))
 
 const WorkspaceSettings = lazy(loadWorkspaceSettings)
 import { SyncLog } from './SyncLog'
@@ -32,6 +41,7 @@ function parts(key: MessageKey, params: Record<string, ReactNode>) {
 export function SettingsView() {
   const langPref = getLangPref()
   const theme = useTheme()
+  const systemTheme = useSystemTheme()
   const sync = useSync()
   const trashAuto = useStore(trashAutoEmptyStore)
   const [pat, setPat] = useState('')
@@ -159,6 +169,14 @@ export function SettingsView() {
             { value: 'dark', label: t('settings.theme.dark'), icon: Moon },
           ]}
         />
+        <p className="settings-now" aria-live="polite">
+          {t('settings.now', {
+            value: t(
+              (theme === 'system' ? systemTheme : theme) === 'dark' ? 'settings.theme.dark' : 'settings.theme.light',
+            ),
+          })}
+          {theme === 'system' && ` · ${t('settings.theme.followsSystem')}`}
+        </p>
       </section>
 
       <section className="card">
@@ -176,6 +194,10 @@ export function SettingsView() {
             ...LANGS.map((l) => ({ value: l, label: LANG_NAMES[l], lang: l })),
           ]}
         />
+        <p className="settings-now">
+          {t('settings.now', { value: LANG_NAMES[getLang()] })}
+          {langPref === 'system' && ` · ${t('settings.language.followsBrowser')}`}
+        </p>
       </section>
 
       <section className="card">

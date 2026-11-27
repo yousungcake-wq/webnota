@@ -132,7 +132,7 @@ export function PageStylePanel({
                   type="button"
                   role="radio"
                   aria-checked={style[o.key] === value}
-                  className={style[o.key] === value ? 'is-active' : ''}
+                  className={style[o.key] === value ? 'is-on' : ''}
                   disabled={readOnly}
                   data-font={o.key === 'font' ? value : undefined}
                   onClick={() => setPageStyle(doc, { [o.key]: value })}
