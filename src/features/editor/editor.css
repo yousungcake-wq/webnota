@@ -1224,3 +1224,35 @@
   border-radius: var(--r);
   background: var(--bg-hover);
 }
+/* ED-B15 / ED-I06 math (KaTeX output is rendered into these by mathNodes.ts) */
+.wn-editor .math-block {
+  margin: var(--sp-2) 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r);
+  overflow-x: auto;
+  text-align: center;
+  cursor: pointer;
+}
+.wn-editor .math-block:hover,
+.wn-editor .inline-math:hover {
+  background: var(--bg-hover);
+}
+.wn-editor .math-block.ProseMirror-selectednode,
+.wn-editor .inline-math.ProseMirror-selectednode {
+  outline: 2px solid var(--accent);
+  background: var(--accent-soft);
+}
+.wn-editor .math-block.is-empty,
+.wn-editor .inline-math.is-empty {
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+.wn-editor .math-block.is-empty {
+  background: var(--bg-hover);
+  text-align: left;
+}
+.wn-editor .inline-math {
+  padding: 0 2px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}

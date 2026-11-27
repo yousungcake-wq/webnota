@@ -14,6 +14,7 @@ import { v13TableLayout } from './013-table-layout'
 import { v14Image } from './014-image'
 import { v15File } from './015-file'
 import { v16VideoEmbed } from './016-video-embed'
+import { v17Math } from './017-math'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -45,4 +46,5 @@ export const MIGRATIONS: Migration[] = [
   v14Image, // M3-04: image block node type (version stamp only)
   v15File, // M3-05: file attachment block node type (version stamp only)
   v16VideoEmbed, // M3-06: video / embed block node types (version stamp only)
+  v17Math, // M3-07: mathBlock / inlineMath node types (version stamp only)
 ]

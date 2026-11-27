@@ -61,6 +61,15 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,woff2,png}'],
+        // KaTeX fonts (~60 files) only matter on pages with math: cached when first used
+        globIgnores: ['**/KaTeX_*'],
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/KaTeX_[^/]+\.(woff2|woff|ttf)$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'katex-fonts', expiration: { maxEntries: 80 } },
+          },
+        ],
         navigateFallback: `${base}index.html`,
       },
     }),

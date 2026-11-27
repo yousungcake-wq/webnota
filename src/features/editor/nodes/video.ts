@@ -1,10 +1,14 @@
 import { mergeAttributes, Node } from '@tiptap/core'
-import { embedSource, videoSource } from './embedUrls'
+
+/** Pasted HTML: keep http(s) addresses and video file ids; the view re-checks them (`embedUrls.ts`). */
+const isMediaSrc = (s: string | null | undefined): s is string =>
+  !!s && (/^https?:\/\/\S+$/i.test(s) || /^[0-9a-f]{64}\.[a-z0-9]{1,10}$/.test(s))
 
 /**
  * Video (ED-B13) and embed (ED-B22) blocks, schema v16. Both store the URL the user gave
  * (`src`); the player/iframe address is derived when rendering (`embedUrls.ts`), so a
- * block can never point an iframe outside the allowlist. Schema only; UI is `EmbedBlock.tsx`.
+ * block can never point an iframe outside the allowlist (the view only renders what
+ * `embedUrls.ts` accepts). Schema only; UI is `EmbedBlock.tsx`.
  * - video `width`: percent of the text column (null = 100)
  * - embed `height`: iframe height in px (null = the service default)
  */
@@ -21,7 +25,7 @@ export const Video = Node.create({
         parseHTML: (el) => {
           const s =
             el.getAttribute('data-src') ?? el.getAttribute('src') ?? el.querySelector('source')?.getAttribute('src')
-          return s && videoSource(s) ? s : null
+          return isMediaSrc(s) ? s : null
         },
         renderHTML: (a) => (a.src ? { 'data-src': a.src as string } : {}),
       },
@@ -56,7 +60,7 @@ export const Embed = Node.create({
         default: null,
         parseHTML: (el) => {
           const s = el.getAttribute('data-src')
-          return s && embedSource(s) ? s : null
+          return isMediaSrc(s) && s.startsWith('https:') ? s : null
         },
         renderHTML: (a) => (a.src ? { 'data-src': a.src as string } : {}),
       },

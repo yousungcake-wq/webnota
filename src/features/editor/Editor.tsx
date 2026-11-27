@@ -17,7 +17,7 @@ import {
   Superscript,
   Underline,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { schemaStore } from '@/core/schema'
 import { useStore } from '@/core/store/useStore'
 import type * as Y from 'yjs'
@@ -26,6 +26,7 @@ import { useLayout } from '@/platform/layout'
 import { docSchema, editorExtensions } from './extensions'
 import { findUnknownContent } from './unknown'
 import { CalloutPicker } from './CalloutPicker'
+import type { MathEditRequest } from './mathNodes'
 import { ColorPicker } from './ColorPicker'
 import { LinkBubble, LinkSheet, promptLink } from './LinkBubble'
 import { openHref } from './link'
@@ -38,6 +39,9 @@ import { KeyboardToolbar } from './KeyboardToolbar'
 import { hasTable, isCellSelection, loadTableKit, TableMenu } from './TableMenu'
 import './editor.css'
 import { t } from '@/core/i18n'
+
+// LaTeX editor for math nodes: loads with the first formula edit.
+const MathEditor = lazy(() => import('./MathEditor'))
 
 interface Props {
   doc: Y.Doc
@@ -112,6 +116,16 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
     }
     wrap.addEventListener('wn-callout-icon', onPick)
     return () => wrap.removeEventListener('wn-callout-icon', onPick)
+  }, [editor])
+
+  // Math node clicks and new math nodes (mathNodes.ts) open the LaTeX editor.
+  const [mathEdit, setMathEdit] = useState<MathEditRequest | null>(null)
+  useEffect(() => {
+    const wrap = wrapRef.current
+    if (!wrap || !editor) return
+    const onEdit = (e: Event) => editor.isEditable && setMathEdit((e as CustomEvent<MathEditRequest>).detail)
+    wrap.addEventListener('wn-math-edit', onEdit)
+    return () => wrap.removeEventListener('wn-math-edit', onEdit)
   }, [editor])
 
   // Block link target (ED-F15): scroll to it and flash it. y-sync fills the editor a tick
@@ -352,6 +366,17 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
           anchor={calloutPick.anchor}
           onClose={() => setCalloutPick(null)}
         />
+      )}
+      {mathEdit && (
+        <Suspense fallback={null}>
+          <MathEditor
+            key={mathEdit.pos}
+            editor={editor}
+            pos={mathEdit.pos}
+            anchor={mathEdit.anchor}
+            onClose={() => setMathEdit(null)}
+          />
+        </Suspense>
       )}
       {coarse && focused && !readOnly && (
         <KeyboardToolbar editor={editor} onColor={() => setColorPick(true)} onBlockMenu={blockMenuAtCaret} />

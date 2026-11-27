@@ -27,7 +27,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-B12 | 이미지 | `image` (src=fileId/url, width, align, caption) | | P0 | ✅ M3-04 (schema v14). `src` = 파일 id(`<sha256>.<ext>`) 또는 http(s) URL, `width` = 글 폭 대비 %(10~100, null = 원래 크기), `align` left/center/right, `caption` 문자열, `naturalWidth/Height`(로드 전 비율 예약). `/이미지`·블록 패널 → 업로드(폰은 `accept=image/*`로 사진·카메라)/링크, 붙여넣기·끌어 놓기(처리 중 자리 표시가 편집을 따라 이동), 양쪽 손잡이로 크기 조절(데스크탑), 선택 시 도구 모음(정렬·크기 메뉴·캡션·바꾸기·내려받기·원본 보기(데스크탑)·삭제). UI는 `ImageView.tsx` 지연 청크, 업로드는 `core/files/ingest.ts` 지연 청크 |
 | ED-B13 | 동영상 임베드 | `video` (YouTube/Vimeo/직접 URL) | | P1 | ✅ M3-06 (schema v16). `src` = 사용자가 준 주소 그대로(YouTube·Vimeo·동영상 파일 URL) 또는 올린 동영상 파일 id, `width` %. 재생 주소는 표시할 때 `nodes/embedUrls.ts`가 id만 뽑아 다시 만듦(YouTube는 `youtube-nocookie.com`, 시작 시간 `t` 유지). 파일은 `<video controls preload=metadata>` |
 | ED-B14 | 파일 | `file` (fileId, name, size) | | P0 | ✅ M3-05 (schema v15, `mime` 속성 포함). `/파일`·블록 패널 → 파일 올리기(원본 그대로 저장, 25MB 제한), 이미지가 아닌 파일 붙여넣기·끌어 놓기도 파일 블록. 이름·크기·형식 아이콘, "업로드 대기" 표시(저장소에 올라갈 때까지, 동기화마다 다시 확인), 이름/내려받기 버튼 → 기기에 저장(없으면 캐시 → GitHub에서 받음). UI는 `FileView.tsx` 지연 청크 |
-| ED-B15 | 수식 블록 | `mathBlock` (LaTeX, KaTeX) | `$$` | P0 | M3 |
+| ED-B15 | 수식 블록 | `mathBlock` (LaTeX, KaTeX) | `$$` | P0 | ✅ M3-07 (schema v17, `latex` 속성). `/수식`, 빈 줄에서 `$$`+공백. 넣으면 바로 LaTeX 편집기(데스크탑 팝오버 / 폰 하단 시트, 실시간 미리보기, Ctrl/⌘+Enter 완료, 비우고 닫으면 삭제), 누르면 다시 편집. KaTeX(75KB)는 수식이 보이거나 편집할 때 지연 로드(`math/katex.ts`, `trust: false`), 폰트는 서비스 워커 프리캐시에서 빼고 쓸 때 캐시 |
 | ED-B16 | 표 | `table`(simple table: 헤더 행/열, 열 너비, 셀 배경색, 정렬) | | P0 | ✅ M2-11 (schema v9). `/표`, Tab 이동, 표 메뉴(행·열 추가·삭제, 머리글 행·열, 셀 배경색, 셀 정렬, 표 위치 = 왼쪽·가운데·오른쪽·전체 채우기(schema v13), 표 삭제), 열 너비 드래그. 셀 병합은 보류 |
 | ED-B17 | 다단(컬럼) | `columns`/`column` (2~5단, 비율 조절) | | P1 | ✅ M2-12 (schema v10). `/2단`~`/4단`, 단 사이 드래그로 비율 조절, 폰(600px 이하)은 세로로 쌓음. 단 추가·삭제는 M2-13 블록 메뉴 |
 | ED-B18 | 목차 | `outline` (제목에서 자동 생성, 클릭 이동) | | P1 | ✅ M2-12. 다단·토글 안의 제목 포함, 실시간 갱신 |
@@ -48,7 +48,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-I03 | 글자 색 / 배경색 (AppFlowy 팔레트 10색 + 사용자 지정) | `textStyle`+`color`, `highlight` multicolor | P0 | ✅ M2-07 (schema v5). 팔레트 9색 + 기본 + 사용자 지정(hex). 붙여넣은 HTML의 회색·검정 인라인 색은 버림 |
 | ED-I04 | 페이지 멘션 `@페이지` / `[[` | `mention` (kind=page, viewId) — 제목 실시간 반영, 삭제된 페이지 표시 | P0 | ✅ M2-08 (schema v6). `@`는 페이지+날짜, `[[`는 페이지만. 최근 연 페이지 우선 |
 | ED-I05 | 날짜 멘션 `@오늘`, `@내일`, `@2026-12-01` + 리마인더 | `mention` (kind=date, date, reminder) | P0 | ✅ M2-08 (날짜 칩 클릭 → 날짜 변경) / 리마인더 M10 |
-| ED-I06 | 인라인 수식 | `inlineMath` | P1 | M3 |
+| ED-I06 | 인라인 수식 | `inlineMath` | P1 | ✅ M3-07 (schema v17). `$x^2$` 입력 시 변환(내용이 공백으로 시작·끝나면 변환 안 함 → "$5 와 $10"은 글자 그대로), `/인라인 수식`(선택한 글자가 LaTeX가 됨), Enter로 완료. 일반 텍스트 복사 시 `$…$` |
 | ED-I07 | 이모지 `:smile` | 이모지 제안 | P1 | ✅ M2-09. 한·영 이름 검색, 데이터는 지연 로드 |
 | ED-I08 | 위첨자, 아래첨자 | 마크 | P2 | ✅ M2-09 (schema v7). ⌘. / ⌘, + 서식 버블. 폰은 M2-19 `Aa` 패널 |
 | ED-I09 | 사람 멘션 `@login` (공유 워크스페이스) | `mention` (kind=person) | P2 | M9 |

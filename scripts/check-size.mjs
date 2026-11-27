@@ -24,6 +24,9 @@ const BUDGETS = {
   imageView: { kb: 12, entry: 'src/features/editor/ImageView.tsx', after: 'editor' },
   fileView: { kb: 6, entry: 'src/features/editor/FileView.tsx', after: 'editor' },
   embedView: { kb: 6, entry: 'src/features/editor/EmbedView.tsx', after: 'editor' },
+  // KaTeX + its CSS (spec/10: ≤120KB), when a page shows or edits math
+  math: { kb: 120, entry: 'node_modules/katex/dist/katex.mjs', after: 'editor' },
+  mathEditor: { kb: 4, entry: 'src/features/editor/MathEditor.tsx', after: 'editor' },
   fileCache: { kb: 6, entry: 'src/core/files/cache.ts' },
   upload: { kb: 8, entry: 'src/core/files/ingest.ts' },
   // Add as features land: database: { kb: 120, entry: 'src/features/database/index.ts' }, …

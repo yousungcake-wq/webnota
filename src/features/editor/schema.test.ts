@@ -67,6 +67,9 @@ MARKS_AT_VERSION[15] = MARKS_AT_VERSION[14]
 // v16 (M3-06): video and embed blocks.
 NODES_AT_VERSION[16] = [...NODES_AT_VERSION[15]!, 'embed', 'video'].sort()
 MARKS_AT_VERSION[16] = MARKS_AT_VERSION[15]
+// v17 (M3-07): math block and inline math.
+NODES_AT_VERSION[17] = [...NODES_AT_VERSION[16]!, 'inlineMath', 'mathBlock'].sort()
+MARKS_AT_VERSION[17] = MARKS_AT_VERSION[16]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

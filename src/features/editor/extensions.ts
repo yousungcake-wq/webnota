@@ -12,6 +12,7 @@ import { OutlineWithView } from './OutlineBlock'
 import { ImageWithView } from './ImageBlock'
 import { FileWithView } from './FileBlock'
 import { EmbedWithView, VideoWithView } from './EmbedBlock'
+import { InlineMathWithView, MathBlockWithView } from './mathNodes'
 import { FileDrop } from './fileDrop'
 import { BlockFlash } from './blockFlash'
 import { BlockSelection } from './blockSelection'
@@ -97,6 +98,8 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
     file: FileWithView,
     video: VideoWithView,
     embed: EmbedWithView,
+    mathBlock: MathBlockWithView,
+    inlineMath: InlineMathWithView,
   }
   return [
     ...schemaExtensions().map((e) => withViews[e.name] ?? e),

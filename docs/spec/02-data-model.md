@@ -204,6 +204,7 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 | 14 | 블록 노드 타입 `image`(src, width, align, caption, naturalWidth, naturalHeight) 추가, `blockId` 대상에 포함 (버전만) | M3-04 |
 | 15 | 블록 노드 타입 `file`(fileId, name, size, mime) 추가, `blockId` 대상에 포함 (버전만) | M3-05 |
 | 16 | 블록 노드 타입 `video`(src, width)·`embed`(src, height) 추가 — `src`는 사용자가 준 주소, iframe 주소는 표시할 때 계산 (버전만) | M3-06 |
+| 17 | 노드 타입 `mathBlock`(블록)·`inlineMath`(인라인), 속성 `latex` 추가 (버전만) | M3-07 |
 
 v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다 (M0-17).
 

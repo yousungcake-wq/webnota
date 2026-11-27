@@ -1,0 +1,47 @@
+/* ED-B15 / ED-I06 math editor (loaded with MathEditor) */
+.math-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: min(440px, 100%);
+  padding: var(--sp-2);
+}
+.math-input {
+  width: 100%;
+  resize: vertical;
+  padding: var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-code);
+  color: var(--text);
+  font: var(--fs-sm) / 1.5 var(--mono);
+}
+.math-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+.math-preview {
+  min-height: 40px;
+  max-height: 200px;
+  overflow: auto;
+  padding: var(--sp-2);
+  border-radius: var(--r-sm);
+  background: var(--bg-side);
+  color: var(--text);
+  text-align: center;
+}
+.math-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.math-tip {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+@media (pointer: coarse) {
+  .math-actions .btn {
+    min-height: 44px;
+  }
+}
