@@ -1,8 +1,11 @@
 /**
  * When to sync (SY-02b,c). Pure timing logic — the controller supplies `sync`.
  *
- * - Edits: push 8 s after the last edit, but at most 60 s after the first unsynced one
- *   (continuous typing still gets pushed).
+ * - Edits: push 4 s after the last edit, but at most 60 s after the first unsynced one
+ *   (continuous typing still gets pushed). Automatic syncs stay at least 8 s apart
+ *   (GitHub's limit on content-creating requests, ~80/min); the button is never held back.
+ * - Pulls: every 20 s while the page is visible (an unchanged check is a 304, which does
+ *   not count against the rate limit).
  * - Failures: exponential backoff 10 s → 5 min. Periodic pulls wait for it; going
  *   online, hiding/showing the page and the manual button bypass it.
  * - Rate limit (403/429 with reset/retry-after): nothing runs before the reset time.
@@ -10,9 +13,10 @@
  * - One sync at a time; requests during a sync run once afterwards.
  */
 
-export const PUSH_DEBOUNCE_MS = 8_000
+export const PUSH_DEBOUNCE_MS = 4_000
 export const PUSH_MAX_WAIT_MS = 60_000
-export const PULL_INTERVAL_MS = 60_000
+export const MIN_PUSH_GAP_MS = 8_000
+export const PULL_INTERVAL_MS = 20_000
 const BACKOFF_BASE_MS = 10_000
 const BACKOFF_MAX_MS = 5 * 60_000
 
@@ -61,6 +65,9 @@ export function createScheduler(deps: {
   let final = false
   let firstDirtyAt: number | null = null
   let pushAt: number | null = null
+  /** When the last sync finished: automatic pushes wait MIN_PUSH_GAP_MS after it. */
+  let lastSyncAt = -Infinity
+  const nextPush = (t: number, first: number) => Math.max(t + pushDelay(t, first), lastSyncAt + MIN_PUSH_GAP_MS)
   let timer: ReturnType<typeof setTimeout> | undefined
   let running = false
   let pending = false
@@ -95,13 +102,14 @@ export function createScheduler(deps: {
     }
     running = false
     const t = now()
+    lastSyncAt = t
     if (outcome.ok) {
       failures = 0
       blockedUntil = 0
       rateLimited = false
       final = false
       firstDirtyAt = deps.hasDirty() ? t : null
-      if (firstDirtyAt !== null) pushAt = t + pushDelay(t, firstDirtyAt)
+      if (firstDirtyAt !== null) pushAt = nextPush(t, firstDirtyAt)
     } else {
       failures++
       final = outcome.final ?? false
@@ -132,7 +140,7 @@ export function createScheduler(deps: {
     edited() {
       const t = now()
       if (firstDirtyAt === null) firstDirtyAt = t
-      pushAt = t + pushDelay(t, firstDirtyAt)
+      pushAt = nextPush(t, firstDirtyAt)
       plan()
     },
     state: (): SchedulerState => ({ failures, blockedUntil, rateLimited }),

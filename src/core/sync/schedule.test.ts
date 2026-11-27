@@ -4,10 +4,10 @@ import { backoffDelay, createScheduler, pushDelay, retryAfter, type SyncOutcome 
 const S = 1000
 
 describe('delays (SY-02b,c)', () => {
-  it('push: 8 s debounce, but never later than 60 s after the first unsynced edit', () => {
-    expect(pushDelay(0, 0)).toBe(8 * S)
-    expect(pushDelay(50 * S, 0)).toBe(8 * S)
-    expect(pushDelay(55 * S, 0)).toBe(5 * S)
+  it('push: 4 s debounce, but never later than 60 s after the first unsynced edit', () => {
+    expect(pushDelay(0, 0)).toBe(4 * S)
+    expect(pushDelay(50 * S, 0)).toBe(4 * S)
+    expect(pushDelay(57 * S, 0)).toBe(3 * S)
     expect(pushDelay(70 * S, 0)).toBe(0)
   })
 
@@ -51,16 +51,33 @@ describe('scheduler', () => {
   })
   afterEach(() => vi.useRealTimers())
 
-  it('debounces edits and pushes 8 s after the last one', async () => {
+  it('debounces edits and pushes 4 s after the last one', async () => {
     const s = make()
     dirty = true
     s.edited()
-    await flush(5 * S)
+    await flush(3 * S)
     s.edited()
-    await flush(7 * S)
+    await flush(3 * S)
     expect(calls).toBe(0)
     await flush(1 * S)
     expect(calls).toBe(1)
+    s.dispose()
+  })
+
+  it('automatic pushes stay at least 8 s apart (GitHub content-creation limit)', async () => {
+    const s = make()
+    dirty = true
+    s.edited()
+    await flush(4 * S)
+    expect(calls).toBe(1) // first push after 4 s
+    s.edited() // edited right after: the debounce alone would push at +4 s
+    await flush(4 * S)
+    expect(calls).toBe(1)
+    await flush(4 * S)
+    expect(calls).toBe(2) // 8 s after the previous push
+    s.request('manual') // the button is never held back
+    await flush(0)
+    expect(calls).toBe(3)
     s.dispose()
   })
 
