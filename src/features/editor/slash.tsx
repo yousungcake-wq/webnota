@@ -1,7 +1,8 @@
 import { Extension, type Editor, type Range } from '@tiptap/core'
 import { PluginKey } from '@tiptap/pm/state'
+import type { EditorView } from '@tiptap/pm/view'
 import { ReactRenderer } from '@tiptap/react'
-import Suggestion, { type SuggestionKeyDownProps, type SuggestionProps } from '@tiptap/suggestion'
+import Suggestion, { exitSuggestion, type SuggestionKeyDownProps, type SuggestionProps } from '@tiptap/suggestion'
 import { forwardRef, Fragment, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { CATEGORY_LABEL, filterBlocks, type BlockItem } from './blocks'
 import { recentBlocks, recordBlockUse } from './rank'
@@ -116,6 +117,20 @@ export function place(el: HTMLElement, rect: DOMRect | null | undefined) {
   el.style.left = `${left}px`
 }
 
+/**
+ * A press outside the list ends the suggestion (feedback 2-7): the menu closes and the
+ * typed `/…` stays as plain text, instead of the menu lingering or the click selecting
+ * blocks. Returns the cleanup.
+ */
+export function exitOnOutsidePress(wrap: HTMLElement, view: EditorView, key: PluginKey): () => void {
+  const onDown = (e: PointerEvent) => {
+    if (wrap.contains(e.target as Node)) return
+    exitSuggestion(view, key)
+  }
+  document.addEventListener('pointerdown', onDown, true)
+  return () => document.removeEventListener('pointerdown', onDown, true)
+}
+
 export const slashPluginKey = new PluginKey('slash')
 
 export const SlashCommand = Extension.create({
@@ -136,6 +151,7 @@ export const SlashCommand = Extension.create({
         render: () => {
           let renderer: ReactRenderer<SlashListHandle, SlashListProps> | null = null
           let wrap: HTMLDivElement | null = null
+          let stop: (() => void) | null = null
           return {
             onStart: (props: SuggestionProps<BlockItem, BlockItem>) => {
               renderer = new ReactRenderer(SlashList, { props, editor: props.editor })
@@ -143,6 +159,7 @@ export const SlashCommand = Extension.create({
               wrap.className = 'slash-wrap'
               wrap.appendChild(renderer.element)
               document.body.appendChild(wrap)
+              stop = exitOnOutsidePress(wrap, props.editor.view, slashPluginKey)
               requestAnimationFrame(() => wrap && place(wrap, props.clientRect?.()))
             },
             onUpdate: (props: SuggestionProps<BlockItem, BlockItem>) => {
@@ -150,13 +167,12 @@ export const SlashCommand = Extension.create({
               requestAnimationFrame(() => wrap && place(wrap, props.clientRect?.()))
             },
             onKeyDown: ({ event }: SuggestionKeyDownProps) => {
-              if (event.key === 'Escape') {
-                wrap?.remove()
-                return true
-              }
+              if (event.key === 'Escape') return true // the plugin then exits
               return renderer?.ref?.onKeyDown(event) ?? false
             },
             onExit: () => {
+              stop?.()
+              stop = null
               wrap?.remove()
               renderer?.destroy()
               wrap = null

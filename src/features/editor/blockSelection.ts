@@ -39,8 +39,9 @@ function starts(doc: PMNode): number[] {
 /** Document range [from, to) covering top-level blocks a…b (either order). */
 export function blockRangePositions(doc: PMNode, range: BlockRange) {
   const s = starts(doc)
-  const a = Math.max(0, Math.min(range.anchor, range.head))
-  const b = Math.min(s.length - 1, Math.max(range.anchor, range.head))
+  const clamp = (i: number) => Math.max(0, Math.min(s.length - 1, i))
+  const a = clamp(Math.min(range.anchor, range.head))
+  const b = clamp(Math.max(range.anchor, range.head))
   return { from: s[a]!, to: s[b]! + doc.child(b).nodeSize, first: a, last: b }
 }
 

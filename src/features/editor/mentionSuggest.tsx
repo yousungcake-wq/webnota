@@ -69,8 +69,9 @@ function relativeWords(): Record<string, number> {
 }
 
 function suggestion(char: string, key: string, dates: boolean) {
+  const pluginKey = new PluginKey(key)
   return {
-    pluginKey: new PluginKey(key),
+    pluginKey,
     char,
     allowSpaces: true, // page titles have spaces; the menu just hides when nothing matches
     items: ({ query }: { query: string }) =>
@@ -95,7 +96,7 @@ function suggestion(char: string, key: string, dates: boolean) {
         ])
         .run()
     },
-    render: hidingListRenderer(MentionList),
+    render: hidingListRenderer(MentionList, pluginKey),
   }
 }
 

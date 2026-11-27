@@ -85,3 +85,19 @@ test('phone: a handle beside the block with the caret, inside the page (feedback
   await expect(page.getByRole('menuitem', { name: '복제' })).toBeVisible()
   await expect(page.locator('.wn-editor .block-selected')).toHaveCount(1)
 })
+
+test('phone: the handle menu adds a block below (the "+" of desktop); text is centred (feedback 2-8)', async ({
+  page,
+}) => {
+  await openApp(page)
+  const para = page.locator('.wn-editor p').first()
+  await para.tap()
+  const ed = (await page.locator('.wn-editor').boundingBox())!
+  const vw = page.viewportSize()!.width
+  expect(Math.abs(ed.x - (vw - ed.x - ed.width))).toBeLessThan(6) // same space left and right
+  const count = await page.locator('.wn-editor > *').count()
+  await page.locator('.phone-grip').tap()
+  await page.getByRole('menuitem', { name: '아래에 블록 추가' }).tap()
+  await expect(page.locator('.wn-editor > *')).toHaveCount(count + 1)
+  await expect(page.locator('.slash-wrap')).toBeVisible()
+})

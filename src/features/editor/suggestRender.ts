@@ -1,7 +1,8 @@
 import { ReactRenderer } from '@tiptap/react'
+import type { PluginKey } from '@tiptap/pm/state'
 import type { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion'
 import type { ComponentType, RefAttributes } from 'react'
-import { place } from './slash'
+import { exitOnOutsidePress, place } from './slash'
 
 export interface ListHandle {
   onKeyDown: (e: KeyboardEvent) => boolean
@@ -15,10 +16,14 @@ export interface ListProps<T> {
  * `render` for a Suggestion whose list hides itself when there are no items, so the
  * trigger character can be typed as plain text (e.g. `@` in an email, `:` in a time).
  */
-export function hidingListRenderer<T>(Component: ComponentType<ListProps<T> & RefAttributes<ListHandle>>) {
+export function hidingListRenderer<T>(
+  Component: ComponentType<ListProps<T> & RefAttributes<ListHandle>>,
+  key: PluginKey,
+) {
   return () => {
     let renderer: ReactRenderer<ListHandle, ListProps<T>> | null = null
     let wrap: HTMLDivElement | null = null
+    let stop: (() => void) | null = null
     const update = (props: SuggestionProps<T, T>) => {
       renderer?.updateProps(props)
       if (wrap) wrap.hidden = props.items.length === 0
@@ -31,18 +36,18 @@ export function hidingListRenderer<T>(Component: ComponentType<ListProps<T> & Re
         wrap.className = 'slash-wrap'
         wrap.appendChild(renderer.element)
         document.body.appendChild(wrap)
+        stop = exitOnOutsidePress(wrap, props.editor.view, key)
         update(props)
       },
       onUpdate: update,
       onKeyDown: ({ event }: SuggestionKeyDownProps) => {
         if (!wrap || wrap.hidden) return false
-        if (event.key === 'Escape') {
-          wrap.remove()
-          return true
-        }
+        if (event.key === 'Escape') return true // the plugin then exits
         return renderer?.ref?.onKeyDown(event) ?? false
       },
       onExit: () => {
+        stop?.()
+        stop = null
         wrap?.remove()
         renderer?.destroy()
         wrap = null

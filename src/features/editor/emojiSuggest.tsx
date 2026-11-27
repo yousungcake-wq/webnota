@@ -38,13 +38,14 @@ const EmojiList = forwardRef<ListHandle, ListProps<EmojiItem>>(function EmojiLis
 })
 
 /** `:smile` → emoji (ED-I07). The dataset loads on first use (features/emoji, lazy). */
+const emojiKey = new PluginKey('emojiSuggest')
 export const EmojiSuggest = Extension.create({
   name: 'emojiSuggest',
   addProseMirrorPlugins() {
     return [
       Suggestion<EmojiItem, EmojiItem>({
         editor: this.editor,
-        pluginKey: new PluginKey('emojiSuggest'),
+        pluginKey: emojiKey,
         char: ':',
         allowSpaces: false,
         items: async ({ query }) => {
@@ -57,7 +58,7 @@ export const EmojiSuggest = Extension.create({
         command: ({ editor, range, props }: { editor: Editor; range: Range; props: EmojiItem }) => {
           editor.chain().focus().deleteRange(range).insertContent(props.emoji).run()
         },
-        render: hidingListRenderer(EmojiList),
+        render: hidingListRenderer(EmojiList, emojiKey),
       }),
     ]
   },

@@ -15,6 +15,7 @@ import {
   PaintBucket,
   Repeat,
   Trash2,
+  Plus,
 } from 'lucide-react'
 import { t, type MessageKey } from '@/core/i18n'
 import { newId } from '@/core/model/views'
@@ -49,8 +50,11 @@ export function BlockMenu({
   anchor,
   onClose,
   selection,
+  onAddBelow,
 }: {
   editor: TEditor
+  /** "+" (insert a block below and open the slash menu): first item where the "+" button is hidden (feedback 2-8). */
+  onAddBelow?: () => void
   pos: number
   pageId?: string
   anchor: HTMLElement | null
@@ -84,6 +88,7 @@ export function BlockMenu({
   })
 
   const items: MenuEntry[] = [
+    ...(onAddBelow ? [{ label: t('editor.addBelow'), icon: Plus, onSelect: onAddBelow }, 'separator' as const] : []),
     {
       label: t('blockMenu.turnInto'),
       icon: Repeat,

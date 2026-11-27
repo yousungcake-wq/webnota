@@ -39,3 +39,19 @@ test('a pressed handle keeps the block highlighted until a click elsewhere (feed
   await page.locator('.wn-editor p').nth(1).click()
   await expect(first).not.toHaveClass(/block-selected/)
 })
+
+test('narrow window with a mouse: the handle shows beside the second line of a long block too (feedback 2-8)', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 600, height: 800 })
+  await page.locator('.wn-editor p').nth(1).click()
+  await page.keyboard.press('End')
+  await page.keyboard.type(' long text that wraps'.repeat(8))
+  const para = page.locator('.wn-editor p').nth(1)
+  const box = (await para.boundingBox())!
+  expect(box.height).toBeGreaterThan(40)
+  const ed = (await page.locator('.wn-editor').boundingBox())!
+  await page.mouse.move(box.x + 100, box.y - 100)
+  await page.mouse.move(ed.x + 10, box.y + box.height - 10) // left of the last line
+  await expect(page.locator('.block-actions .grip')).toBeVisible()
+})

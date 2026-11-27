@@ -141,9 +141,21 @@
 .wn-editor h3.is-empty::before {
   content: attr(data-placeholder);
   color: var(--text-3);
-  float: left;
-  height: 0;
+  /* absolutely placed, not floated: a float pushes the caret aside or hides it on mobile
+     WebKit (feedback 2-7) */
+  position: absolute;
+  left: 0;
+  right: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   pointer-events: none;
+}
+.wn-editor p.is-empty,
+.wn-editor h1.is-empty,
+.wn-editor h2.is-empty,
+.wn-editor h3.is-empty {
+  position: relative;
 }
 .ProseMirror-gapcursor:after {
   border-top-color: var(--text);
@@ -159,6 +171,14 @@
   .page-body .wn-editor {
     padding-left: 72px;
     margin-left: -72px;
+  }
+}
+/* narrower windows: a smaller handle area inside the page padding, so the handle shows
+   beside every line of a long block, not only the first (feedback 2-8) */
+@media (hover: hover) and (max-width: 699px) {
+  .page-body .wn-editor {
+    padding-left: 36px;
+    margin-left: -36px;
   }
 }
 /* narrow windows with a mouse: the handle only (no "+"), inside the page padding (feedback 1) */

@@ -76,7 +76,7 @@ const NESTED = {
 
 export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Props) {
   debugCrash('editor')
-  const coarse = useLayout().isTouch
+  const { isTouch: coarse, layout } = useLayout()
   const schemaReadOnly = useStore(schemaStore, selectReadOnly)
   // Content from a newer app version (ED-B23): kept as is, page opens read-only.
   const [unknown, setUnknown] = useState<string[] | null>(null)
@@ -250,6 +250,12 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
       if (!inPadding && target.closest('.wn-editor, .page-head, button, input, a, .block-actions, [role="dialog"]'))
         return
       if (e.clientY < rect.top) return
+      // below the last block: the caret goes to the end, nothing is selected (feedback 2-7)
+      if (e.clientY > rect.bottom) {
+        e.preventDefault()
+        editor.commands.focus('end')
+        return
+      }
       const anchor = indexAtY(e.clientY)
       if (anchor === null) return
       e.preventDefault()
@@ -331,9 +337,9 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
   if (!editor) return null
 
   /** AppFlowy-style "+" next to the drag handle: insert an empty block below and open the slash menu. */
-  const addBlockBelow = () => {
-    const { node, pos } = hovered.current
-    if (!node || pos < 0) return
+  const addBlockBelow = (pos = hovered.current.pos) => {
+    const node = pos >= 0 ? editor.state.doc.nodeAt(pos) : null
+    if (!node) return
     const at = pos + node.nodeSize
     editor
       .chain()
@@ -355,7 +361,7 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
           }}
         >
           <div className="block-actions">
-            <button type="button" className="block-btn" title={t('editor.addBelow')} onClick={addBlockBelow}>
+            <button type="button" className="block-btn" title={t('editor.addBelow')} onClick={() => addBlockBelow()}>
               <Plus size={16} />
             </button>
             <button
@@ -407,6 +413,7 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
             pageId={pageId}
             anchor={blockMenu.anchor}
             selection={blockMenu.selection}
+            onAddBelow={layout === 'phone' ? () => addBlockBelow(blockMenu.pos) : undefined}
             onClose={() => setBlockMenu(null)}
           />
         </Suspense>
