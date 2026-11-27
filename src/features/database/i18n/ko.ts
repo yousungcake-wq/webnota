@@ -262,6 +262,14 @@ export const ko = {
   'db.cal.placeOn': '{date}에 놓기',
   'db.cal.events': '일정 {count}개',
   'db.cal.noEvents': '일정이 없습니다',
+  'db.row.gone': '이 행은 삭제되었습니다',
+  'db.rowpage.icon': '아이콘',
+  'db.rowpage.addIcon': '아이콘 추가',
+  'db.rowpage.addCover': '커버 추가',
+  'db.rowpage.changeCover': '커버 변경',
+  'db.rowpage.removeCover': '커버 제거',
+  'db.rowpage.hidden': '숨긴 속성 {count}개',
+  'db.rowpage.addProperty': '속성 추가',
 }
 
 export type DbKey = keyof typeof ko

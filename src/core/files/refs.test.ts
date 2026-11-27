@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import * as Y from 'yjs'
 import { addField, addRow, createDatabase, setCell, SHARD_COUNT, updateRow, type DbDocs } from '../model/database'
-import { fileRefsInDoc, fileRefsInRows, fileRefsInWorkspace, orphanFiles } from './refs'
+import { fileRefsInDoc, fileRefsInRows, fileRefsInWorkspace, orphanFiles, rowsWithBody } from './refs'
 
 const id = (c: string, ext = 'png') => `${c.repeat(64)}.${ext}`
 
@@ -52,6 +52,9 @@ describe('file references (SY-04 cleanup, M3-10)', () => {
     const refs = new Set<string>()
     db.shards.forEach((s) => fileRefsInRows(s, refs))
     expect([...refs].sort()).toEqual([id('a'), id('b'), id('c')])
+    // rows with a row page body (M5-08): their docs are scanned by the cleanup too
+    updateRow(db, r1, { hasDoc: true })
+    expect(db.shards.flatMap((s) => rowsWithBody(s))).toEqual([r1])
   })
 
   it('orphans: unreferenced WebNota files only (data and foreign names are kept)', () => {

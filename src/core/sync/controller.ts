@@ -122,6 +122,9 @@ export async function saveAccount(token: string, account: Account) {
   for (const p of listViews(ws)) markDirty(pageDocName(p.id))
   // databases (M4-02): schema + every shard, even untouched ones (the engine skips identical blobs)
   for (const dbId of referencedDatabaseIds(ws)) databaseDocNames(dbId).forEach(markDirty)
+  // row page bodies (M5-08): read from the shards, loaded only here
+  const { rowBodyDocNames } = await import('../docs/database')
+  for (const dbId of referencedDatabaseIds(ws)) (await rowBodyDocNames(dbId)).forEach(markDirty)
   requestSync('manual')
 }
 

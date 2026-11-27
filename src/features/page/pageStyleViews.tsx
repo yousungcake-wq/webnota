@@ -3,7 +3,7 @@ import { Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import type * as Y from 'yjs'
 import { t, type MessageKey } from '@/core/i18n'
-import { readCover, setCover, setPageStyle, type PageStyle } from '@/core/model/page'
+import { setPageStyle, type PageStyle } from '@/core/model/page'
 import { useLayout } from '@/platform/layout'
 import { Button, Overlay } from '@/ui'
 import { uploadImage } from './uploadImage'
@@ -12,14 +12,25 @@ import { COVER_GRADIENTS, coverBackground, usePageMeta } from './pageMeta'
 const PALETTE = ['gray', 'brown', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'red'] as const
 
 /** Cover picker: palette colors, gradients, an uploaded image (M3-09) or an image link. */
-export function CoverPicker({ doc, anchor, onClose }: { doc: Y.Doc; anchor: HTMLElement | null; onClose: () => void }) {
+/**
+ * Cover picker (ED-F11): upload, gradients, colours, image URL. Works on any cover value —
+ * a page's (`setCover`) or a database row's (M5-08).
+ */
+export function CoverPicker({
+  value,
+  onChange,
+  anchor,
+  onClose,
+}: {
+  value: { type: string; value: string } | null
+  onChange: (cover: { type: 'color' | 'gradient' | 'url' | 'file'; value: string; offsetY?: number }) => void
+  anchor: HTMLElement | null
+  onClose: () => void
+}) {
   const phone = useLayout().layout === 'phone'
-  const [url, setUrl] = useState(() => {
-    const c = readCover(doc)
-    return c?.type === 'url' ? c.value : ''
-  })
-  const pick = (type: 'color' | 'gradient', value: string) => {
-    setCover(doc, { type, value })
+  const [url, setUrl] = useState(() => (value?.type === 'url' ? value.value : ''))
+  const pick = (type: 'color' | 'gradient', v: string) => {
+    onChange({ type, value: v })
     onClose()
   }
   const input = useRef<HTMLInputElement>(null)
@@ -40,7 +51,7 @@ export function CoverPicker({ doc, anchor, onClose }: { doc: Y.Doc; anchor: HTML
             void uploadImage(f).then((id) => {
               setBusy(false)
               if (!id) return
-              setCover(doc, { type: 'file', value: id, offsetY: 50 })
+              onChange({ type: 'file', value: id, offsetY: 50 })
               onClose()
             })
           }}
@@ -80,7 +91,7 @@ export function CoverPicker({ doc, anchor, onClose }: { doc: Y.Doc; anchor: HTML
             e.preventDefault()
             const v = url.trim()
             if (!/^https?:\/\//i.test(v)) return
-            setCover(doc, { type: 'url', value: v })
+            onChange({ type: 'url', value: v })
             onClose()
           }}
         >

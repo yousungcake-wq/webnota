@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { RowPage } from './RowPage'
 import { cellOf, readDbMeta, setCell, type FieldMeta, type RowSnapshot } from '@/core/model/database'
 import { useLayout } from '@/platform/layout'
 import { Dialog, Sheet } from '@/ui'
@@ -38,25 +39,19 @@ export function RowSheet({
   if (!row) return null
   const primary = readDbMeta(state.docs).primaryFieldId
   const title = String(row.cells[primary] ?? '') || dt('db.row.untitled')
-  const body = (
-    <div className="db-rowsheet">
-      {state.fields.map((f) => (
-        <RowProperty key={f.id} state={state} field={f} row={row} readOnly={readOnly || READ_ONLY_TYPES.has(f.type)} />
-      ))}
-    </div>
-  )
+  const body = <RowPage session={session} state={state} rowId={rowId} readOnly={readOnly} />
   return phone ? (
     <Sheet title={title} onClose={onClose}>
       {body}
     </Sheet>
   ) : (
-    <Dialog title={title} onClose={onClose}>
+    <Dialog title={title} onClose={onClose} className="db-row-dialog">
       {body}
     </Dialog>
   )
 }
 
-function RowProperty({
+export function RowProperty({
   state,
   field,
   row,
@@ -68,6 +63,7 @@ function RowProperty({
   readOnly: boolean
 }) {
   const [open, setOpen] = useState(false)
+  readOnly = readOnly || READ_ONLY_TYPES.has(field.type)
   const Icon = FIELD_TYPE_INFO[field.type]?.icon
   const value = cellOf(field, row)
   const props = { docs: state.docs, field, rowId: row.id, value, readOnly }

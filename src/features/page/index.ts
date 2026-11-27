@@ -16,3 +16,5 @@ export { afterMenuClosed, renameStore, renameView } from './rename'
 export const loadPageView = () => import('./PageView')
 export { displayTitle, pathOf } from './titles'
 export { emoji, ViewIcon } from './ViewIcon'
+/** Cover picker for other covers (database rows, M5-08). */
+export const loadCoverPicker = () => import('./pageStyleViews').then((m) => ({ default: m.CoverPicker }))

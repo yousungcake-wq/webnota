@@ -82,6 +82,9 @@ MARKS_AT_VERSION[20] = MARKS_AT_VERSION[19]
 // v21 (M5-01): database view tabs, board / calendar — no editor change.
 NODES_AT_VERSION[21] = NODES_AT_VERSION[20]
 MARKS_AT_VERSION[21] = MARKS_AT_VERSION[20]
+// v22 (M5-08): row page bodies — no editor change.
+NODES_AT_VERSION[22] = NODES_AT_VERSION[21]
+MARKS_AT_VERSION[22] = MARKS_AT_VERSION[21]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

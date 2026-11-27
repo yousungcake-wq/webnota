@@ -86,7 +86,12 @@ export function PageCover({ doc, cover, readOnly }: { doc: Y.Doc; cover: CoverVa
       )}
       {picker && (
         <Suspense fallback={null}>
-          <CoverPicker doc={doc} anchor={picker} onClose={() => setPicker(null)} />
+          <CoverPicker
+            value={cover}
+            onChange={(c) => setCover(doc, c)}
+            anchor={picker}
+            onClose={() => setPicker(null)}
+          />
         </Suspense>
       )}
     </div>

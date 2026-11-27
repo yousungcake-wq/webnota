@@ -366,4 +366,63 @@ test.describe('database views (M5)', () => {
     await expect(day(5).locator('xpath=..').locator('.dbc-event', { hasText: name })).toBeVisible()
     noErrors()
   })
+
+  test('row page: title, icon, cover, properties (hidden folded, add), body saved in its own doc (M5-08)', async ({
+    page,
+  }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    const open = async () => {
+      await page.locator('.dbg-row').first().hover()
+      await page.locator('.dbg-row').first().locator('.dbg-open').click()
+      await expect(page.locator('.db-rowpage')).toBeVisible()
+    }
+    await open()
+    const rp = page.locator('.db-rowpage')
+    // title = primary field
+    const title = rp.locator('.db-rowpage-title')
+    await title.fill('행 페이지 제목')
+    // icon
+    await rp.getByRole('button', { name: '아이콘 추가' }).click()
+    await page.getByPlaceholder('이모지 검색 (한/영)').fill('rocket')
+    await page.getByRole('button', { name: '🚀', exact: true }).click()
+    await expect(rp.locator('.db-rowpage-icon')).toHaveText('🚀')
+    // cover (a gradient)
+    await rp.getByRole('button', { name: '커버 추가' }).click()
+    await page.locator('.cover-swatch').first().click()
+    await expect(rp.locator('.db-rowpage-cover')).toBeVisible()
+    // add a property
+    await rp.getByRole('button', { name: '속성 추가' }).click()
+    await page.getByRole('menuitem', { name: '숫자' }).click()
+    await expect(rp.locator('.db-prop-name', { hasText: '숫자' })).toBeVisible()
+    // body
+    await rp.locator('.wn-editor').click()
+    await page.keyboard.type('행 본문입니다')
+    await expect(rp.locator('.wn-editor')).toContainText('행 본문입니다')
+    await page.mouse.click(1250, 450) // the backdrop
+    await expect(rp).toHaveCount(0)
+    await expect(page.locator('.dbg-row').first().locator('[aria-colindex="1"]')).toHaveText(/행 페이지 제목/)
+
+    await reload(page)
+    await dbLive(page)
+    await open()
+    await expect(rp.locator('.db-rowpage-title')).toHaveValue('행 페이지 제목')
+    await expect(rp.locator('.db-rowpage-icon')).toHaveText('🚀')
+    await expect(rp.locator('.wn-editor')).toContainText('행 본문입니다')
+    noErrors()
+  })
+
+  test('row page folds hidden properties (M5-08)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.getByRole('button', { name: '보기 추가' }).click()
+    await page.getByRole('menuitem', { name: '보드' }).click() // a board shows only titles: the rest is hidden
+    await page.locator('.dbk-card-body').first().click()
+    const rp = page.locator('.db-rowpage')
+    await expect(rp.locator('.db-rowpage-prop')).toHaveCount(0)
+    const toggle = rp.getByRole('button', { name: /숨긴 속성 \d+개/ })
+    await toggle.click()
+    await expect(rp.locator('.db-rowpage-prop.is-hidden').first()).toBeVisible()
+    noErrors()
+  })
 })

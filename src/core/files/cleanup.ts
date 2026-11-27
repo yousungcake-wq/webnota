@@ -4,7 +4,8 @@ import { syncStore } from '../sync/controller'
 import { cacheMeta, deleteFiles } from './db'
 import { databaseDocNames } from '../model/database/shard'
 import { referencedDatabaseIds } from '../model/views'
-import { fileRefsInDoc, fileRefsInRows, fileRefsInWorkspace } from './refs'
+import { rowDocName } from '../docs/database'
+import { fileRefsInDoc, fileRefsInRows, fileRefsInWorkspace, rowsWithBody } from './refs'
 import { pendingFiles } from './upload'
 
 /**
@@ -41,10 +42,22 @@ export async function cleanupRepository(): Promise<{ removed: number; kept: numb
   for (const dbId of referencedDatabaseIds(ws)) {
     for (const name of databaseDocNames(dbId).slice(1)) {
       const release = retainDoc(name)
+      let bodies: string[]
       try {
-        fileRefsInRows(await openDoc(name), refs)
+        const shard = await openDoc(name)
+        fileRefsInRows(shard, refs)
+        bodies = rowsWithBody(shard).map((rowId) => rowDocName(dbId, rowId))
       } finally {
         release()
+      }
+      // row page bodies (M5-08)
+      for (const body of bodies) {
+        const releaseBody = retainDoc(body)
+        try {
+          fileRefsInDoc(await openDoc(body), refs)
+        } finally {
+          releaseBody()
+        }
       }
     }
   }

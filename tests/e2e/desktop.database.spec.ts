@@ -277,14 +277,13 @@ test.describe('database (M4)', () => {
     await page.mouse.up()
     await expect.poll(names).toEqual(['D', 'A', 'B', 'C'])
 
-    // open → properties dialog, edit the name there
+    // open → row page (M5-08), edit the title (the primary field) there
     await rows.nth(1).hover()
     await rows.nth(1).getByRole('button', { name: '열기' }).click()
     const dialog = page.getByRole('dialog', { name: 'A' })
-    await dialog.getByRole('button', { name: '이름' }).click()
+    await dialog.locator('.db-rowpage-title').click()
     await page.keyboard.press('End')
     await page.keyboard.type('!')
-    await page.keyboard.press('Enter')
     await expect(page.getByRole('dialog', { name: 'A!' })).toBeVisible()
     await page.keyboard.press('Escape')
     await expect.poll(names).toEqual(['D', 'A!', 'B', 'C'])

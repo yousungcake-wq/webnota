@@ -21,6 +21,7 @@ import { makeFirstScreen, readFirstScreen, screenKey, writeFirstScreen } from '.
 import { createQueryRunner, type QueryRunner } from './query/runner'
 
 export interface DbState {
+  dbId: string
   docs: DbDocs
   meta: DbMeta
   fields: FieldMeta[]
@@ -111,6 +112,7 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
     for (const r of c.rows) rowCache.set(r.id, r)
     performance.mark('db:preview')
     store.set({
+      dbId,
       docs: previewDocs(),
       meta: c.meta,
       fields: c.fields,
@@ -138,6 +140,7 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
           s && !s.preview
             ? { ...s, result, rowsVersion: s.rowsVersion + 1 }
             : {
+                dbId,
                 docs: d,
                 meta: readDbMeta(d),
                 // fresh: the schema may have changed while a worker answered the first query

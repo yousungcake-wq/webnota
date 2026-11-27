@@ -22,6 +22,18 @@ export async function openDatabase(dbId: string): Promise<{ docs: DbDocs; releas
   }
 }
 
+/** Doc names of the row pages a database has (rows with `hasDoc`, M5-08). */
+export async function rowBodyDocNames(dbId: string): Promise<string[]> {
+  const { docs, release } = await openDatabase(dbId)
+  try {
+    return listRows(docs)
+      .filter((r) => r.hasDoc)
+      .map((r) => rowDocName(dbId, r.id))
+  } finally {
+    release()
+  }
+}
+
 /**
  * After views were permanently deleted: removes the local data of each database in
  * `candidates` that no remaining view points at (schema, shards, row pages). The sync

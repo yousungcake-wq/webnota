@@ -1,0 +1,105 @@
+/* Row page (M5-08, spec/05 §7) */
+.dialog.db-row-dialog {
+  width: min(900px, 92vw);
+  max-width: none;
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+.db-rowpage {
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.db-rowpage-cover {
+  height: 160px;
+  margin: -8px -8px 0;
+  border-radius: var(--r) var(--r) 0 0;
+  overflow: hidden;
+  background: var(--bg-hover);
+}
+.db-rowpage-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.db-rowpage-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.db-rowpage-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: var(--r);
+  background: transparent;
+  font-size: 40px;
+  line-height: 1;
+  cursor: pointer;
+}
+.db-rowpage-icon:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.db-rowpage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  opacity: 0.85;
+}
+.db-rowpage-title {
+  width: 100%;
+  border: 0;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.25;
+  field-sizing: content;
+}
+.db-rowpage-props {
+  min-width: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.db-rowpage-prop {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+}
+.db-rowpage-prop > .db-prop {
+  flex: 1;
+  min-width: 0;
+}
+.db-rowpage-prop .db-grip {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  margin-left: -18px;
+  color: var(--text-3);
+  cursor: grab;
+  opacity: 0;
+  touch-action: none;
+}
+.db-rowpage-prop:hover .db-grip {
+  opacity: 1;
+}
+.db-rowpage-hidden {
+  color: var(--text-3);
+}
+.db-rowpage-body {
+  min-height: 200px;
+  padding: 8px 0 64px 28px; /* room for the block handles on the left */
+}
+.db-rowpage-body .wn-editor {
+  padding-left: 0;
+  padding-right: 0;
+}

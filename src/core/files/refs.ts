@@ -74,6 +74,16 @@ export function fileRefsInRows(shard: Y.Doc, out = new Set<string>()): Set<strin
   return out
 }
 
+/** Ids of the rows in a shard that have a row page body (`hasDoc`, M5-08). */
+export function rowsWithBody(shard: Y.Doc): string[] {
+  if (!shard.share.has('rows')) return []
+  const out: string[] = []
+  shard.getMap<Y.Map<unknown>>('rows').forEach((row, id) => {
+    if (row instanceof Y.Map && row.get('hasDoc') === true) out.push(id)
+  })
+  return out
+}
+
 /** Repository paths under `files/` that no document references. */
 export function orphanFiles(repoPaths: string[], referenced: Set<string>): string[] {
   return repoPaths.filter((p) => {

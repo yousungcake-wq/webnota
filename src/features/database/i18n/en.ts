@@ -263,4 +263,12 @@ export const en: Record<DbKey, string> = {
   'db.cal.placeOn': 'Place on {date}',
   'db.cal.events': '{count} events',
   'db.cal.noEvents': 'No events',
+  'db.row.gone': 'This row was deleted',
+  'db.rowpage.icon': 'Icon',
+  'db.rowpage.addIcon': 'Add icon',
+  'db.rowpage.addCover': 'Add cover',
+  'db.rowpage.changeCover': 'Change cover',
+  'db.rowpage.removeCover': 'Remove cover',
+  'db.rowpage.hidden': '{count} hidden properties',
+  'db.rowpage.addProperty': 'Add property',
 }

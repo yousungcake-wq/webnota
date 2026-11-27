@@ -174,6 +174,8 @@ AppFlowy 팔레트 10색(Purple, Pink, Light Pink, Orange, Yellow, Lime, Green, 
 | DB-R04 | 이전/다음 행 이동, 링크 복사, 복제, 삭제 |
 | DB-R05 | 관계 필드 칩 클릭 → 연결된 행 페이지로 이동 (뒤로 가기 지원) |
 
+구현 (M5-08, schema v22, `RowPage.tsx`): 위에서부터 커버(행 `cover`: 페이지와 같은 커버 선택기 `loadCoverPicker` — 업로드·그라데이션·색·URL), 아이콘(행 `icon`, 이모지/아이콘 선택기), 제목 = 기본 필드(입력하는 대로 저장, IME는 조합 끝에), 속성 목록(뷰에서 보이는 속성, 끌어서 순서 = 그 뷰의 필드 순서; 숨긴 속성은 "숨긴 속성 N개"로 접힘; "속성 추가"는 유형 선택 → 이 뷰에 보이는 새 필드), 본문 에디터(`row/<db>/<row>` 문서, 페이지를 열 때만 열고 retain). 본문에 내용이 생기면 행에 `hasDoc: true` — 그래서 열어만 본 행은 파일이 생기지 않습니다(빈 문서는 더티가 아님). 첫 연결 시 `hasDoc` 행의 본문 문서도 더티(`rowBodyDocNames`), 저장소 정리는 `hasDoc` 행 본문의 파일 참조도 보존(`rowsWithBody`), Notion 형식 내보내기는 이미 `rowDocs`로 포함. 행을 지워도 본문 파일은 남깁니다(실행 취소로 복원되는 행이 본문을 되찾도록) — DB 영구 삭제 때 같이 지워짐.
+
 ## 8. 인라인·연결된 데이터베이스 (`DB-L`, M5)
 
 - 문서 블록 `database`: 새로 만들기(Grid/Board/Calendar) 또는 기존 DB 연결을 선택합니다.

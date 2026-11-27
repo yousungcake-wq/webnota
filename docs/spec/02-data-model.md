@@ -230,6 +230,7 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 | 19 | 데이터베이스 뷰(`kind: 'database'`, `databaseId`) + `db/<id>`·`dbr/<id>/<n>` 문서 (버전만 — 구버전은 DB 뷰를 문서로 열어 엉뚱한 `doc/` 파일을 만들 수 있음) | M4-01 |
 | 20 | `image.captionAlign`(left·center·right, 기본 left — 이미지 정렬과 별개), `video.align`·`caption`·`captionAlign` 추가 (버전만) | 피드백 4·5 |
 | 21 | DB 뷰 탭: 같은 DB의 추가 뷰는 첫 뷰의 하위 뷰(`kind: 'database'`, 같은 `databaseId`), `board`·`calendar` 레이아웃과 뷰 설정 `group`·`board`·`calendar` (버전만) | M5-01 |
+| 22 | 행 페이지 본문 문서 `row/<db>/<row>`(`data/dbs/<db>/rows/<row>.yjs`, 첫 입력 때 행에 `hasDoc: true`) (버전만) | M5-08 |
 
 v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다 (M0-17).
 

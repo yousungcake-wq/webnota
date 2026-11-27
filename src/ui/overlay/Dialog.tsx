@@ -8,12 +8,15 @@ export function Dialog({
   onClose,
   actions,
   role = 'dialog',
+  className,
   children,
 }: {
   title?: string
   onClose: () => void
   actions?: ReactNode
   role?: 'dialog' | 'alertdialog'
+  /** Extra class on the dialog box (size variants). */
+  className?: string
   children?: ReactNode
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -28,7 +31,7 @@ export function Dialog({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className="dialog"
+        className={className ? `dialog ${className}` : 'dialog'}
       >
         {title && (
           <h2 id={titleId} className="dialog-title">
