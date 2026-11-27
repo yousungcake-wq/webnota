@@ -6,7 +6,7 @@ import { useStore } from './useStore'
 
 export type Route =
   | { name: 'home' }
-  | { name: 'page'; id: string; block?: string }
+  | { name: 'page'; id: string; block?: string; row?: string }
   | { name: 'search' }
   | { name: 'favorites' }
   | { name: 'trash' }
@@ -26,9 +26,10 @@ function parse(hash: string): Route {
       const [, ws, kind, id, b, block] = parts
       if (kind !== 'v' || !id) return { name: 'home' }
       if (ws && ws !== currentWorkspaceId() && listSlots().some((s) => s.id === ws)) switchSlot(ws, true)
-      return b === 'b' && block
-        ? { name: 'page', id: decodeURIComponent(id), block: decodeURIComponent(block) }
-        : { name: 'page', id: decodeURIComponent(id) }
+      if (b === 'b' && block) return { name: 'page', id: decodeURIComponent(id), block: decodeURIComponent(block) }
+      // a database row page (M5-09): #/w/<ws>/v/<view>/r/<row>
+      if (b === 'r' && block) return { name: 'page', id: decodeURIComponent(id), row: decodeURIComponent(block) }
+      return { name: 'page', id: decodeURIComponent(id) }
     }
     case 'page':
       return parts[1] ? { name: 'page', id: decodeURIComponent(parts[1]) } : { name: 'home' }
@@ -45,7 +46,8 @@ function parse(hash: string): Route {
 export function href(route: Route): string {
   return route.name === 'page'
     ? `#/w/${currentWorkspaceId()}/v/${encodeURIComponent(route.id)}` +
-        (route.block ? `/b/${encodeURIComponent(route.block)}` : '')
+        (route.block ? `/b/${encodeURIComponent(route.block)}` : '') +
+        (route.row ? `/r/${encodeURIComponent(route.row)}` : '')
     : route.name === 'home'
       ? '#/'
       : `#/${route.name}`
@@ -150,6 +152,16 @@ export function goBack() {
   saveTrail()
   history.replaceState({ wnDepth: depth, wnSeq: prev.seq }, '', prev.href)
   window.dispatchEvent(new HashChangeEvent('hashchange'))
+}
+
+/**
+ * Leaves a screen opened on top of `route` (a row page over its view, M5-09): back when
+ * the previous screen of this tab is that route, else replace — so closing never leaves
+ * the app or stacks a duplicate entry.
+ */
+export function closeTo(route: Route) {
+  if (trail.at(-2)?.href === href(route)) goBack()
+  else navigate(route, { replace: true })
 }
 
 const routeStore = createStore<Route>(parse(location.hash))

@@ -98,7 +98,7 @@ test.describe('database views (M5)', () => {
     const first = doing.locator('.dbk-card').first()
     const name = (await first.locator('.db-card-title').innerText()).trim()
     await first.locator('.dbk-card-body').click()
-    await expect(page.getByRole('dialog', { name })).toBeVisible()
+    await expect(page.getByRole('dialog', { name: '행 페이지' }).locator('.db-rowpage-title')).toHaveValue(name)
     await page.keyboard.press('Escape')
 
     // inline title
@@ -423,6 +423,63 @@ test.describe('database views (M5)', () => {
     const toggle = rp.getByRole('button', { name: /숨긴 속성 \d+개/ })
     await toggle.click()
     await expect(rp.locator('.db-rowpage-prop.is-hidden').first()).toBeVisible()
+    noErrors()
+  })
+
+  test('row page navigation: route, prev/next, full screen, link, duplicate with body, delete, back; from board and calendar (M5-09)', async ({
+    page,
+    context,
+  }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    const modal = page.getByRole('dialog', { name: '행 페이지' })
+    const title = modal.locator('.db-rowpage-title')
+    await page.locator('.dbg-row').first().hover()
+    await page.locator('.dbg-row').first().locator('.dbg-open').click()
+    await expect(page).toHaveURL(/\/r\/[^/]+$/)
+    await expect(title).toHaveValue('Item 1')
+    await expect(modal.getByRole('button', { name: '이전 행' })).toBeDisabled()
+    await modal.getByRole('button', { name: '다음 행' }).click()
+    await expect(title).toHaveValue('Item 2')
+    await expect(modal.locator('.db-row-pos')).toHaveText('2 / 50')
+    // full screen, remembered
+    await modal.getByRole('button', { name: '전체 화면으로' }).click()
+    await expect(page.locator('.db-row-backdrop')).toHaveClass(/is-full/)
+    await modal.getByRole('button', { name: '가운데 창으로' }).click()
+    await expect(page.locator('.db-row-backdrop')).not.toHaveClass(/is-full/)
+    // link
+    await modal.getByRole('button', { name: '더보기' }).click()
+    await page.getByRole('menuitem', { name: '링크 복사' }).click()
+    const link = await page.evaluate(() => navigator.clipboard.readText())
+    expect(link).toMatch(/#\/w\/[^/]+\/v\/[^/]+\/r\/[^/]+$/)
+    // body, then duplicate (the copy keeps the body)
+    await modal.locator('.wn-editor').click()
+    await page.keyboard.type('복제될 본문')
+    await modal.getByRole('button', { name: '더보기' }).click()
+    await page.getByRole('menuitem', { name: '복제' }).click()
+    await expect(title).toHaveValue('Item 2')
+    await expect(modal.locator('.db-row-pos')).toHaveText('3 / 51')
+    await expect(modal.locator('.wn-editor')).toContainText('복제될 본문')
+    // delete → closes, one row fewer
+    await modal.getByRole('button', { name: '더보기' }).click()
+    await page.getByRole('menuitem', { name: '삭제' }).click()
+    await expect(modal).toHaveCount(0)
+    await expect(page.getByRole('grid')).toHaveAttribute('aria-rowcount', '51')
+    // a link opens the row page; back closes it
+    await page.goto(link)
+    await expect(title).toHaveValue('Item 2')
+    await page.goBack()
+    await expect(modal).toHaveCount(0)
+
+    // board card → row page; close returns to the board
+    await page.getByRole('button', { name: '보기 추가' }).click()
+    await page.getByRole('menuitem', { name: '보드' }).click()
+    await page.locator('.dbk-card-body').first().click()
+    await expect(modal).toBeVisible()
+    await modal.getByRole('button', { name: '닫기' }).click()
+    await expect(modal).toHaveCount(0)
+    await expect(page.locator('.dbk-col').first()).toBeVisible()
     noErrors()
   })
 })

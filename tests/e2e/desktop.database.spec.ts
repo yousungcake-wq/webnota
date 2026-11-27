@@ -280,12 +280,14 @@ test.describe('database (M4)', () => {
     // open → row page (M5-08), edit the title (the primary field) there
     await rows.nth(1).hover()
     await rows.nth(1).getByRole('button', { name: '열기' }).click()
-    const dialog = page.getByRole('dialog', { name: 'A' })
+    const dialog = page.getByRole('dialog', { name: '행 페이지' })
+    await expect(dialog.locator('.db-rowpage-title')).toHaveValue('A')
     await dialog.locator('.db-rowpage-title').click()
     await page.keyboard.press('End')
     await page.keyboard.type('!')
-    await expect(page.getByRole('dialog', { name: 'A!' })).toBeVisible()
+    await expect(dialog.locator('.db-rowpage-title')).toHaveValue('A!')
     await page.keyboard.press('Escape')
+    await expect(dialog).toHaveCount(0)
     await expect.poll(names).toEqual(['D', 'A!', 'B', 'C'])
     await reload(page)
     await dbLive(page) // not the cached first screen

@@ -59,8 +59,9 @@ test.describe('database on phones (M4-13)', () => {
     const card = page.locator('.db-card').first()
     await expect(card).toContainText('폰에서 고침')
     await card.tap()
-    await expect(page.locator('.sheet .db-rowsheet')).toBeVisible()
+    await expect(page.getByRole('dialog', { name: '행 페이지' })).toBeVisible() // M5-09
     await page.goBack()
+    await expect(page.getByRole('dialog', { name: '행 페이지' })).toHaveCount(0)
     await reload(page)
     await dbLive(page) // not the cached first screen
     await expect(page.locator('.db-card').first()).toBeVisible() // remembered per device
@@ -97,9 +98,10 @@ test.describe('database on phones (M4-13)', () => {
     expect((await col.boundingBox())!.width).toBeLessThan(page.viewportSize()!.width)
     expect((await col.locator('.dbk-new').boundingBox())!.height).toBeGreaterThanOrEqual(44)
     await col.locator('.dbk-card-body').first().tap()
-    await expect(page.locator('.sheet')).toBeVisible()
-    await page.keyboard.press('Escape')
-    await expect(page.locator('.sheet')).toHaveCount(0)
+    const rowPage = page.getByRole('dialog', { name: '행 페이지' }) // M5-09
+    await expect(rowPage).toBeVisible()
+    await rowPage.getByRole('button', { name: '닫기' }).tap()
+    await expect(rowPage).toHaveCount(0)
     // column menu is a bottom sheet (M5-05)
     expect((await col.locator('.dbk-handle').boundingBox())!.height).toBeGreaterThanOrEqual(44)
     await col.locator('.dbk-handle').tap()
@@ -159,9 +161,10 @@ test.describe('database on phones (M4-13)', () => {
     await expect(agenda.locator('.dbc-agenda-item').first()).toBeVisible()
     const n = await agenda.locator('.dbc-agenda-item').count()
     await agenda.getByRole('button', { name: '새로 만들기' }).tap()
-    await expect(page.locator('.sheet')).toBeVisible()
+    const rowPage = page.getByRole('dialog', { name: '행 페이지' }) // M5-09
+    await expect(rowPage).toBeVisible()
     await page.goBack()
-    await expect(page.locator('.sheet')).toHaveCount(0)
+    await expect(rowPage).toHaveCount(0)
     await expect(agenda.locator('.dbc-agenda-item')).toHaveCount(n + 1)
     // undated rows: a sheet with "place on <day>"
     await page.getByRole('button', { name: /^일정 없음/ }).tap()
@@ -175,6 +178,25 @@ test.describe('database on phones (M4-13)', () => {
     await expect(sheet.locator('.dbc-nodate-item')).toHaveCount(before - 1)
     await page.goBack()
     await expect(agenda.locator('.dbc-agenda-item')).toHaveCount(n + 2)
+    noErrors()
+  })
+
+  test('row page on phones: full screen from the card list, back closes it (M5-09, MB-31)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.getByRole('button', { name: '카드 목록 보기' }).tap()
+    await page.locator('.db-card').first().tap()
+    const modal = page.getByRole('dialog', { name: '행 페이지' })
+    await expect(modal).toBeVisible()
+    await expect(page.locator('.db-row-backdrop')).toHaveClass(/is-full/)
+    const box = (await modal.boundingBox())!
+    expect(box.width).toBe(page.viewportSize()!.width)
+    expect((await modal.getByRole('button', { name: '다음 행' }).boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    await modal.getByRole('button', { name: '다음 행' }).tap()
+    await expect(modal.locator('.db-row-pos')).toHaveText('2 / 50')
+    await page.goBack()
+    await expect(modal).toHaveCount(0)
+    await expect(page.locator('.db-card').first()).toBeVisible()
     noErrors()
   })
 })

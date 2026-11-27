@@ -176,6 +176,8 @@ AppFlowy 팔레트 10색(Purple, Pink, Light Pink, Orange, Yellow, Lime, Green, 
 
 구현 (M5-08, schema v22, `RowPage.tsx`): 위에서부터 커버(행 `cover`: 페이지와 같은 커버 선택기 `loadCoverPicker` — 업로드·그라데이션·색·URL), 아이콘(행 `icon`, 이모지/아이콘 선택기), 제목 = 기본 필드(입력하는 대로 저장, IME는 조합 끝에), 속성 목록(뷰에서 보이는 속성, 끌어서 순서 = 그 뷰의 필드 순서; 숨긴 속성은 "숨긴 속성 N개"로 접힘; "속성 추가"는 유형 선택 → 이 뷰에 보이는 새 필드), 본문 에디터(`row/<db>/<row>` 문서, 페이지를 열 때만 열고 retain). 본문에 내용이 생기면 행에 `hasDoc: true` — 그래서 열어만 본 행은 파일이 생기지 않습니다(빈 문서는 더티가 아님). 첫 연결 시 `hasDoc` 행의 본문 문서도 더티(`rowBodyDocNames`), 저장소 정리는 `hasDoc` 행 본문의 파일 참조도 보존(`rowsWithBody`), Notion 형식 내보내기는 이미 `rowDocs`로 포함. 행을 지워도 본문 파일은 남깁니다(실행 취소로 복원되는 행이 본문을 되찾도록) — DB 영구 삭제 때 같이 지워짐.
 
+구현 (M5-09, `RowModal.tsx`, `rowNav.ts`): 행 페이지는 라우트 `#/w/:ws/v/:view/r/:row`(`Route.page.row`)라 링크로 열리고 뒤로 가기로 닫힙니다. Grid "열기"·행 메뉴 "열기"·폰 카드 목록·Board 카드·Calendar 이벤트/목록이 모두 `openRow`로 이동. 데스크탑은 가운데 창(최대 900px), "전체 화면으로" 전환은 기기별 저장(`webnota:row-full`), 폰은 항상 전체 화면(MB-31). 상단 막대: 닫기(`closeTo`: 바로 앞 화면이 그 보기면 뒤로, 아니면 교체 — 앱 밖으로 나가거나 기록이 쌓이지 않음), 이전/다음 행(보기의 필터·정렬 순서, 교체 이동), 위치 `n / 전체`, 더보기: 링크 복사·복제(본문 문서도 복사 `copyBody`)·삭제(실행 취소 토스트 후 닫힘). 첫 화면 미리보기 중에는 열지 않음.
+
 ## 8. 인라인·연결된 데이터베이스 (`DB-L`, M5)
 
 - 문서 블록 `database`: 새로 만들기(Grid/Board/Calendar) 또는 기존 DB 연결을 선택합니다.

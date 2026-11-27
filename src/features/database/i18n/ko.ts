@@ -270,6 +270,13 @@ export const ko = {
   'db.rowpage.removeCover': '커버 제거',
   'db.rowpage.hidden': '숨긴 속성 {count}개',
   'db.rowpage.addProperty': '속성 추가',
+  'db.rowpage.label': '행 페이지',
+  'db.rowpage.close': '닫기',
+  'db.rowpage.prev': '이전 행',
+  'db.rowpage.next': '다음 행',
+  'db.rowpage.full': '전체 화면으로',
+  'db.rowpage.center': '가운데 창으로',
+  'db.rowpage.more': '더보기',
 }
 
 export type DbKey = keyof typeof ko

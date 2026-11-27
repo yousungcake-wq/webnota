@@ -3,6 +3,7 @@ import { wsKey } from '@/core/docs/slots'
 import { useLayout } from '@/platform/layout'
 import { ws } from '@/core/docs/workspace'
 import { databaseIdOf, type ViewMeta } from '@/core/model/views'
+import { useRoute } from '@/core/store/router'
 import { EmptyState, ErrorBoundary, Skeleton } from '@/ui'
 import { DbTabs } from './DbTabs'
 import { DbToolbar } from './DbToolbar'
@@ -10,6 +11,7 @@ import { Grid } from './Grid'
 import { CardList } from './CardList'
 import { dt, loadDbMessages } from './i18n'
 import type { LayoutProps } from './layoutProps'
+import { RowModal } from './RowModal'
 import { useDbSession } from './useDbSession'
 import './database.css'
 
@@ -28,6 +30,8 @@ export function DatabaseView({ view, readOnly }: { view: ViewMeta; readOnly: boo
   const dbId = databaseIdOf(ws(), view.id)
   const { session, state } = useDbSession(dbId, view.id)
   const phone = useLayout().layout === 'phone'
+  const route = useRoute()
+  const openRowId = route.name === 'page' && route.id === view.id ? route.row : undefined
   const [cards, setCards] = useState(() => readCards())
   const toggleCards = () => {
     setCards(!cards)
@@ -67,6 +71,9 @@ export function DatabaseView({ view, readOnly }: { view: ViewMeta; readOnly: boo
         </ErrorBoundary>
       ) : (
         <GridLayout {...props} cards={phone && cards} />
+      )}
+      {openRowId && !state.preview && (
+        <RowModal session={session} state={state} viewId={view.id} rowId={openRowId} readOnly={props.readOnly} />
       )}
     </div>
   )

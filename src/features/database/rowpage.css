@@ -1,9 +1,77 @@
 /* Row page (M5-08, spec/05 §7) */
-.dialog.db-row-dialog {
-  width: min(900px, 92vw);
-  max-width: none;
+/* row page modal (M5-09): centred, or full screen (phones always) */
+.db-row-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-popover);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 5dvh 16px;
+  background: var(--bg-overlay);
+}
+.db-row-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(900px, 100%);
   max-height: 90dvh;
+  border-radius: var(--r-lg);
+  background: var(--bg-elev);
+  box-shadow: var(--shadow-lg);
+  outline: none;
+  overflow: hidden;
+}
+.db-row-backdrop.is-full {
+  padding: 0;
+}
+.db-row-backdrop.is-full .db-row-modal {
+  width: 100%;
+  height: 100dvh;
+  max-height: none;
+  border-radius: 0;
+}
+.db-row-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.db-row-bar .db-icon-btn:last-child {
+  margin-left: auto;
+}
+.db-row-bar .db-icon-btn:disabled {
+  opacity: 0.35;
+}
+.db-row-pos {
+  margin: 0 8px;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+.db-row-scroll {
+  flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 48px 32px;
+}
+.db-row-backdrop.is-full .db-row-scroll > .db-rowpage {
+  max-width: 900px;
+  margin: 0 auto;
+}
+@media (max-width: 479px) {
+  .db-row-scroll {
+    padding: 12px 16px 32px;
+  }
+  .db-rowpage-cover {
+    margin: -12px -16px 0;
+  }
+}
+@media (pointer: coarse) {
+  .db-row-bar .db-icon-btn {
+    min-width: 44px;
+    height: 44px;
+  }
 }
 .db-rowpage {
   color: var(--text);
@@ -13,8 +81,7 @@
 }
 .db-rowpage-cover {
   height: 160px;
-  margin: -8px -8px 0;
-  border-radius: var(--r) var(--r) 0 0;
+  margin: -16px -48px 0;
   overflow: hidden;
   background: var(--bg-hover);
 }

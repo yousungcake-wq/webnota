@@ -1,9 +1,9 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { readDbMeta } from '@/core/model/database'
 import { CardBody } from './CardBody'
 import { columnsOf } from './gridColumns'
 import { dt } from './i18n'
-import { RowSheet } from './RowSheet'
+import { openRow } from './rowNav'
 import { fixedLayout } from './rowLayout'
 import type { DbSession, DbState } from './session'
 import { useScrollBox } from './useScrollBox'
@@ -13,22 +13,20 @@ const CARD_FIELDS = 3
 
 /**
  * Phone "card list" (MB-30): one card per row with its title and the first few visible
- * properties; tap opens the row's properties. Fixed-height cards, virtualized.
+ * properties; tap opens the row page. Fixed-height cards, virtualized.
  */
 export function CardList({
   session,
   state,
   title,
-  readOnly,
 }: {
   session: DbSession
   state: DbState
   title: string
-  readOnly: boolean
+  readOnly?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const box = useScrollBox(ref)
-  const [open, setOpen] = useState<string | null>(null)
   const rowIds = state.result.rowIds
   const primary = state.meta.primaryFieldId || readDbMeta(state.docs).primaryFieldId
   const fields = useMemo(
@@ -56,16 +54,13 @@ export function CardList({
               role="listitem"
               className="db-card"
               style={{ top: layout.top(start + k), height: CARD_HEIGHT - 8 }}
-              onClick={() => setOpen(id)}
+              onClick={() => state.view && openRow(state.view.id, id)}
             >
               <CardBody row={row} primary={primaryField} fields={fields} labels />
             </button>
           )
         })}
       </div>
-      {open && (
-        <RowSheet session={session} state={state} rowId={open} readOnly={readOnly} onClose={() => setOpen(null)} />
-      )}
     </div>
   )
 }

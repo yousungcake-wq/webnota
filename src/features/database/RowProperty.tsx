@@ -1,8 +1,5 @@
 import { useState } from 'react'
-import { RowPage } from './RowPage'
-import { cellOf, readDbMeta, setCell, type FieldMeta, type RowSnapshot } from '@/core/model/database'
-import { useLayout } from '@/platform/layout'
-import { Dialog, Sheet } from '@/ui'
+import { cellOf, setCell, type FieldMeta, type RowSnapshot } from '@/core/model/database'
 import { CellEditor } from './CellEditor'
 import { ChecklistEditor } from './ChecklistEditor'
 import { CellView } from './CellView'
@@ -12,45 +9,12 @@ import { dt } from './i18n'
 import { MediaEditor } from './MediaEditor'
 import { SelectEditor } from './SelectEditor'
 import { editText, parseEdit, TEXT_EDITED } from './cellEdit'
-import type { DbSession, DbState } from './session'
+import type { DbState } from './session'
 
 const READ_ONLY_TYPES = new Set(['createdTime', 'updatedTime', 'rollup'])
 const POPOVER_TYPES = new Set(['select', 'multiSelect', 'date', 'checklist', 'media'])
 
-/**
- * Every property of one row (DB-G05 until the row page of M5-04): a dialog on desktop, a
- * full-height sheet on phones. Values are edited in place.
- */
-export function RowSheet({
-  session,
-  state,
-  rowId,
-  readOnly,
-  onClose,
-}: {
-  session: DbSession
-  state: DbState
-  rowId: string
-  readOnly: boolean
-  onClose: () => void
-}) {
-  const phone = useLayout().layout === 'phone'
-  const row = session.row(rowId)
-  if (!row) return null
-  const primary = readDbMeta(state.docs).primaryFieldId
-  const title = String(row.cells[primary] ?? '') || dt('db.row.untitled')
-  const body = <RowPage session={session} state={state} rowId={rowId} readOnly={readOnly} />
-  return phone ? (
-    <Sheet title={title} onClose={onClose}>
-      {body}
-    </Sheet>
-  ) : (
-    <Dialog title={title} onClose={onClose} className="db-row-dialog">
-      {body}
-    </Dialog>
-  )
-}
-
+/** One property of a row on the row page (M5-08): name and value, edited in place. */
 export function RowProperty({
   state,
   field,

@@ -20,7 +20,7 @@ import { Sheet } from '@/ui'
 import { CellEditor } from './CellEditor'
 import { deleteRowsWithUndo, newRow } from './rowActions'
 import { clearRect, copyRect, pasteTSV, rectOf } from './gridClipboard'
-import { RowSheet } from './RowSheet'
+import { openRow } from './rowNav'
 import { CalcRow } from './CalcRow'
 import { GridHeader } from './GridHeader'
 import { GridRow, type GridPos as Pos, type GridRowActions } from './GridRow'
@@ -76,7 +76,6 @@ export function Grid({
   const primaryId = state.meta.primaryFieldId || readDbMeta(docs).primaryFieldId
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
   const [rowMenu, setRowMenu] = useState<{ rowId: string; anchor: HTMLElement } | null>(null)
-  const [sheetRow, setSheetRow] = useState<string | null>(null)
   const [drag, setDrag] = useState<{ rowId: string; drop: number } | null>(null)
 
   // DB-G08: wrapped columns make rows grow; their heights are measured after render.
@@ -366,7 +365,7 @@ export function Grid({
     e: React.PointerEvent | React.MouseEvent,
   ) => {
     if (action === 'insert') addRowAt({ afterId: rowId })
-    else if (action === 'open') setSheetRow(rowId)
+    else if (action === 'open' && state.view) openRow(state.view.id, rowId)
     else startHandle(rowId, e as React.PointerEvent)
   }
 
@@ -498,7 +497,11 @@ export function Grid({
             title={dt('db.row.menu')}
             onClose={() => setRowMenu(null)}
             items={[
-              { label: dt('db.row.open'), icon: Maximize2, onSelect: () => setSheetRow(rowMenu.rowId) },
+              {
+                label: dt('db.row.open'),
+                icon: Maximize2,
+                onSelect: () => state.view && openRow(state.view.id, rowMenu.rowId),
+              },
               ...(readOnly
                 ? []
                 : [
@@ -522,15 +525,6 @@ export function Grid({
                     },
                   ]),
             ]}
-          />
-        )}
-        {sheetRow && (
-          <RowSheet
-            session={session}
-            state={state}
-            rowId={sheetRow}
-            readOnly={readOnly}
-            onClose={() => setSheetRow(null)}
           />
         )}
       </div>

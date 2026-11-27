@@ -80,7 +80,8 @@ function DesktopFrame({ route, tablet }: { route: Route; tablet: boolean }) {
         {(hidden, openSidebar) => (
           <>
             <SchemaBanner />
-            <ErrorBoundary key={href(route)}>
+            {/* a row page (M5-09) opens over its view: same key, no remount */}
+            <ErrorBoundary key={href(route.name === 'page' ? { ...route, row: undefined } : route)}>
               <MainContent route={route} sidebarOpen={!hidden} onToggleSidebar={openSidebar} />
             </ErrorBoundary>
           </>

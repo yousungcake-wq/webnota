@@ -271,4 +271,11 @@ export const en: Record<DbKey, string> = {
   'db.rowpage.removeCover': 'Remove cover',
   'db.rowpage.hidden': '{count} hidden properties',
   'db.rowpage.addProperty': 'Add property',
+  'db.rowpage.label': 'Row page',
+  'db.rowpage.close': 'Close',
+  'db.rowpage.prev': 'Previous row',
+  'db.rowpage.next': 'Next row',
+  'db.rowpage.full': 'Full screen',
+  'db.rowpage.center': 'Centered',
+  'db.rowpage.more': 'More',
 }

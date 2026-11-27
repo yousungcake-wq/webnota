@@ -28,7 +28,7 @@ import { dt } from './i18n'
 import type { LayoutProps } from './layoutProps'
 import { appLocale } from './locale'
 import { newRow } from './rowActions'
-import { RowSheet } from './RowSheet'
+import { openRow } from './rowNav'
 import type { DbSession } from './session'
 import './calendar.css'
 
@@ -57,7 +57,7 @@ export default function CalendarView({ session, state, title, readOnly }: Layout
     return { y: now.getFullYear(), m: now.getMonth() }
   })
   const [today] = useState(() => dayStart(Date.now()))
-  const [open, setOpen] = useState<string | null>(null)
+  const setOpen = (id: string) => view && openRow(view.id, id)
   const [more, setMore] = useState<{ day: number; anchor: HTMLElement } | null>(null)
   const [selected, setSelected] = useState<number>(() => dayStart(Date.now()))
   const [noDateOpen, setNoDateOpen] = useState(false)
@@ -311,9 +311,6 @@ export default function CalendarView({ session, state, title, readOnly }: Layout
           }}
           onClose={() => setMore(null)}
         />
-      )}
-      {open && (
-        <RowSheet session={session} state={state} rowId={open} readOnly={readOnly} onClose={() => setOpen(null)} />
       )}
     </div>
   )
