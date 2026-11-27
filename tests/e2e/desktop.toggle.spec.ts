@@ -6,7 +6,7 @@ test('toggle: "> " creates it, Enter goes inside, collapse persists per device; 
 }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   const ed = page.locator('.wn-editor')
   await ed.click()
@@ -37,7 +37,7 @@ test('toggle: "> " creates it, Enter goes inside, collapse persists per device; 
 
 test('slash menu creates a toggle heading', async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
   await page.keyboard.type('/토글') // the menu stops at a space: pick the 3rd match

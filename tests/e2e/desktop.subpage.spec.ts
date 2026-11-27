@@ -6,7 +6,7 @@ test('sub-page block: /page creates a child, title follows, deleting the block t
 }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.fill('.page-title', '부모')
   const ed = page.locator('.wn-editor')

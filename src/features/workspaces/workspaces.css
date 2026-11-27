@@ -41,7 +41,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--accent);
+  color: var(--text-2);
 }
 .ws-list {
   list-style: none;

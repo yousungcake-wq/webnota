@@ -10,7 +10,7 @@ const PNG = Buffer.from(
 test.beforeEach(async ({ page }) => {
   await page.route('https://img.example.com/**', (route) => route.fulfill({ body: PNG, contentType: 'image/png' }))
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.fill('.page-title', '스타일')
 })

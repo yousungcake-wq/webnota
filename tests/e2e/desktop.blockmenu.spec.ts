@@ -10,7 +10,7 @@ async function openBlockMenu(page: Page, block: ReturnType<Page['locator']>) {
 test('block menu: color, turn into, duplicate, delete, columns (ED-F02, ED-F03)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   const ed = page.locator('.wn-editor')
   await ed.click()
@@ -67,7 +67,7 @@ test('block link: copy, open from elsewhere, the block is scrolled to and flashe
   expect(link).toMatch(/#\/w\/[^/]+\/v\/[^/]+\/b\/[^/]+$/)
 
   // paste it into another page as a link and follow it
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await ed.click()
   await page.evaluate((href) => {

@@ -16,7 +16,7 @@ test('files upload in the sync commit; "clean up storage" removes only unused on
     ['남길 페이지', 40],
     ['지울 페이지', 60],
   ] as const) {
-    await page.click('.sidebar-bottom >> text=새 페이지')
+    await page.click('.sidebar [data-new-page] >> nth=0')
     await waitForNewPage(page)
     await page.fill('.page-title', title)
     await page.locator('.wn-editor').click()
@@ -64,7 +64,7 @@ test('another device downloads the image from the repository and caches it (SY-0
   const gh = new FakeGithub()
   await gh.install(page)
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.fill('.page-title', '사진 페이지')
   await page.locator('.wn-editor').click()

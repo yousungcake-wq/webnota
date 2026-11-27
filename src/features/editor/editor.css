@@ -6,7 +6,7 @@
   font-size: 16px;
   line-height: 1.65;
   min-height: 40vh;
-  caret-color: var(--accent);
+  caret-color: var(--text);
   word-break: break-word;
 }
 .wn-editor > * + * {
@@ -68,8 +68,8 @@
 .wn-editor blockquote {
   margin: 6px 0;
   padding: 2px 0 2px 14px;
-  border-left: 3px solid var(--accent);
-  color: var(--text-2);
+  border-left: 3px solid var(--text);
+  color: inherit;
 }
 .wn-editor pre {
   background: var(--bg-code);
@@ -101,8 +101,9 @@
   padding: 0 1px;
 }
 .wn-editor a {
-  color: var(--accent);
+  color: inherit;
   text-decoration: underline;
+  text-decoration-color: var(--text-3); /* links stay text-coloured (feedback 9) */
   text-underline-offset: 2px;
 }
 .wn-editor ul[data-type='taskList'] {
@@ -196,8 +197,8 @@
   background: var(--bg-hover);
 }
 .fmt-btn.is-active {
-  color: var(--accent);
-  background: var(--accent-soft);
+  color: var(--text);
+  background: var(--bg-active);
 }
 .slash-wrap {
   position: fixed;
@@ -287,8 +288,8 @@
   background: var(--bg-hover);
 }
 .kb-btn.is-active {
-  color: var(--accent);
-  background: var(--accent-soft);
+  color: var(--text);
+  background: var(--bg-active);
 }
 .kb-sep {
   width: 1px;
@@ -319,8 +320,8 @@
   color: var(--text-2);
 }
 .kb-block.is-active {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--bg-active);
+  color: var(--text);
 }
 
 /* ED-B23: unknown content notice */
@@ -598,7 +599,7 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  color: var(--accent);
+  color: var(--text-2);
   font-size: 13px;
 }
 .link-edit {
@@ -789,7 +790,7 @@
   text-decoration: line-through;
 }
 .wn-editor .mention-date {
-  color: var(--accent);
+  color: var(--text-2);
 }
 .mention-date-picker {
   display: flex;
@@ -1167,8 +1168,8 @@
   white-space: nowrap;
 }
 .kb-style-btn.is-active {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--bg-active);
+  color: var(--text);
 }
 .kb-selection {
   border-bottom: 1px solid var(--border);

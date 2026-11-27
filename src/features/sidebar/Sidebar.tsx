@@ -36,9 +36,6 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
           <Search size={16} /> {t('common.search')}
           <kbd className="side-kbd">{/Mac|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl K'}</kbd>
         </button>
-        <a className={`side-link${route.name === 'settings' ? ' is-current' : ''}`} href={href({ name: 'settings' })}>
-          <Settings size={16} /> {t('common.settings')}
-        </a>
       </nav>
 
       <div className="sidebar-scroll">
@@ -57,6 +54,7 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
             <IconButton
               size="sm"
               icon={Plus}
+              data-new-page
               label={t('common.newPage')}
               onClick={(e) => newView(e.currentTarget, null, spaceId)}
             />
@@ -66,9 +64,9 @@ export function Sidebar({ route, onClose }: { route: Route; onClose: () => void 
       </div>
 
       <div className="sidebar-bottom">
-        <button type="button" className="side-link" onClick={(e) => newView(e.currentTarget, null, spaceId)}>
-          <Plus size={16} /> {t('common.newPage')}
-        </button>
+        <a className={`side-link${route.name === 'settings' ? ' is-current' : ''}`} href={href({ name: 'settings' })}>
+          <Settings size={16} /> {t('common.settings')}
+        </a>
         <a className={`side-link${route.name === 'trash' ? ' is-current' : ''}`} href={href({ name: 'trash' })}>
           <Trash2 size={16} /> {t('common.trash')}
         </a>

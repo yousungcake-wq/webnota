@@ -21,7 +21,7 @@ test('newer data opens read-only with an update banner', async ({ page }) => {
   await expect(page.locator('.page-title')).toHaveAttribute('readonly', '')
 
   // model writes are refused with a toast instead of changing data
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await expect(page.getByText('읽기 전용 모드에서는 바꿀 수 없습니다')).toBeVisible()
   await expect(page)
     .not.toHaveURL(/#\/page\/(?!.*welcome)/, { timeout: 100 })

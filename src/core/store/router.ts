@@ -83,21 +83,73 @@ export function navigate(route: Route, opts: { replace?: boolean } = {}) {
   }
   const target = href(route)
   if (opts.replace) {
-    history.replaceState({ wnDepth: depth }, '', target)
+    const seq = (history.state as { wnSeq?: number } | null)?.wnSeq
+    history.replaceState({ wnDepth: depth, ...(seq != null ? { wnSeq: seq } : {}) }, '', target)
     window.dispatchEvent(new HashChangeEvent('hashchange'))
   } else {
     location.hash = target
   }
 }
 
-/** Back within the app; if the app was opened directly on this screen, go to home instead of leaving. */
+/**
+ * The screens visited in this tab, in order (feedback 10): the in-app back button walks
+ * this list instead of trusting the browser history, which overlays and links opened from
+ * sheets can leave with extra entries. Each history entry carries its position (`wnSeq`).
+ */
+const TRAIL_KEY = 'webnota:trail'
+let trail: { seq: number; href: string }[] = readTrail()
+let seqCounter = trail.reduce((m, e) => Math.max(m, e.seq), 0)
+function readTrail(): { seq: number; href: string }[] {
+  try {
+    const t = JSON.parse(sessionStorage.getItem(TRAIL_KEY) ?? '[]') as unknown
+    return Array.isArray(t) ? (t as { seq: number; href: string }[]) : []
+  } catch {
+    return []
+  }
+}
+function saveTrail() {
+  try {
+    sessionStorage.setItem(TRAIL_KEY, JSON.stringify(trail.slice(-100)))
+  } catch {
+    /* private mode: memory only */
+  }
+}
+/** Records the current history entry in the trail (new entry → push, known one → cut back to it). */
+function recordTrail(replace: boolean) {
+  const st = (history.state ?? {}) as { wnSeq?: number }
+  const known = st.wnSeq != null ? trail.findIndex((e) => e.seq === st.wnSeq) : -1
+  if (known >= 0) {
+    trail = trail.slice(0, known + 1)
+    trail[known] = { seq: st.wnSeq!, href: location.hash }
+  } else {
+    const seq = ++seqCounter
+    history.replaceState({ ...(history.state as object | null), wnSeq: seq }, '')
+    if (replace && trail.length) trail[trail.length - 1] = { seq, href: location.hash }
+    else trail.push({ seq, href: location.hash })
+  }
+  saveTrail()
+}
+recordTrail(false)
+window.addEventListener('hashchange', () => recordTrail(false))
+
+/** Back within the app: the previous screen of this tab, or home when there is none. */
 export function goBack() {
   if (historyBusy()) {
     void whenHistoryIdle().then(goBack)
     return
   }
-  if (depth > 0) history.back()
-  else navigate({ name: 'home' }, { replace: true })
+  const prev = trail.at(-2)
+  if (!prev) return navigate({ name: 'home' }, { replace: true })
+  const st = (history.state ?? {}) as { wnSeq?: number; wnOverlay?: number }
+  // the usual case: the browser's previous entry is our previous screen
+  if (depth > 0 && st.wnSeq === trail.at(-1)?.seq && !st.wnOverlay) {
+    history.back()
+    return
+  }
+  trail.pop()
+  saveTrail()
+  history.replaceState({ wnDepth: depth, wnSeq: prev.seq }, '', prev.href)
+  window.dispatchEvent(new HashChangeEvent('hashchange'))
 }
 
 const routeStore = createStore<Route>(parse(location.hash))

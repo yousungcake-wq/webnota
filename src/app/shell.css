@@ -47,7 +47,7 @@
   color: var(--text-3);
 }
 .tab.is-active {
-  color: var(--accent);
+  color: var(--text);
 }
 
 /* Schema read-only gate (spec/02 §6) */

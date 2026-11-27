@@ -5,7 +5,7 @@ import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 test('finds pages by body text and inside Korean words; index survives a reload', async ({ page }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.fill('.page-title', '주간 정리')
   await page.locator('.wn-editor').click()

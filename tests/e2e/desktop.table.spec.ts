@@ -4,7 +4,7 @@ import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 test('table: insert, Tab between cells, menu rows / colors / headers, persists (ED-B16)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   const ed = page.locator('.wn-editor')
   await ed.click()
@@ -56,7 +56,7 @@ test('table: insert, Tab between cells, menu rows / colors / headers, persists (
 
 test('table position: center, right, full width; persists', async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   const ed = page.locator('.wn-editor')
   await ed.click()

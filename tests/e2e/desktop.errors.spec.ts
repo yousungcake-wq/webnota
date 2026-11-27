@@ -19,7 +19,7 @@ test.describe('error handling', () => {
     await expect(fallback).toBeVisible()
     await expect(page.locator('.page-title')).toBeVisible() // page header still rendered
 
-    await page.click('.sidebar-bottom >> text=새 페이지')
+    await page.click('.sidebar [data-new-page] >> nth=0')
     await waitForNewPage(page)
     await page.fill('.page-title', '오류 중에도 작성')
     await expect(page.locator('.tree-title', { hasText: '오류 중에도 작성' })).toHaveCount(1)

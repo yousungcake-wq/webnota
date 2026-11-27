@@ -4,7 +4,7 @@ import { editorJson } from './media'
 
 test.beforeEach(async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
 })

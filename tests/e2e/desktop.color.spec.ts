@@ -4,7 +4,7 @@ import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
 test('text and background color from the format bubble, kept after reload (ED-I03)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   const ed = page.locator('.wn-editor')
   await ed.click()
@@ -38,7 +38,7 @@ test('text and background color from the format bubble, kept after reload (ED-I0
 
 test('pasted HTML keeps real colors but drops black/gray inline colors', async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
   await page.evaluate(() => {

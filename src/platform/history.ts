@@ -48,6 +48,9 @@ export function pushOverlayEntry(onPop: () => void): () => void {
     if (i < 0) return // already popped by the back button
     const removed = stack.length - i
     stack.splice(i)
+    // The app navigated while the overlay was open (a link in a sheet): its entry is behind
+    // us now, and going back would undo that navigation (feedback 10). Leave it.
+    if (stateId() < entry.id) return
     if (ownPops === 0) idle = new Promise((r) => (settle = r))
     ownPops += removed
     history.go(-removed)

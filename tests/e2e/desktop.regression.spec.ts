@@ -11,7 +11,7 @@ test.describe('PoC regression (desktop)', () => {
   test.afterEach(() => assertNoErrors())
 
   async function newPage(page: Page, title: string) {
-    await page.click('.sidebar-bottom >> text=새 페이지')
+    await page.click('.sidebar [data-new-page] >> nth=0')
     await waitForNewPage(page)
     await page.fill('.page-title', title)
   }

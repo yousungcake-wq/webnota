@@ -4,7 +4,7 @@ import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
 test('links: add from the bubble, popover on the link to edit / remove (ED-I02)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   const ed = page.locator('.wn-editor')
   await ed.click()
@@ -38,7 +38,7 @@ test('links: add from the bubble, popover on the link to edit / remove (ED-I02)'
 
 test('after adding a link to a selection, typing continues after the link (not replacing it)', async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   const ed = page.locator('.wn-editor')
   await ed.click()

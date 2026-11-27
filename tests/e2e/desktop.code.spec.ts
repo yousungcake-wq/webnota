@@ -5,7 +5,7 @@ test('code block: language → highlighting (lazy), wrap, copy (ED-B10)', async 
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
   await page.keyboard.type('```')

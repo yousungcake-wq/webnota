@@ -10,6 +10,8 @@ AppFlowy의 정돈된 느낌(밝은 회색 사이드바, 둥근 모서리, 절�
 | 글자 | `--text`, `--text-2`, `--text-3`, `--text-on-accent` | 대비: 본문 4.5:1 이상 |
 | 선 | `--border`, `--border-strong` | |
 | 강조 | `--accent`, `--accent-soft`, `--accent-hover` | 사용자 지정 가능 (ST-05) |
+
+색 사용 원칙 (피드백 9, Notion처럼 무채색 위주): 강조색(`--accent`, 파랑)은 주 버튼·체크박스·포커스 링·선택 영역·드롭 위치 표시처럼 **기능상 필요한 곳에만** 씁니다. 링크는 글자색 + 회색 밑줄, 인용은 글자색 세로줄, 현재 항목·켜진 버튼(`is-active`)·탭은 회색 배경(`--bg-active`) + 글자색입니다.
 | 상태 | `--ok`, `--warn`, `--danger`, `--info`, `--star`(즐겨찾기 별) | |
 | 블록 색 | `--c-<name>-text`, `--c-<name>-bg` (gray, brown, orange, yellow, green, blue, purple, pink, red) | 에디터 글자/배경색, select 옵션 |
 | 간격 | `--sp-1`(4) `--sp-2`(8) `--sp-3`(12) `--sp-4`(16) `--sp-6`(24) `--sp-8`(32) | 4px 단위 |

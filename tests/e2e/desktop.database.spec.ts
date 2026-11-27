@@ -5,7 +5,7 @@ import { enableDatabase, failOnConsoleErrors, gridCell, openApp, openQaDatabase,
 test.describe('database (M4)', () => {
   test('without the flag, "+" creates a document directly', async ({ page }) => {
     await openApp(page)
-    await page.click('.sidebar-bottom >> text=새 페이지')
+    await page.click('.sidebar [data-new-page] >> nth=0')
     await expect(page.getByRole('menu')).toHaveCount(0)
     await expect(page.locator('.wn-editor')).toBeVisible()
   })
@@ -14,7 +14,7 @@ test.describe('database (M4)', () => {
     const noErrors = failOnConsoleErrors(page)
     await enableDatabase(page)
     await openApp(page)
-    await page.click('.sidebar-bottom >> text=새 페이지')
+    await page.click('.sidebar [data-new-page] >> nth=0')
     await expect(page.getByRole('menuitem', { name: '보드' })).toBeDisabled()
     await page.getByRole('menuitem', { name: '표 (Grid)' }).click()
     // a new database starts with three empty rows (DB-F05)
@@ -204,7 +204,7 @@ test.describe('database (M4)', () => {
     const noErrors = failOnConsoleErrors(page)
     await enableDatabase(page)
     await openApp(page)
-    await page.click('.sidebar-bottom >> text=새 페이지')
+    await page.click('.sidebar [data-new-page] >> nth=0')
     await page.getByRole('menuitem', { name: '표 (Grid)' }).click()
     const rows = page.locator('.dbg-row')
     const names = () => page.locator('.dbg-row [data-type="text"] .dbc-text').allTextContents()

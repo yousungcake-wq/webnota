@@ -141,7 +141,7 @@
 }
 .db-option-check {
   margin-left: auto;
-  color: var(--accent);
+  color: var(--text);
 }
 .db-grip {
   display: inline-grid;
@@ -280,7 +280,7 @@
   color: var(--text-3);
 }
 .db-cal-day.is-today {
-  color: var(--accent);
+  color: var(--text);
   font-weight: 700;
 }
 .db-cal-day.is-range {
@@ -444,14 +444,14 @@
   background: var(--bg-hover);
 }
 .db-barbtn.is-on {
-  color: var(--accent);
+  color: var(--text);
 }
 .db-search {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding-left: 8px;
-  border-bottom: 1px solid var(--accent);
+  border-bottom: 1px solid var(--border-strong);
   color: var(--text-2);
 }
 .db-search-input {

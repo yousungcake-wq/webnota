@@ -16,7 +16,7 @@ test('spaces: create, switch, edit, delete (WS-02)', async ({ page }) => {
   await expect(switcher).toContainText('업무')
   await expect(page.locator('.sidebar .tree-empty')).toBeVisible()
 
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.fill('.page-title', '업무 페이지')
   await expect(page.locator('.sidebar .tree-title')).toHaveText(['업무 페이지'])

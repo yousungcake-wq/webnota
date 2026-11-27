@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M5 데이터베이스 II (M4 완료 — 실기기 확인은 docs/QA.md "M4"(와 M3·M2), 사용자 확인 대기. DB는 설정 → 고급 "데이터베이스 (개발 중)" 플래그 뒤)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12, M4 16/16 완료. M5 0/13 (체크리스트 세부화 완료)
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12, M4 16/16 완료. M5 0/13 (체크리스트 세부화 완료). 사용자 피드백 13건(2026-11-27) 처리 중
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M5-00 사전 정리(DB 첫 화면 속도·뷰 레이아웃 골격). 실기기 QA(docs/QA.md M4·M3·M2) 사용자 확인 대기
+- **다음 할 일**: 사용자 피드백 13건 처리 중 (다음: 블록 핸들·선택 강조). 그 후 M5-00
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -57,6 +57,8 @@
 - DB 화면 구조 (M4-05): `features/database`는 **평평하게**(하위 폴더는 상위를 import할 수 없음 — `query/`, `i18n/`처럼 잎 모듈만). 그리드 `Grid.tsx`, 셀 표시 `CellView.tsx`, 편집기 `CellEditor.tsx`, 입력 해석 `cellEdit.ts`. e2e는 `openQaDatabase(page)`·`gridCell(page, row, '열 이름')`(helpers). 편집을 시작하는 pointerdown은 preventDefault해야 포커스가 그리드로 돌아가지 않음.
 
 - **DB 성능 과제 (M4-14)**: 4× 감속에서 10k행 열기 2.3s(목표 800ms) — 대부분 IndexedDB에서 Yjs 문서를 적용하는 시간(행당 Y.Map 2개). 후보: 첫 화면용 행 스냅샷 캐시(IndexedDB에 쿼리 결과·보이는 행 저장 후 문서 로드와 병행), 샤드를 점진 적용. 스크롤 31fps는 헤드리스 소프트웨어 렌더링 영향이 커서 실기기 확인 필요. 행 컴포넌트는 메모되어 있으니 **GridRow에 새 객체 prop을 넘기지 말 것**(콜백은 `rowActions`).
+
+- **e2e 새 페이지 버튼**: 사이드바 `.sidebar [data-new-page] >> nth=0` (피드백 12로 하단 '새 페이지' 제거). **뒤로가기**: `goBack()`은 `core/store/router.ts`의 trail(sessionStorage `webnota:trail`, 기록마다 `wnSeq`)을 따름. 오버레이가 열린 채 이동하면 그 오버레이 기록은 되돌리지 않음(`platform/history.ts`).
 
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
 - GitHub 로그인 (2026-11-27 설정 완료, 사용자가 실기기 로그인 확인): Worker `https://webnota-auth.yousungcake.workers.dev`(Actions가 배포, `/token`·`/unfurl` 동작 확인), 저장소 Variables `WEBNOTA_GITHUB_CLIENT_ID`·`WEBNOTA_AUTH_PROXY_URL`, Secrets `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`·`WEBNOTA_GITHUB_CLIENT_SECRET`. 작업 환경의 `gh`로 Actions 변수·비밀은 읽고 쓸 수 없음(403) — `gh workflow run`은 가능. Cloudflare 토큰이 만료되면 worker 작업이 실패해 Pages 배포도 멈춤.
@@ -174,3 +176,4 @@
 | 2026-11-27 | M4-13: 폰 Grid(44px 행, 탭 → 편집 시트, 고정 열 140px 제한, 카드 목록 보기, 전체 높이 설정 시트) | 47b92fc |
 | 2026-11-27 | M4-14: DB 성능 벤치(perf:db) + 행 스냅샷 캐시·메모 행·containment(4×: 열기 2.3s·31fps·편집 16ms·필터 111ms / 1×: 641ms·60fps) | 6ba0d78 |
 | 2026-11-27 | M4-15: DB e2e(데스크탑 11·폰·영어)·성능 기록·QA M4 항목, M4 완료, M5 체크리스트 세부화 | 22636c3 |
+| 2026-11-27 | 피드백 12·9·8·10: 설정을 휴지통 위로(새 페이지 버튼 제거), 무채색 위주 색(링크·인용·활성 표시 회색), 한글 검색 깜빡임 제거(이전 결과 유지), 폰 뒤로가기(방문 기록 trail, 시트에서 이동 후 되돌림 방지) | HASH |

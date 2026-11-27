@@ -30,8 +30,8 @@
   font-size: 14px;
 }
 .space-tab.is-active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  border-color: var(--text);
+  background: var(--bg-active);
   font-weight: 600;
 }
 .recent-strip {

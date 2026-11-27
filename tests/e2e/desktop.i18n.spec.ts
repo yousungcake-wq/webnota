@@ -30,7 +30,7 @@ test.describe('i18n', () => {
     await enableDatabase(page)
     await page.goto('/')
     await expect(page.locator('.wn-editor')).toBeVisible()
-    await page.click('.sidebar-bottom >> text=New page')
+    await page.click('.sidebar [data-new-page] >> nth=0')
     await page.getByRole('menuitem', { name: 'Grid' }).click()
     await expect(page.getByRole('button', { name: 'Field menu: Name' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'New row' })).toBeVisible()

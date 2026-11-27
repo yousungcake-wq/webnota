@@ -51,7 +51,7 @@ test.describe('Korean IME in every block (MB-26)', () => {
     test(c.name, async ({ page }) => {
       const check = failOnConsoleErrors(page)
       await openApp(page)
-      await page.click('.sidebar-bottom >> text=새 페이지')
+      await page.click('.sidebar [data-new-page] >> nth=0')
       await waitForNewPage(page)
       await page.locator('.wn-editor').click()
       await c.setup(page)

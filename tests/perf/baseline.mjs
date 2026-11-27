@@ -94,7 +94,7 @@ await withPage(
   async (page) => {
     await page.goto(BASE)
     await page.locator('.wn-editor').waitFor()
-    await page.click('.sidebar-bottom >> text=새 페이지')
+    await page.click('.sidebar [data-new-page] >> nth=0')
     await page.waitForFunction(() => document.querySelector('.page-title')?.value === '')
     await page.fill('.page-title', 'B')
     await page.locator('.wn-editor').click()

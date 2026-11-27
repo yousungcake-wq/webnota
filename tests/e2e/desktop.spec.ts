@@ -15,7 +15,7 @@ test.describe('desktop', () => {
   })
 
   test('write a page: title, slash menu, markdown shortcut, block move', async ({ page }) => {
-    await page.click('.sidebar-bottom >> text=새 페이지')
+    await page.click('.sidebar [data-new-page] >> nth=0')
     await waitForNewPage(page)
     await page.fill('.page-title', '회의록 2026')
     await page.keyboard.press('Enter')
@@ -40,7 +40,7 @@ test.describe('desktop', () => {
   })
 
   test('content persists across reload (IndexedDB) and the last page reopens', async ({ page }) => {
-    await page.click('.sidebar-bottom >> text=새 페이지')
+    await page.click('.sidebar [data-new-page] >> nth=0')
     await waitForNewPage(page)
     await page.fill('.page-title', '저장 테스트')
     await page.keyboard.press('Enter')
@@ -52,7 +52,7 @@ test.describe('desktop', () => {
   })
 
   test('subpage, breadcrumbs, trash and restore', async ({ page }) => {
-    await page.click('.sidebar-bottom >> text=새 페이지')
+    await page.click('.sidebar [data-new-page] >> nth=0')
     await waitForNewPage(page)
     await page.fill('.page-title', '부모')
     const row = page.locator('.tree-row', { hasText: '부모' })

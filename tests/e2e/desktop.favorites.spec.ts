@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { openApp, reload, waitForNewPage } from './helpers'
 
 async function newFavorite(page: Page, title: string) {
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.fill('.page-title', title)
   await page.getByRole('button', { name: '즐겨찾기에 추가' }).click()

@@ -4,7 +4,7 @@ import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
 test('command palette: Ctrl+K, keyboard navigation, commands (WS-07)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar-bottom >> text=새 페이지')
+  await page.click('.sidebar [data-new-page] >> nth=0')
   await waitForNewPage(page)
   await page.fill('.page-title', 'Palette target')
 
