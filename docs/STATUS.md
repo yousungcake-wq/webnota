@@ -7,7 +7,7 @@
 - **마일스톤**: M4 데이터베이스 I (M3 완료 — 실기기 확인은 docs/QA.md "M3"(와 M2·M1), 사용자 확인 대기. 링크 미리보기는 Worker 재배포 필요)
 - **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 0/16 (체크리스트 세부화 완료)
 - **진행 중 항목**: (없음)
-- **다음 할 일**: 사용자 실기기에서 GitHub 로그인 확인 → M4-00. 실기기 QA(docs/QA.md M3·M2) 대기
+- **다음 할 일**: M4-00 사전 정리(database 플래그·features/database 지연 청크·fast-check). 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -49,7 +49,7 @@
 - 동기화 경로 v2 (M0-17): `doc/<id>` ↔ `data/docs/<id>.yjs`, DB 경로 매핑도 있음(엔진은 아직 DB 파일을 지우지 않음). 구 `data/pages/` 파일은 첫 동기화에서 이동·삭제 — 구버전 앱은 이후 본문을 못 받음 (사용자 결정).
 
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
-- GitHub 로그인 (2026-11-27 설정 완료): Worker `https://webnota-auth.yousungcake.workers.dev`(Actions가 배포, `/token`·`/unfurl` 동작 확인), 저장소 Variables `WEBNOTA_GITHUB_CLIENT_ID`·`WEBNOTA_AUTH_PROXY_URL`, Secrets `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`·`WEBNOTA_GITHUB_CLIENT_SECRET`. 작업 환경의 `gh`로 Actions 변수·비밀은 읽고 쓸 수 없음(403) — `gh workflow run`은 가능. Cloudflare 토큰이 만료되면 worker 작업이 실패해 Pages 배포도 멈춤.
+- GitHub 로그인 (2026-11-27 설정 완료, 사용자가 실기기 로그인 확인): Worker `https://webnota-auth.yousungcake.workers.dev`(Actions가 배포, `/token`·`/unfurl` 동작 확인), 저장소 Variables `WEBNOTA_GITHUB_CLIENT_ID`·`WEBNOTA_AUTH_PROXY_URL`, Secrets `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`·`WEBNOTA_GITHUB_CLIENT_SECRET`. 작업 환경의 `gh`로 Actions 변수·비밀은 읽고 쓸 수 없음(403) — `gh workflow run`은 가능. Cloudflare 토큰이 만료되면 worker 작업이 실패해 Pages 배포도 멈춤.
 - 실기기 한글 IME 미검증 (에뮬레이션 CDP 테스트만 통과).
 - Tiptap DragHandle/EditorContent가 DOM을 직접 옮겨서 React 재조정이 어긋난 적이 있음 → `page-body`를 `key={id}`로 감싸서 해결. 에디터 주변 구조를 바꿀 때 주의.
 - 작업 환경에서는 `*.github.io`에 접속할 수 없어 배포본 e2e를 돌릴 수 없음. 로컬 `npm run e2e` (vite preview)로 테스트.
