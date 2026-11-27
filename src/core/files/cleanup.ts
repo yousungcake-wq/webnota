@@ -2,7 +2,9 @@ import { getToken } from '../auth/auth'
 import { openDoc, pageDocName, retainDoc } from '../docs/registry'
 import { syncStore } from '../sync/controller'
 import { cacheMeta, deleteFiles } from './db'
-import { fileRefsInDoc, fileRefsInWorkspace } from './refs'
+import { databaseDocNames } from '../model/database/shard'
+import { referencedDatabaseIds } from '../model/views'
+import { fileRefsInDoc, fileRefsInRows, fileRefsInWorkspace } from './refs'
 import { pendingFiles } from './upload'
 
 /**
@@ -33,6 +35,17 @@ export async function cleanupRepository(): Promise<{ removed: number; kept: numb
       fileRefsInDoc(await openDoc(name), refs)
     } finally {
       release()
+    }
+  }
+  // databases (M4-07): media cells and row icons/covers in every shard (trashed views included)
+  for (const dbId of referencedDatabaseIds(ws)) {
+    for (const name of databaseDocNames(dbId).slice(1)) {
+      const release = retainDoc(name)
+      try {
+        fileRefsInRows(await openDoc(name), refs)
+      } finally {
+        release()
+      }
     }
   }
   // never remove what is still waiting to be uploaded

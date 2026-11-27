@@ -66,6 +66,16 @@ export const ko = {
   'db.check.empty': '항목이 없습니다',
   'db.check.item': '항목 이름',
   'db.check.progress': '{done}/{total} 완료',
+  'db.convert.title': '{type}(으)로 바꿀까요?',
+  'db.convert.lost': '{count}개 셀의 값이 사라집니다.',
+  'db.convert.confirm': '바꾸기',
+  'db.convert.done': '{name} 필드를 {type}(으)로 바꿨습니다',
+  'db.media.add': '파일 추가',
+  'db.media.empty': '파일이 없습니다',
+  'db.media.delete': '{name} 삭제',
+  'db.media.open': '{name} 열기',
+  'db.media.tooLarge': '{name}: {max}MB보다 큰 파일은 올릴 수 없습니다',
+  'db.media.hideNames': '파일 이름 숨기기',
 }
 
 export type DbKey = keyof typeof ko

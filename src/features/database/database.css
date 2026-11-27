@@ -308,3 +308,33 @@
   color: var(--text-2);
   font-size: var(--fs-xs);
 }
+
+/* media */
+.db-media {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.db-thumb {
+  flex: none;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+  background: var(--bg-hover);
+}
+.db-thumb.is-file {
+  display: inline-grid;
+  place-items: center;
+  color: var(--text-2);
+}
+.db-media-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dbc-media {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 160px;
+  min-width: 0;
+}

@@ -2,6 +2,7 @@ import { Check, Copy, ExternalLink } from 'lucide-react'
 import {
   asChecklist,
   asDate,
+  asMedia,
   asNumber,
   choicesOf,
   formatDateValue,
@@ -17,6 +18,7 @@ import {
 } from '@/core/model/database'
 import { toast } from '@/ui'
 import { Chip } from './Chip'
+import { MediaThumb } from './MediaEditor'
 import { dt } from './i18n'
 import { appLocale } from './locale'
 
@@ -130,6 +132,19 @@ export function CellView({
           <span className="dbc-muted">
             {done}/{items.length}
           </span>
+        </span>
+      )
+    }
+    case 'media': {
+      const items = asMedia(value)
+      return (
+        <span className="dbc-chips">
+          {items.map((it, i) => (
+            <span key={`${it.fileId}-${i}`} className="dbc-media">
+              <MediaThumb item={it} />
+              {field.options.hideFileNames !== true && <span className="dbc-text">{it.name}</span>}
+            </span>
+          ))}
         </span>
       )
     }

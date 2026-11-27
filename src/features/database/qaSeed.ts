@@ -35,6 +35,7 @@ export async function seedQaDatabase(opts: { rows: number; wide?: boolean; title
       ['Link', 'url'],
       ['Estimate', 'time'],
       ['Tasks', 'checklist'],
+      ['Files', 'media'],
       ['Created', 'createdTime'],
       ['Updated', 'updatedTime'],
     ]
@@ -59,6 +60,8 @@ export async function seedQaDatabase(opts: { rows: number; wide?: boolean; title
         else if (type === 'time') cells[id] = Math.round(rand() * 480)
         else if (type === 'checklist')
           cells[id] = [1, 2, 3].map((n) => ({ id: `c${n}`, name: `Step ${n}`, done: rand() < 0.5 }))
+        else if (type === 'media')
+          return // files need the upload store
         else if (type === 'text') cells[id] = `Note ${Math.floor(rand() * 1000)}`
       })
       rows.push(cells)

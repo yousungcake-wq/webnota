@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { makeImage } from './media'
 import { enableDatabase, failOnConsoleErrors, gridCell, openApp, openQaDatabase, reload } from './helpers'
 
 test.describe('database (M4)', () => {
@@ -27,7 +28,7 @@ test.describe('database (M4)', () => {
     await openQaDatabase(page)
     const name = await gridCell(page, 0, 'Name')
     await expect(name).toHaveText('Item 1')
-    await expect(page.locator('.dbg-hcell')).toHaveCount(11)
+    await expect(page.locator('.dbg-hcell')).toHaveCount(12)
 
     // text: double click edits, Enter saves and moves down
     await name.click()
@@ -150,6 +151,33 @@ test.describe('database (M4)', () => {
     await reload(page)
     await expect(await gridCell(page, 0, 'Status')).toHaveText('리뷰')
     await expect(await gridCell(page, 0, 'Due')).toHaveText(/15 → .*18$/)
+    noErrors()
+  })
+
+  test('media cells upload, show and remove files (M4-07)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    const files = await gridCell(page, 0, 'Files')
+    await files.click()
+    await page.keyboard.press('Enter')
+    const pop = page.getByRole('dialog', { name: 'Files' })
+    await pop
+      .getByLabel('파일 추가')
+      .first()
+      .setInputFiles([
+        { name: 'photo.png', mimeType: 'image/png', buffer: await makeImage(page, 40, 30) },
+        { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello') },
+      ])
+    await expect(pop.locator('.db-media-name')).toHaveText(['photo.png', 'notes.txt'])
+    await page.keyboard.press('Escape')
+    await expect(files.locator('img.db-thumb')).toHaveCount(1)
+    await expect(files).toContainText('notes.txt')
+    await files.click()
+    await page.getByRole('dialog', { name: 'Files' }).getByRole('button', { name: 'notes.txt 삭제' }).click()
+    await page.getByRole('dialog', { name: 'Files' }).getByRole('switch', { name: '파일 이름 숨기기' }).click()
+    await page.keyboard.press('Escape')
+    await expect(files).not.toContainText('photo.png')
+    await expect(files.locator('img.db-thumb')).toHaveCount(1)
     noErrors()
   })
 })

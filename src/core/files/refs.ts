@@ -4,7 +4,8 @@ import { FILE_ID } from '../sync/engine'
 /**
  * Which workspace files are still used (SY-04 "storage cleanup", M3-10). Raw Y reads so
  * the scan does not depend on the editor: block attributes that hold a file id
- * (`image.src`, `file.fileId`, `video.src`), the page cover, and view/space icons.
+ * (`image.src`, `file.fileId`, `video.src`), the page cover, view/space icons, and in
+ * databases (M4-07) media cells and row icons/covers.
  * Anything that looks like a file id counts — when in doubt, a file is kept.
  */
 const FILE_ATTRS = ['src', 'fileId']
@@ -38,6 +39,38 @@ export function fileRefsInWorkspace(ws: Y.Doc, out = new Set<string>()): Set<str
       if (icon?.type === 'file' && typeof icon.value === 'string' && FILE_ID.test(icon.value)) out.add(icon.value)
     })
   }
+  return out
+}
+
+const isFileValue = (v: unknown): v is { type: string; value: string } =>
+  !!v &&
+  typeof v === 'object' &&
+  (v as { type?: unknown }).type === 'file' &&
+  typeof (v as { value?: unknown }).value === 'string'
+
+/**
+ * File ids referenced by a database's row shards (`dbr/<id>/<n>`): media cells (any cell
+ * holding `{ fileId }` items, whatever the field type now says — a field changed away from
+ * media keeps nothing, but a stale cell must not lose its file) and row icons/covers.
+ */
+export function fileRefsInRows(shard: Y.Doc, out = new Set<string>()): Set<string> {
+  if (!shard.share.has('rows')) return out
+  shard.getMap<Y.Map<unknown>>('rows').forEach((row) => {
+    if (!(row instanceof Y.Map)) return
+    for (const k of ['icon', 'cover']) {
+      const v = row.get(k)
+      if (isFileValue(v) && FILE_ID.test(v.value)) out.add(v.value)
+    }
+    const cells = row.get('cells')
+    if (!(cells instanceof Y.Map)) return
+    cells.forEach((v) => {
+      if (!Array.isArray(v)) return
+      for (const item of v) {
+        const id = item && typeof item === 'object' ? (item as { fileId?: unknown }).fileId : null
+        if (typeof id === 'string' && FILE_ID.test(id)) out.add(id)
+      }
+    })
+  })
   return out
 }
 

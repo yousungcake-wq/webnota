@@ -80,7 +80,7 @@ AppFlowy 팔레트 10색(Purple, Pink, Light Pink, Orange, Yellow, Lime, Green, 
 | checkbox ↔ text | "true"/"yes"/"1"/"✓" ↔ boolean |
 | 그 외 | 값 비움 (변환 전 확인 대화상자: "N개 셀의 값이 사라집니다") |
 
-원본 값은 변환 후 30초 동안 실행 취소할 수 있습니다 (Yjs UndoManager, DB 범위).
+원본 값은 변환 후 30초 동안 실행 취소할 수 있습니다. 구현 (M4-07, `core/model/database/convert.ts`): Y.UndoManager는 문서 하나만 다룰 수 있는데 DB는 schema + 샤드 8개라, `convertField`가 바꾼 셀의 이전 값을 기억했다가 되돌리는 `undo`를 돌려줍니다 (변환 뒤에 다시 고친 셀은 건드리지 않음). 추가 규칙: number ↔ time은 값 유지(분), → URL은 → 텍스트와 같음(텍스트는 그대로), 체크 해제 → 텍스트는 빈 값, 만든·수정한 시각 → 날짜는 행 시각(시간 포함), 만든·수정한 시각으로 바꾸면 저장된 셀은 지웁니다. select ↔ multi는 쓰지 않는 옵션도 유지. media 셀은 `{fileId, name, mime, size}[]`, 업로드는 `core/files/ingest`(지연), 파일 참조는 `core/files/refs.ts`의 `fileRefsInRows`(셀의 fileId 항목 + 행 아이콘·커버, 필드 타입과 무관하게)로 저장소 정리에서 보존.
 
 ## 4. Grid (`DB-G`, M4)
 
