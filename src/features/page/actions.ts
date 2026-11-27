@@ -18,21 +18,29 @@ import { currentRoute, navigate } from '@/core/store/router'
 import { t } from '@/core/i18n'
 import { toast } from '@/ui'
 import { displayTitle } from './titles'
+import { createDatabaseView } from '@/features/database'
 
 /**
  * New view under `parentId`, or at the end of `spaceId` (default: the first space).
  * With a single available layout (today: documents, WS-11) this is what every "+" does.
  */
 export function addPage(parentId: string | null = null, spaceId?: string, layout: ViewLayout = 'document') {
-  const id = createView(ws(), {
-    parentId,
-    spaceId,
-    layout,
-    kind: layout === 'document' ? 'document' : 'database',
-  })
+  if (layout !== 'document') return void addDatabase(parentId, spaceId, layout)
+  const id = createView(ws(), { parentId, spaceId, layout, kind: 'document' })
   if (parentId) toggleExpanded(parentId, true)
   navigate({ name: 'page', id })
   return id
+}
+
+/** Database views (M4): the schema and row docs are created by the lazy database chunk. Failures reach the global error toast. */
+async function addDatabase(
+  parentId: string | null,
+  spaceId: string | undefined,
+  layout: Exclude<ViewLayout, 'document'>,
+) {
+  const id = await createDatabaseView({ parentId, spaceId, layout })
+  if (parentId) toggleExpanded(parentId, true)
+  navigate({ name: 'page', id })
 }
 
 export function toggleFavorite(id: string) {

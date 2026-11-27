@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M4 데이터베이스 I (M3 완료 — 실기기 확인은 docs/QA.md "M3"(와 M2·M1), 사용자 확인 대기. 링크 미리보기는 Worker 재배포 필요)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 1/16
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12 완료. M4 2/16
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M4-01 DB 데이터 모델(schema v19). 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
+- **다음 할 일**: M4-02 DB 문서 수명·동기화. 실기기 QA(docs/QA.md M3·M2) 사용자 확인 대기
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -49,6 +49,8 @@
 - 동기화 경로 v2 (M0-17): `doc/<id>` ↔ `data/docs/<id>.yjs`, DB 경로 매핑도 있음(엔진은 아직 DB 파일을 지우지 않음). 구 `data/pages/` 파일은 첫 동기화에서 이동·삭제 — 구버전 앱은 이후 본문을 못 받음 (사용자 결정).
 
 - **데이터베이스 (M4-00)**: 코드는 `features/database`(지연 청크, `loadDatabase()`만 공개, 예산 120KB). 플래그 `database`(설정 → 고급)로 새 뷰 메뉴에 Grid 노출. **DB 문자열은 `features/database/i18n/{ko,en}.ts`에 두고 `dt('db.…')`** — 부팅 사전(i18n 7.9/8KB)에 넣지 말 것. e2e는 `enableDatabase(page)`(helpers).
+
+- DB 모델 (M4-01): `core/model/database`(순수, `DbDocs = {schema, shards}`), 열기는 `core/docs/database.ts`의 `openDatabase(dbId)` → `{docs, release}`. 생성은 `@/features/database`의 `createDatabaseView`(지연). core/model/database는 상위 폴더(`../guard`, `../views`)만 import 가능(lint). **초기 번들 123.2/125KB** — 페이지·사이드바 코드에 DB 로직 추가 금지.
 
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
 - GitHub 로그인 (2026-11-27 설정 완료, 사용자가 실기기 로그인 확인): Worker `https://webnota-auth.yousungcake.workers.dev`(Actions가 배포, `/token`·`/unfurl` 동작 확인), 저장소 Variables `WEBNOTA_GITHUB_CLIENT_ID`·`WEBNOTA_AUTH_PROXY_URL`, Secrets `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`·`WEBNOTA_GITHUB_CLIENT_SECRET`. 작업 환경의 `gh`로 Actions 변수·비밀은 읽고 쓸 수 없음(403) — `gh workflow run`은 가능. Cloudflare 토큰이 만료되면 worker 작업이 실패해 Pages 배포도 멈춤.
@@ -151,3 +153,4 @@
 | 2026-11-27 | GitHub 로그인 설정 완료: OAuth 앱·Cloudflare 토큰·저장소 값 입력(사용자), Worker 배포·동작 확인, 로그인 버튼이 들어간 빌드 배포 | f3540b9 |
 | 2026-11-27 | 동기화 주기 단축(사용자 요청): 입력 후 4초 푸시(자동 동기화 최소 8초 간격), 20초 주기 풀 | 8859453 |
 | 2026-11-27 | M4-00: database 플래그·features/database 지연 청크·DB 지연 문자열 사전(dt)·fast-check, 새 뷰 메뉴 Grid(플래그) | aa8712d |
+| 2026-11-27 | M4-01: DB 데이터 모델(db/dbr 샤드 8개·FNV-1a·필드/행/셀 CRUD·뷰 설정), openDatabase, schema v19 | HASH |

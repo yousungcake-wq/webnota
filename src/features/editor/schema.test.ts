@@ -73,6 +73,9 @@ MARKS_AT_VERSION[17] = MARKS_AT_VERSION[16]
 // v18 (M3-08): link preview block.
 NODES_AT_VERSION[18] = [...NODES_AT_VERSION[17]!, 'linkPreview'].sort()
 MARKS_AT_VERSION[18] = MARKS_AT_VERSION[17]
+// v19 (M4-01): database views — no editor change.
+NODES_AT_VERSION[19] = NODES_AT_VERSION[18]
+MARKS_AT_VERSION[19] = MARKS_AT_VERSION[18]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

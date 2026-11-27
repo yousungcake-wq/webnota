@@ -63,6 +63,16 @@ export default tseslint.config(
     ignores: ['**/*.test.ts'],
     rules: { 'no-restricted-imports': restrict([pureCore]) },
   },
+  {
+    // the database model may use its parent folder (guard, views ids), still nothing outside core/model
+    files: ['src/core/model/database/**/*.ts'],
+    ignores: ['**/*.test.ts'],
+    rules: {
+      'no-restricted-imports': restrict([
+        { ...pureCore, group: ['@/**', '../../**', 'react', 'react-dom', 'y-indexeddb'] },
+      ]),
+    },
+  },
   { files: ['src/platform/**/*.{ts,tsx}'], rules: { 'no-restricted-imports': restrict([noPlatformUp]) } },
   {
     files: ['src/features/**/*.{ts,tsx}'],

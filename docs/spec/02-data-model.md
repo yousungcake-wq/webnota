@@ -116,6 +116,8 @@ rows: Y.Map<rowId, Y.Map>
   createdAt, createdBy, updatedAt, updatedBy
 ```
 
+구현 (M4-01, `core/model/database`): 함수는 `DbDocs = { schema, shards[8] }`를 받습니다 (`core/docs/database.ts`의 `openDatabase(dbId)`가 9개 문서를 열고 retain). `meta.schemaVersion`은 DB 문서 형식 버전(`DB_FORMAT_VERSION = 1`)이고 앱 전체 읽기 전용 판단은 여전히 `workspace`가 합니다. 샤드 해시는 FNV-1a 32비트(바꾸면 행이 다른 샤드로 감 — 고정). 새 DB = primary text 필드 + 첫 뷰 설정(`frozenColumns: 1`) + 빈 행 3개. 필드 삭제는 뷰 설정·계산·정렬과 모든 행의 해당 셀도 지웁니다. 행 삭제는 즉시 삭제입니다(휴지통 없음, 실행 취소는 M4-07의 DB UndoManager). 행 `order`가 같은 키 사이에 넣을 때는 뒤따르는 같은 키 행들의 키를 다시 매깁니다 (§5). 다른 기기에서 추가되어 뷰 설정이 없는 필드는 그 뷰의 맨 끝에 보입니다(`orderedFields`).
+
 ### 4.3 필드 타입과 셀 값
 
 AppFlowy `type_option_editor`의 타입에서 AI 타입(summary, translate)만 뺀 목록입니다.
@@ -206,6 +208,7 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 | 16 | 블록 노드 타입 `video`(src, width)·`embed`(src, height) 추가 — `src`는 사용자가 준 주소, iframe 주소는 표시할 때 계산 (버전만) | M3-06 |
 | 17 | 노드 타입 `mathBlock`(블록)·`inlineMath`(인라인), 속성 `latex` 추가 (버전만) | M3-07 |
 | 18 | 블록 노드 타입 `linkPreview`(url, title, description, image, siteName — 메타데이터 캐시) 추가 (버전만) | M3-08 |
+| 19 | 데이터베이스 뷰(`kind: 'database'`, `databaseId`) + `db/<id>`·`dbr/<id>/<n>` 문서 (버전만 — 구버전은 DB 뷰를 문서로 열어 엉뚱한 `doc/` 파일을 만들 수 있음) | M4-01 |
 
 v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다 (M0-17).
 
