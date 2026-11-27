@@ -26,6 +26,7 @@ function runQuery(input: {
 
 - **증분 갱신**: 행 변경 이벤트(Yjs observeDeep의 변경 키)를 받으면 해당 행만 다시 평가합니다. 필터 일치 여부를 다시 계산하고, 정렬 위치는 이진 탐색으로 삽입합니다. 전체 재계산은 설정이 바뀔 때만 합니다.
 - **5,000행 이상**이면 쿼리를 `query.worker.ts`로 넘깁니다. 행 스냅샷은 구조적 복제 대신 변경분만 전송합니다.
+- 구현 (M4-04): `createLiveQuery`(core, 증분) ← `observeRows`(샤드 `observeDeep`의 행 id) / `observeSchema`(schema 문서 트랜잭션마다 전체 재계산). 화면은 `features/database/session.ts`의 `openDbSession`(문서 retain + 관찰 + 실행기)을 `useDbSession`으로 구독합니다. 워커 여부는 세션을 열 때 행 수로 정합니다(`WORKER_THRESHOLD = 5000`, 이후 커져도 바꾸지 않음). 워커 메시지는 `init`(전체 행 1회) → `apply`(바뀐 행만) / `query`(설정), 응답은 마지막 요청 번호만 반영.
 - 정렬 비교는 `Intl.Collator('ko', { numeric: true })`를 씁니다 (한글, 숫자 자연 정렬. 한글이 라틴 문자보다 앞).
 - 구현 규칙 (M4-03, `core/model/database/query.ts`): `compileQuery`가 행 판정(`matches`)과 비교 함수(`compare`: 정렬 조건 → 수동 순서 `(order, id)`)를 만들고 `runQuery`가 필터 → 정렬 → 계산을 합니다. 값이 필요한 조건은 값이 비어 있으면 적용하지 않습니다(조건을 막 만든 상태). 텍스트 비교는 대소문자 무시. 숫자 조건은 빈 셀이면 `≠`만 참. 삭제된 선택 옵션은 빈 값. select 정렬은 이름이 아니라 옵션 순서(AppFlowy). 체크박스 정렬은 해제 → 체크(빈 값 취급 안 함). "이번 주"는 `weekStart`(기본 일요일), "지난 7일"은 오늘 포함 7일. 계산의 백분율은 0~100, 숫자가 없으면 `null`(합계는 0), 날짜 필드는 최소·최대·범위(ms). 행 검색은 `cellText`(옵션 이름·날짜 등 평문) 기준.
 
