@@ -99,7 +99,7 @@
 ## M3 미디어와 임베드
 > 규칙: M2와 같음 — 새 노드·마크 타입마다 schemaVersion 증가(빈 `up` + 테스트, `schema.test.ts` 목록 갱신). **초기 번들 123.6/125KB**: M3 기능은 전부 지연 청크로(KaTeX ≤120KB, 파일 저장소·이미지 처리는 업로드할 때). 에디터 청크 197/210KB — 새 노드 정의는 가볍게, 무거운 UI·라이브러리는 별도 청크(`check-size.mjs`에 등록).
 - [x] M3-00 사전 정리: 초기 번들 여유 확보(사이드바·홈의 클릭 전용 UI 지연 로드 검토), 데코레이션 플러그인이 필요할 때만 계산하는지 점검 (spec/10) — 7541b62
-- [~] M3-01 파일 저장소 코어: SHA-256 → `files/<sha256>.<ext>`(중복 제거), IndexedDB `pendingFiles`(오프라인 대기), 다음 동기화 커밋에 포함, 25MB 제한 (SY-04)
+- [x] M3-01 파일 저장소 코어: SHA-256 → `files/<sha256>.<ext>`(중복 제거), IndexedDB `pendingFiles`(오프라인 대기), 다음 동기화 커밋에 포함, 25MB 제한 (SY-04) — 6028f0a
 - [ ] M3-02 파일 표시 캐시: Git blob API로 받아 IndexedDB `fileCache`(LRU 200MB) → objectURL, 연결 전·오프라인 자리 표시 (SY-04)
 - [ ] M3-03 이미지 전처리: 긴 변 2560px, WebP(지원 시), EXIF 회전, "원본 유지" 옵션 (SY-04)
 - [ ] M3-04 이미지 블록 `image`(src=fileId|url, width, align, caption) — 업로드(선택·붙여넣기·끌어 놓기), URL, 크기 조절, 정렬, 캡션, lazy + 비율 예약, 폰 사진 선택 (ED-B12, ED-F06 이미지) — schema 증가
