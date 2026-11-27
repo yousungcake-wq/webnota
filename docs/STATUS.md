@@ -150,4 +150,4 @@
 | 2026-11-27 | GitHub 로그인 준비: Actions가 Cloudflare Worker 자동 배포(Secrets 있을 때만, 허용 출처 자동), README를 브라우저만으로 하는 설정 안내로 교체 | 2d1f6d0 |
 | 2026-11-27 | GitHub 로그인 설정 완료: OAuth 앱·Cloudflare 토큰·저장소 값 입력(사용자), Worker 배포·동작 확인, 로그인 버튼이 들어간 빌드 배포 | f3540b9 |
 | 2026-11-27 | 동기화 주기 단축(사용자 요청): 입력 후 4초 푸시(자동 동기화 최소 8초 간격), 20초 주기 풀 | 8859453 |
-| 2026-11-27 | M4-00: database 플래그·features/database 지연 청크·DB 지연 문자열 사전(dt)·fast-check, 새 뷰 메뉴 Grid(플래그) | HASH |
+| 2026-11-27 | M4-00: database 플래그·features/database 지연 청크·DB 지연 문자열 사전(dt)·fast-check, 새 뷰 메뉴 Grid(플래그) | aa8712d |
