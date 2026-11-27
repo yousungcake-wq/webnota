@@ -416,3 +416,137 @@
   color: var(--text-3);
   cursor: default;
 }
+
+/* settings bar (DB-G07) */
+.db-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-height: 40px;
+  flex-wrap: wrap;
+}
+.db-barbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.db-barbtn:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.db-barbtn.is-on {
+  color: var(--accent);
+}
+.db-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 8px;
+  border-bottom: 1px solid var(--accent);
+  color: var(--text-2);
+}
+.db-search-input {
+  width: 180px;
+  min-height: 32px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: max(16px, var(--fs-sm));
+  outline: none;
+}
+.db-panel {
+  width: min(560px, 92vw);
+}
+.sheet .db-panel {
+  width: 100%;
+}
+.db-fgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.db-fgroup.is-nested {
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg-side);
+}
+.db-frow {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.db-fop {
+  flex: 0 0 72px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.db-fnested {
+  flex: 1;
+  min-width: 0;
+}
+.db-filter {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.db-filter select,
+.db-fop select,
+.db-sort select {
+  min-height: 36px;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: max(16px, var(--fs-sm));
+}
+.db-filter .db-input {
+  flex: 1;
+  min-width: 120px;
+  width: auto;
+}
+.db-fchoices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.db-fchoice {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+}
+.db-frange {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+.db-factions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.db-sort select {
+  flex: 1;
+}
+.db-prop-row .switch-row {
+  flex: 1;
+}

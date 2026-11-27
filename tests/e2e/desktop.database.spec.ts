@@ -442,4 +442,103 @@ test.describe('database (M4)', () => {
     await expect.poll(async () => (await headers()).slice(0, 3)).toEqual(['Name', 'Done', 'Amount'])
     noErrors()
   })
+
+  test('settings bar: filter (AND/OR group), sort, properties, search, calculations (M4-12)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    const grid = page.getByRole('grid')
+    const rowCount = async () => Number(await grid.getAttribute('aria-rowcount')) - 1
+    expect(await rowCount()).toBe(50)
+
+    // filter: Status is any of Doing
+    await page.getByRole('button', { name: '필터', exact: true }).click()
+    const panel = page.getByRole('dialog', { name: '필터' })
+    await panel.getByRole('button', { name: '필터 추가' }).click()
+    await panel.getByLabel('필드').selectOption({ label: 'Status' })
+    await panel.getByRole('group', { name: '값' }).getByRole('checkbox').nth(1).check() // Doing
+    await expect.poll(rowCount).toBeLessThan(50)
+    const doing = await rowCount()
+    for (let i = 0; i < Math.min(doing, 3); i++) await expect(await gridCell(page, i, 'Status')).toHaveText('Doing')
+    // OR group: ... or (Done is checked and Amount > 50000)
+    await panel.getByRole('button', { name: '필터 그룹 추가' }).click()
+    await panel.getByLabel('그리고/또는').selectOption('or')
+    const group = panel.getByRole('group', { name: '그룹' })
+    await group.getByLabel('필드').selectOption({ label: 'Done' })
+    await group.getByRole('button', { name: '필터 추가' }).click()
+    await group.getByLabel('필드').nth(1).selectOption({ label: 'Amount' })
+    await group.getByLabel('조건').nth(1).selectOption('gt')
+    await group.getByLabel('값').fill('50000')
+    await expect.poll(rowCount).toBeGreaterThan(doing)
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('button', { name: '필터 3' })).toBeVisible()
+
+    // a new row gets values that keep it visible? (OR filter: nothing pinned) → only with AND
+    await page.getByRole('button', { name: '필터 3' }).click()
+    await panel.getByRole('button', { name: '필터 삭제' }).last().click()
+    await panel.getByRole('button', { name: '필터 삭제' }).last().click()
+    await page.keyboard.press('Escape')
+    const before = await rowCount()
+    await page.getByRole('button', { name: '새 행' }).click()
+    await expect.poll(rowCount).toBe(before + 1)
+    await grid.evaluate((el) => (el.scrollTop = el.scrollHeight))
+    await expect(page.locator('.dbg-row').last().locator('[data-type="select"]')).toHaveText('Doing')
+
+    // clear the filter; sort by Amount descending
+    await page.getByRole('button', { name: '필터 1' }).click()
+    await panel.getByRole('button', { name: '필터 삭제' }).click()
+    await page.keyboard.press('Escape')
+    await expect.poll(rowCount).toBe(51)
+    await page.getByRole('button', { name: '정렬', exact: true }).click()
+    const sp = page.getByRole('dialog', { name: '정렬' })
+    await sp.getByRole('button', { name: '정렬 추가' }).click()
+    await sp.getByLabel('필드').selectOption({ label: 'Amount' })
+    await sp.getByLabel('정렬 방향').selectOption('desc')
+    await page.keyboard.press('Escape')
+    await grid.evaluate((el) => (el.scrollTop = 0))
+    const amounts = async () => {
+      const out: number[] = []
+      for (let i = 0; i < 4; i++)
+        out.push(Number(((await (await gridCell(page, i, 'Amount')).textContent()) ?? '').replace(/[^0-9]/g, '')))
+      return out
+    }
+    await expect
+      .poll(async () => {
+        const a = await amounts()
+        return a.every((v, i) => i === 0 || v <= a[i - 1]!)
+      })
+      .toBe(true)
+    // dragging a row while sorted explains why it cannot
+    const row = page.locator('.dbg-row').first()
+    await row.hover()
+    const hb = (await row.getByRole('button', { name: /행 메뉴/ }).boundingBox())!
+    await page.mouse.move(hb.x + 5, hb.y + 5)
+    await page.mouse.down()
+    await page.mouse.move(hb.x + 5, hb.y + 60, { steps: 5 })
+    await page.mouse.up()
+    await expect(page.getByText('정렬 중에는 행을 끌어서 옮길 수 없습니다', { exact: false })).toBeVisible()
+
+    // properties: hide Amount
+    await page.getByRole('button', { name: '속성', exact: true }).click()
+    await page.getByRole('dialog', { name: '속성' }).getByRole('switch', { name: 'Amount' }).click()
+    await expect(page.getByRole('dialog', { name: '속성' }).getByRole('switch', { name: 'Name' })).toBeDisabled()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('button', { name: '속성 1' })).toBeVisible()
+    await expect(page.locator('.dbg-hname', { hasText: /^Amount$/ })).toHaveCount(0)
+
+    // search
+    await page.locator('.db-bar').getByRole('button', { name: '검색' }).click()
+    await page.locator('.db-bar').getByLabel('검색', { exact: true }).fill('Item 4')
+    await expect.poll(rowCount).toBe(11) // Item 4, Item 40–49
+    await page.keyboard.press('Escape')
+    await expect.poll(rowCount).toBe(51)
+
+    // calculation row: count on Name, checked % on Done
+    await page.getByRole('button', { name: 'Name: 계산' }).click()
+    await page.getByRole('menuitemcheckbox', { name: '개수' }).click()
+    await expect(page.locator('.dbg-calc[data-field-id]').first()).toContainText('51')
+    await reload(page)
+    await expect(page.locator('.dbg-calc').first()).toContainText('51')
+    await expect(page.getByRole('button', { name: '정렬 1' })).toBeVisible()
+    noErrors()
+  })
 })

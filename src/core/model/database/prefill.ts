@@ -14,7 +14,8 @@ export function prefillFromFilter(
   now: number,
 ): Record<string, CellValue> {
   const out: Record<string, CellValue> = {}
-  if (!filter || filter.op !== 'and') return out
+  // OR only matters with two or more conditions
+  if (!filter || (filter.op !== 'and' && filter.items.length > 1)) return out
   const byId = new Map(fields.map((f) => [f.id, f]))
   for (const item of filter.items) {
     if ('items' in item) continue

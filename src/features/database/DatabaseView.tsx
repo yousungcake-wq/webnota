@@ -2,6 +2,7 @@ import { use } from 'react'
 import { ws } from '@/core/docs/workspace'
 import { databaseIdOf, type ViewMeta } from '@/core/model/views'
 import { EmptyState, Skeleton } from '@/ui'
+import { DbToolbar } from './DbToolbar'
 import { Grid } from './Grid'
 import { dt, loadDbMessages } from './i18n'
 import { useDbSession } from './useDbSession'
@@ -20,7 +21,10 @@ export function DatabaseView({ view, readOnly }: { view: ViewMeta; readOnly: boo
   return (
     <div className="db-view" data-layout={view.layout} data-rows={state.result.rowIds.length}>
       {view.layout === 'grid' ? (
-        <Grid session={session} state={state} title={view.title} readOnly={readOnly} />
+        <>
+          <DbToolbar session={session} state={state} readOnly={readOnly} />
+          <Grid session={session} state={state} title={view.title} readOnly={readOnly} />
+        </>
       ) : (
         <EmptyState title={dt('db.comingSoon')} description={dt('db.comingSoonHint')} />
       )}

@@ -18,6 +18,7 @@ import { columnsOf, GUTTER, HEADER_HEIGHT, ROW_HEIGHT } from './gridColumns'
 import { deleteRowsWithUndo, newRow } from './rowActions'
 import { clearRect, copyRect, pasteTSV, rectOf } from './gridClipboard'
 import { RowSheet } from './RowSheet'
+import { CalcRow } from './CalcRow'
 import { GridHeader } from './GridHeader'
 import { GridRow, type GridPos as Pos } from './GridRow'
 import { fixedLayout, measuredLayout, visibleColumns } from './rowLayout'
@@ -420,6 +421,17 @@ export function Grid({
           <button type="button" className="dbg-newrow" style={{ width: totalWidth }} onClick={() => addRowAt({})}>
             <Plus size={14} aria-hidden /> {dt('db.row.new')}
           </button>
+        )}
+        {state.view && (
+          <CalcRow
+            docs={docs}
+            viewId={state.view.id}
+            columns={columns}
+            colRange={colRange}
+            calcs={state.view.calcs}
+            results={state.result.calcs}
+            readOnly={readOnly}
+          />
         )}
         {popover && (
           <GridPopover

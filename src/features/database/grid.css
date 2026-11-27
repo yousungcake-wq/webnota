@@ -368,3 +368,47 @@ textarea.dbc-editor {
   pointer-events: none;
   z-index: 6;
 }
+.dbg-calcrow {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  min-width: 100%;
+  height: 32px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+.dbg-calc {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex: none;
+  padding: 0 8px;
+  border: 0;
+  background: var(--bg);
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.dbg-calc.is-frozen {
+  position: sticky;
+  z-index: 1;
+}
+.dbg-calc:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+.dbg-calc-label.is-hint {
+  opacity: 0;
+}
+.dbg-calc:hover .dbg-calc-label.is-hint,
+.dbg-calc:focus-visible .dbg-calc-label.is-hint {
+  opacity: 1;
+}
+.dbg-calc-value {
+  color: var(--text);
+  font-weight: 600;
+}

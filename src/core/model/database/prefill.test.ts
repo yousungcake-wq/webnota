@@ -55,9 +55,13 @@ describe('new rows satisfy the filter (spec/05 §4.2)', () => {
     expect(runQuery({ fields, rows: [row(cells)], view: { filter, sorts: [] }, now: NOW }).rowIds).toEqual(['x'])
   })
   it('leaves OR groups and conditions without a pinned value empty', () => {
-    expect(
-      prefillFromFilter({ op: 'or', items: [{ id: '1', fieldId: 't', cond: 'is', value: 'a' }] }, fields, NOW),
-    ).toEqual({})
+    const two = [
+      { id: '1', fieldId: 't', cond: 'is' as const, value: 'a' },
+      { id: '2', fieldId: 'c', cond: 'checked' as const },
+    ]
+    expect(prefillFromFilter({ op: 'or', items: two }, fields, NOW)).toEqual({})
+    // a single condition counts as AND whatever the operator says
+    expect(prefillFromFilter({ op: 'or', items: two.slice(0, 1) }, fields, NOW)).toEqual({ t: 'a' })
     expect(
       prefillFromFilter(
         {
