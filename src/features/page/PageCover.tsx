@@ -3,6 +3,7 @@ import { lazy, Suspense, useRef, useState } from 'react'
 import type * as Y from 'yjs'
 import { t } from '@/core/i18n'
 import { setCover, type CoverValue } from '@/core/model/page'
+import { useImageSrc } from '@/features/files'
 import { coverBackground } from './pageMeta'
 
 const CoverPicker = lazy(() => import('./pageStyleViews').then((m) => ({ default: m.CoverPicker })))
@@ -41,15 +42,7 @@ export function PageCover({ doc, cover, readOnly }: { doc: Y.Doc; cover: CoverVa
       style={{ background: coverBackground(cover) }}
       onPointerDown={onPointerDown}
     >
-      {image && (
-        <img
-          src={cover.value}
-          alt=""
-          draggable={false}
-          style={{ objectPosition: `50% ${offsetY}%` }}
-          decoding="async"
-        />
-      )}
+      {image && <CoverImage value={cover.value} offsetY={offsetY} />}
       {!readOnly && (
         <div className="cover-actions">
           {moving !== null ? (
@@ -98,4 +91,11 @@ export function PageCover({ doc, cover, readOnly }: { doc: Y.Doc; cover: CoverVa
       )}
     </div>
   )
+}
+
+/** Image cover: an external URL or an uploaded workspace file (ED-F11, M3-09). */
+function CoverImage({ value, offsetY }: { value: string; offsetY: number }) {
+  const src = useImageSrc(value)
+  if (!src) return null
+  return <img src={src} alt="" draggable={false} style={{ objectPosition: `50% ${offsetY}%` }} decoding="async" />
 }

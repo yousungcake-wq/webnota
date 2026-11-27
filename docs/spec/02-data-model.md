@@ -51,7 +51,7 @@ workspace (Y.Doc)
 type IconValue =
   | { type: 'emoji'; value: string }            // "📄"
   | { type: 'icon'; value: string; color?: string } // lucide 아이콘 이름
-  | { type: 'file'; value: string }             // files/<sha>.png
+  | { type: 'file'; value: string }             // 파일 id `<sha256>.<ext>` (files/ 저장소, M3-09: 256px로 줄여 저장)
 type FracKey = string // fractional-indexing 키 ("a0", "a0V" …)
 ```
 
@@ -69,7 +69,7 @@ type FracKey = string // fractional-indexing 키 ("a0", "a0V" …)
 doc (Y.Doc)
 ├─ default: Y.XmlFragment          // ProseMirror 문서 (y-prosemirror)
 └─ page: Y.Map
-    cover: CoverValue | null       // { type: 'color'|'gradient'|'file'|'url', value, offsetY }
+    cover: CoverValue | null       // { type: 'color'|'gradient'|'file'|'url', value, offsetY } — file: 파일 id (M3-09)
     font: string | null            // 'default' | 'serif' | 'mono' | 구글 폰트 이름 (M2)
     fontSize: 'small' | 'normal' | 'large'
     lineHeight: 'compact' | 'normal' | 'relaxed'

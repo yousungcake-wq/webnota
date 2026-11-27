@@ -83,7 +83,7 @@ export interface PreparedImage {
 export async function prepareImage(
   file: Blob,
   name: string,
-  opts: { original?: boolean } = {},
+  opts: { original?: boolean; maxSide?: number } = {},
 ): Promise<PreparedImage> {
   const asIs = async (): Promise<PreparedImage> => {
     const dims = await imageSize(file).catch(() => ({ width: 0, height: 0 }))
@@ -98,7 +98,7 @@ export async function prepareImage(
   }
   const head = new Uint8Array(await file.slice(0, 65536).arrayBuffer())
   const orientation = file.type === 'image/jpeg' && jpegOrientation(head) > 1
-  const fit = fitSize(bitmap.width, bitmap.height)
+  const fit = fitSize(bitmap.width, bitmap.height, opts.maxSide)
   if (keepOriginal({ size: file.size, resized: fit.resized, orientation })) {
     bitmap.close()
     return { blob: file, name, width: fit.w, height: fit.h }

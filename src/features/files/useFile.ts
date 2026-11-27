@@ -64,3 +64,13 @@ export function fileStatusKey(status: FileState['status']) {
       return 'files.error'
   }
 }
+
+/**
+ * `src` for an image stored as a workspace file id or (older data) a URL — page icons
+ * and covers (ED-F11, ED-F12). Null until the file is available.
+ */
+export function useImageSrc(value: string | null): string | null {
+  const isUrl = !!value && /^(https?:|data:|blob:)/i.test(value)
+  const file = useFile(value && !isUrl ? value : null)
+  return isUrl ? value : file.url
+}

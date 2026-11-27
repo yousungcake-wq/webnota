@@ -1,15 +1,17 @@
 // Click-only page style UI (ED-F10, ED-F11), loaded on demand to keep the initial bundle small.
-import { useState } from 'react'
+import { Upload } from 'lucide-react'
+import { useRef, useState } from 'react'
 import type * as Y from 'yjs'
 import { t, type MessageKey } from '@/core/i18n'
 import { readCover, setCover, setPageStyle, type PageStyle } from '@/core/model/page'
 import { useLayout } from '@/platform/layout'
-import { Overlay } from '@/ui'
+import { Button, Overlay } from '@/ui'
+import { uploadImage } from './uploadImage'
 import { COVER_GRADIENTS, coverBackground, usePageMeta } from './pageMeta'
 
 const PALETTE = ['gray', 'brown', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'red'] as const
 
-/** Cover picker: palette colors, gradients, or an image link. */
+/** Cover picker: palette colors, gradients, an uploaded image (M3-09) or an image link. */
 export function CoverPicker({ doc, anchor, onClose }: { doc: Y.Doc; anchor: HTMLElement | null; onClose: () => void }) {
   const phone = useLayout().layout === 'phone'
   const [url, setUrl] = useState(() => {
@@ -20,9 +22,32 @@ export function CoverPicker({ doc, anchor, onClose }: { doc: Y.Doc; anchor: HTML
     setCover(doc, { type, value })
     onClose()
   }
+  const input = useRef<HTMLInputElement>(null)
+  const [busy, setBusy] = useState(false)
   return (
     <Overlay anchor={anchor} title={t('cover.title')} sheet={phone} onClose={onClose}>
       <div className="cover-picker">
+        <input
+          ref={input}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={(e) => {
+            const f = e.currentTarget.files?.[0]
+            e.currentTarget.value = ''
+            if (!f) return
+            setBusy(true)
+            void uploadImage(f).then((id) => {
+              setBusy(false)
+              if (!id) return
+              setCover(doc, { type: 'file', value: id, offsetY: 50 })
+              onClose()
+            })
+          }}
+        />
+        <Button size="sm" icon={Upload} disabled={busy} onClick={() => input.current?.click()}>
+          {busy ? t('files.loading') : t('cover.upload')}
+        </Button>
         <div className="cover-label">{t('cover.gradients')}</div>
         <div className="cover-grid">
           {COVER_GRADIENTS.map((g) => (

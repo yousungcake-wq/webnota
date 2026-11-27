@@ -482,6 +482,9 @@ export const ko = {
   'pasteUrl.embed': '임베드',
   'pasteUrl.video': '동영상',
   'pasteUrl.image': '이미지',
+  'cover.upload': '이미지 올리기',
+  'icon.upload': '이미지 올리기',
+  'files.notImage': '이미지 파일을 고르세요',
   // files (SY-04)
   'files.loading': '불러오는 중…',
   'files.notConnected': 'GitHub에 연결하면 이 파일을 볼 수 있습니다',

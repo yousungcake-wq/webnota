@@ -15,9 +15,14 @@ export interface Ingested extends FileRef {
 export { FileTooLargeError, MAX_FILE_BYTES } from './upload'
 export const MAX_FILE_MB = MAX_FILE_BYTES / 1024 / 1024
 
-export async function ingestFile(file: Blob, name = (file as File).name ?? ''): Promise<Ingested> {
+/** `maxSide`: a small image such as a page icon (always scaled, "keep original" ignored). */
+export async function ingestFile(
+  file: Blob,
+  name = (file as File).name ?? '',
+  opts: { maxSide?: number } = {},
+): Promise<Ingested> {
   if (!file.type.startsWith('image/')) return addFile(file, name)
-  const img = await prepareImage(file, name, { original: getImageOriginal() })
+  const img = await prepareImage(file, name, { original: !opts.maxSide && getImageOriginal(), maxSide: opts.maxSide })
   const ref = await addFile(img.blob, img.name)
   return { ...ref, width: img.width || undefined, height: img.height || undefined }
 }

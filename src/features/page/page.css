@@ -409,3 +409,24 @@
 .lock-banner span {
   flex: 1;
 }
+
+/* M3-09: upload buttons in the cover and icon pickers */
+.icon-upload {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--sp-1) var(--sp-2) 0;
+}
+.cover-picker > .btn {
+  align-self: flex-start;
+}
+.view-icon-file.is-loading {
+  display: inline-block;
+  border-radius: 3px;
+  background: var(--bg-hover);
+}
+@media (pointer: coarse) {
+  .icon-upload .btn,
+  .cover-picker > .btn {
+    min-height: 44px;
+  }
+}

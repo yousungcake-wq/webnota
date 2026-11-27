@@ -475,6 +475,9 @@ export const en: Record<MessageKey, string> = {
   'pasteUrl.embed': 'Embed',
   'pasteUrl.video': 'Video',
   'pasteUrl.image': 'Image',
+  'cover.upload': 'Upload image',
+  'icon.upload': 'Upload image',
+  'files.notImage': 'Choose an image file',
   // files (SY-04)
   'files.loading': 'Loading…',
   'files.notConnected': 'Connect GitHub to see this file',
