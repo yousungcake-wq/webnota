@@ -252,6 +252,8 @@ export function SettingsView() {
         </section>
       )}
 
+      <DeviceData connected={!!sync.account} />
+
       <section className="card">
         <h2>{t('common.trash')}</h2>
         <Switch
@@ -440,5 +442,69 @@ function RepoHistory() {
       </Button>
       <p className="muted small">{st('history.hint')}</p>
     </div>
+  )
+}
+
+/** This device's data (ST-08, M8-10): space used, clear the cache, delete everything here. */
+function DeviceData({ connected }: { connected: boolean }) {
+  const [usage, setUsage] = useState<{ used: number; quota: number } | null | undefined>(undefined)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    let alive = true
+    void (navigator.storage?.estimate?.() ?? Promise.resolve(null)).then(
+      (e) => alive && setUsage(e && e.usage !== undefined && e.quota ? { used: e.usage, quota: e.quota } : null),
+      () => alive && setUsage(null),
+    )
+    return () => {
+      alive = false
+    }
+  }, [busy])
+  const clearCache = async () => {
+    setBusy(true)
+    try {
+      const freed = await (await import('@/core/files/cache')).clearFileCache()
+      toast(st('data.cleared', { size: mb(freed) }))
+    } finally {
+      setBusy(false)
+    }
+  }
+  const deleteAll = async () => {
+    const local = await import('@/core/docs/local')
+    const { docs, files } = await local.unsyncedCounts()
+    const warn = !connected
+      ? st('data.deleteLocalOnly')
+      : docs || files
+        ? st('data.deleteUnsynced', { docs, files })
+        : ''
+    const ok = await confirmDialog({
+      title: st('data.delete'),
+      message: warn ? `${st('data.deleteConfirm')} ${warn}` : st('data.deleteConfirm'),
+      confirmLabel: st('data.deleteRun'),
+      danger: true,
+    })
+    if (!ok) return
+    setBusy(true)
+    await local.deleteLocalData()
+    location.replace(location.pathname)
+  }
+  return (
+    <section className="card" data-device-data>
+      <h2>{st('data.title')}</h2>
+      {usage !== undefined && (
+        <p className="muted small" data-usage>
+          {usage ? st('data.usage', { used: mb(usage.used), quota: mb(usage.quota) }) : st('data.usageUnknown')}
+        </p>
+      )}
+      <div className="settings-row-buttons">
+        <Button disabled={busy} onClick={() => void clearCache()}>
+          {st('data.clearCache')}
+        </Button>
+        <Button variant="danger" disabled={busy} onClick={() => void deleteAll()}>
+          {st('data.delete')}
+        </Button>
+      </div>
+      <p className="muted small">{st('data.clearCacheDesc')}</p>
+      <p className="muted small">{st('data.deleteDesc')}</p>
+    </section>
   )
 }

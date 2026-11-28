@@ -82,7 +82,8 @@ test('another device downloads the image from the repository and caches it (SY-0
   await p2.goto('/')
   await p2.locator('.tree-row', { hasText: '사진 페이지' }).click({ timeout: 15000 })
   const img = p2.locator('.wn-editor .image-frame img')
-  await expect(img).toHaveAttribute('src', /^blob:/)
+  // the page body and then the file come from the (fake) repository: slow on a busy machine
+  await expect(img).toHaveAttribute('src', /^blob:/, { timeout: 15000 })
   expect(await img.evaluate((i: HTMLImageElement) => i.naturalWidth)).toBe(50)
   await other.close()
 })

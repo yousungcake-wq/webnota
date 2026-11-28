@@ -55,6 +55,20 @@ export const en: Record<HistoryKey, string> = {
   'settings.device': 'Phone',
   'settings.haptics': 'Vibration',
   'settings.haptics.desc': 'A short buzz on drag start, long press, checkboxes and swipes (Android)',
+  'data.title': 'Data on this device',
+  'data.usage': 'Space used on this device: {used} (available {quota})',
+  'data.usageUnknown': 'This browser does not report storage use',
+  'data.clearCache': 'Clear cache',
+  'data.clearCacheDesc':
+    'Removes downloaded copies of images and files and the font cache; they are fetched again from the repository when needed. Files not uploaded yet and the app itself stay.',
+  'data.cleared': 'Freed {size}',
+  'data.delete': 'Delete data on this device',
+  'data.deleteDesc':
+    'Deletes every workspace, setting and cache stored on this device and starts fresh. Your GitHub repositories are not touched.',
+  'data.deleteConfirm': 'Delete all WebNota data on this device? Reconnect to get it back from GitHub.',
+  'data.deleteUnsynced': '{docs} documents and {files} files not synced yet will be lost.',
+  'data.deleteLocalOnly': 'Not connected to GitHub: every page on this device will be lost for good.',
+  'data.deleteRun': 'Delete all',
   'settings.files': 'Files & images',
   'settings.imageOriginal': 'Upload original images',
   'settings.imageOriginal.desc':

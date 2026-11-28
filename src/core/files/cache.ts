@@ -136,3 +136,20 @@ export async function saveFile(id: string, name: string): Promise<FileStatus> {
   a.remove()
   return 'ready'
 }
+
+/**
+ * "Clear cache" (ST-08, M8-10): downloaded copies of files (they come back from the
+ * repository when shown) and the service worker's runtime caches (KaTeX fonts). Files not
+ * uploaded yet (`pending`) and the app itself (precache) are kept. Returns bytes freed.
+ */
+export async function clearFileCache(): Promise<number> {
+  const { allFiles, deleteFiles } = await import('./db')
+  const cached = await allFiles('cache')
+  await deleteFiles(
+    'cache',
+    cached.map((f) => f.id),
+  )
+  if (typeof caches !== 'undefined')
+    for (const name of await caches.keys()) if (!name.includes('precache')) await caches.delete(name)
+  return cached.reduce((n, f) => n + f.size, 0)
+}
