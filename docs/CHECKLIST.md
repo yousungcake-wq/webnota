@@ -143,7 +143,7 @@
 - [x] M5-08 행 페이지: `row/<db>/<row>` 문서(첫 입력 때 생성, `hasDoc`), 상단 아이콘·커버·제목(primary), 속성 목록(숨긴 필드 접기 "N개 숨김", 필드 추가, 끌어 순서), 본문 에디터 — **schema 증가**, 동기화 경로·영구 삭제·첫 연결 더티·`refs.ts`(행 본문) (DB-R01~R03, spec/02 §1) — 30ba3db
 - [x] M5-09 행 페이지 탐색: 데스크탑 가운데 모달(전체 화면 전환), 폰 전체 화면(MB-31), 이전/다음 행, 링크 복사(라우트 `#/w/:ws/v/:id/r/:row`), 복제, 삭제, 뒤로 가기. Grid의 "열기"·Board 카드·Calendar 이벤트가 행 페이지로 (DB-R04, DB-G05, MB-31) — e4397ac
 - [x] M5-10 인라인 DB 블록 `database`(databaseId, viewId, layout): 슬래시 메뉴 새로 만들기(Grid/Board/Calendar)·기존 DB 연결, 높이 제한(기본 400px, 조절), "전체 페이지로 열기", 노드 뷰는 지연 청크 — **schema 증가**(노드 타입) (ED-B20, DB-L, spec/05 §8) — a03700b
-- [x] M5-11 기능 플래그 `database` 제거, 새 뷰 메뉴 Board·Calendar 활성화, 사이드바 아이콘(보드·캘린더), 빈 DB 안내 (WS-11)
+- [x] M5-11 기능 플래그 `database` 제거, 새 뷰 메뉴 Board·Calendar 활성화, 사이드바 아이콘(보드·캘린더), 빈 DB 안내 (WS-11) — 47afbe2
 - [ ] M5-12 e2e(데스크탑·폰: 탭 바, Board 드래그 마우스·터치, Calendar 드래그, 행 페이지, 인라인 DB) + 성능 기록(`perf:db` + Board 1,000카드) + 실기기 QA
 
 ## M6 ~ M11
