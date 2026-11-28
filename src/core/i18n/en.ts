@@ -505,4 +505,6 @@ export const en: Record<MessageKey, string> = {
 
   'flag.debugLog': 'Debug logging',
   'flag.debugLog.desc': 'Writes sync activity to the browser console',
+  'update.ready': 'An update is ready',
+  'update.reload': 'Reload',
 }

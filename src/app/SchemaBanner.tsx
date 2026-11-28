@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { t } from '@/core/i18n'
 import { schemaStore } from '@/core/schema'
 import { useStore } from '@/core/store/useStore'
-import { updateApp } from '@/platform/sw'
+import { applyUpdate } from '@/platform/sw'
 import { Button } from '@/ui'
 
 /** Read-only gate banner (spec/02 §6): data newer than this build, or a failed migration. */
@@ -21,7 +21,7 @@ export function SchemaBanner() {
           disabled={busy}
           onClick={() => {
             setBusy(true)
-            void updateApp()
+            void applyUpdate()
           }}
         >
           {t('schema.update')}

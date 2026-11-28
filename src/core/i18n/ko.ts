@@ -514,6 +514,8 @@ export const ko = {
   // settings
   'flag.debugLog': '디버그 로그',
   'flag.debugLog.desc': '동기화 과정을 브라우저 콘솔에 기록합니다',
+  'update.ready': '업데이트가 준비되었습니다',
+  'update.reload': '새로 고침',
 } satisfies Record<string, string>
 
 export type MessageKey = keyof typeof ko

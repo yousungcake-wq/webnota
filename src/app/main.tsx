@@ -9,6 +9,7 @@ import { initWorkspace, seedIfEmpty } from '@/core/docs/workspace'
 import { initSchema, isReadOnly } from '@/core/schema'
 import { debugFlag } from '@/platform/debug'
 import { captureInstall } from '@/platform/install'
+import { applyUpdate, registerServiceWorker } from '@/platform/sw'
 import { loadInstall } from '@/features/install'
 import { applyTheme, trashAutoEmptyStore } from '@/core/store/prefs'
 import { navigate } from '@/core/store/router'
@@ -88,6 +89,13 @@ async function boot() {
     toast(e instanceof Error ? e.message : String(e), { tone: 'error' })
   }
   startAutoSync()
+  // MB-41: a new version waits until the next launch; offer it now without forcing a reload
+  registerServiceWorker(() =>
+    toast(t('update.ready'), {
+      action: { label: t('update.reload'), onClick: () => void applyUpdate() },
+      duration: 60000,
+    }),
+  )
 
   // Warm the editor chunk once the shell is idle.
   const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1500))

@@ -34,7 +34,10 @@ export default defineConfig({
     },
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // M7-10 (MB-41): a new version waits and the app offers "reload"; registered by
+      // src/platform/sw.ts (no injected script, no workbox-window in the bundle)
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: ['icon.svg', 'icons/apple-touch-icon-180.png'],
       manifest: {
         name: 'WebNota',
