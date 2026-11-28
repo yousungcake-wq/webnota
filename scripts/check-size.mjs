@@ -10,7 +10,9 @@ const KB = 1024
 /** Budgets in gzip KB. Lazy groups are keyed by the source module that is dynamically imported. */
 const BUDGETS = {
   initial: { kb: 125 }, // React 19 (~60KB) + Yjs + y-indexeddb + shell; see spec/10 §1.1
-  css: { kb: 25 },
+  // CSS loaded at start (DECISIONS 022); `css` is every stylesheet, most of them lazy feature CSS
+  cssInitial: { kb: 10 },
+  css: { kb: 35 },
   editor: { kb: 210, entry: 'src/features/editor/Editor.tsx', after: 'pageView' }, // opened only from the page screen
   // page screen (title, banners, cover hooks), fetched as soon as the app starts (feedback 7: initial budget)
   pageView: { kb: 12, entry: 'src/features/page/PageView.tsx' },
@@ -64,6 +66,9 @@ const allCss = new Set(Object.values(manifest).flatMap((c) => c.css ?? []))
 const sizes = {
   initial: [...initialFiles].reduce((n, f) => n + gz(f), 0),
   css: [...allCss].reduce((n, f) => n + gz(f), 0),
+  cssInitial: [
+    ...new Set([...initialFiles].flatMap((f) => Object.values(manifest).find((c) => c.file === f)?.css ?? [])),
+  ].reduce((n, f) => n + gz(f), 0),
 }
 for (const [name, b] of Object.entries(BUDGETS)) {
   if (!b.entry) continue

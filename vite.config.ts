@@ -21,6 +21,17 @@ export default defineConfig({
   },
   define: { __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev') },
   plugins: [
+    // M7-00: the bubble menu only needs `instanceof CellSelection` — don't pull in all of
+    // prosemirror-tables for that (src/features/editor/table/cellSelectionShim.ts)
+    {
+      name: 'bubble-menu-cell-selection',
+      enforce: 'pre',
+      resolveId(source, importer) {
+        if (source === '@tiptap/pm/tables' && importer?.includes('extension-bubble-menu'))
+          return fileURLToPath(new URL('./src/features/editor/table/cellSelectionShim.ts', import.meta.url))
+        return null
+      },
+    },
     react(),
     VitePWA({
       registerType: 'autoUpdate',

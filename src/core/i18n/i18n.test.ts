@@ -28,13 +28,9 @@ describe('i18n', () => {
 
   it('splits messages around non-string parameters', async () => {
     const el = { el: true }
-    expect(tParts('settings.privateRepo', { repo: el })).toEqual(['비공개 저장소 ', el])
+    expect(tParts('search.results', { count: el })).toEqual(['결과 ', el, '개'])
     await initI18n('en')
-    expect(tParts('settings.patStep1', { repo: el })).toEqual([
-      'Create a private repository ',
-      el,
-      ' on GitHub. Including a README is recommended.',
-    ])
+    expect(tParts('search.results', { count: el })).toEqual([el, ' results'])
   })
 
   it('every English message has the same parameters as the Korean one', () => {

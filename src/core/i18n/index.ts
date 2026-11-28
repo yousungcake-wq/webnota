@@ -84,7 +84,15 @@ export function tFeature(key: string, params?: Record<string, string | number>):
  * message split into an array of strings and those values, in order.
  */
 export function tParts<T>(key: MessageKey, params: Record<string, T>): (string | T)[] {
-  const msg = dict?.[key] ?? key
+  return splitParts(dict?.[key] ?? key, params)
+}
+
+/** `tParts` for a feature dictionary key. */
+export function tFeatureParts<T>(key: string, params: Record<string, T>): (string | T)[] {
+  return splitParts(featureDict.get(key) ?? key, params)
+}
+
+function splitParts<T>(msg: string, params: Record<string, T>): (string | T)[] {
   const out: (string | T)[] = []
   let last = 0
   for (const m of msg.matchAll(PARAM)) {

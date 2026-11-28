@@ -1,15 +1,16 @@
-import { getLang, t } from '@/core/i18n'
+import { getLang } from '@/core/i18n'
 import { useStore } from '@/core/store/useStore'
 import { syncLogStore, type SyncLogEntry } from '@/core/sync/log'
+import { st } from './i18n'
 
 /** Recent sync runs (SY-02d, ST-04). */
 export function SyncLog() {
   const log = useStore(syncLogStore)
   return (
     <details className="sync-log">
-      <summary>{t('settings.syncLog', { count: log.length })}</summary>
+      <summary>{st('settings.syncLog', { count: log.length })}</summary>
       {log.length === 0 ? (
-        <p className="muted small">{t('settings.syncLog.empty')}</p>
+        <p className="muted small">{st('settings.syncLog.empty')}</p>
       ) : (
         <ol>
           {log.map((e) => (
@@ -32,9 +33,9 @@ function formatTime(e: SyncLogEntry) {
 
 function describe(e: SyncLogEntry) {
   const main = !e.ok
-    ? t('settings.syncLog.failed', { error: e.error ?? '?' })
+    ? st('settings.syncLog.failed', { error: e.error ?? '?' })
     : e.pulled + e.pushed + e.deleted === 0
-      ? t('settings.syncLog.noop')
-      : t('settings.syncLog.changes', { pulled: e.pulled, pushed: e.pushed, deleted: e.deleted })
-  return e.repeat ? `${main} ${t('settings.syncLog.repeat', { count: e.repeat })}` : main
+      ? st('settings.syncLog.noop')
+      : st('settings.syncLog.changes', { pulled: e.pulled, pushed: e.pushed, deleted: e.deleted })
+  return e.repeat ? `${main} ${st('settings.syncLog.repeat', { count: e.repeat })}` : main
 }

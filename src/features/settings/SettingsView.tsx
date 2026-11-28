@@ -3,7 +3,7 @@ import { Fragment, lazy, Suspense, use, useEffect, useState, useSyncExternalStor
 import { oauthAvailable, startLogin } from '@/core/auth/auth'
 import { FLAGS, setFlag, type FlagName } from '@/core/flags'
 import { useFlag } from '@/core/store/flags'
-import { getLang, getLangPref, LANG_NAMES, LANGS, setLangPref, t, tParts, type MessageKey } from '@/core/i18n'
+import { getLang, getLangPref, LANG_NAMES, LANGS, setLangPref, t, type MessageKey } from '@/core/i18n'
 import {
   setImageOriginal,
   setTheme,
@@ -33,7 +33,10 @@ const useSystemTheme = () => useSyncExternalStore(subscribeScheme, () => (darkQu
 const WorkspaceSettings = lazy(loadWorkspaceSettings)
 const IoSection = lazy(loadIoSection)
 import { SyncLog } from './SyncLog'
-import { ht, loadHistoryMessages } from './historyI18n'
+import { loadSettingsMessages, st, stParts } from './i18n'
+
+// settings strings are a lazy dictionary (M7-00): loaded with this chunk
+const messages = loadSettingsMessages()
 
 function Github({ size = 18 }: { size?: number }) {
   return (
@@ -44,11 +47,14 @@ function Github({ size = 18 }: { size?: number }) {
 }
 
 /** Renders a message whose parameters are elements. */
-function parts(key: MessageKey, params: Record<string, ReactNode>) {
-  return tParts(key, params).map((p, i) => <Fragment key={i}>{p}</Fragment>)
+
+/** A settings message around element parameters (links, code). */
+function parts(key: Parameters<typeof stParts>[0], params: Record<string, ReactNode>) {
+  return stParts(key, params).map((p, i) => <Fragment key={i}>{p}</Fragment>)
 }
 
 export function SettingsView() {
+  use(messages)
   const langPref = getLangPref()
   const theme = useTheme()
   const systemTheme = useSystemTheme()
@@ -82,7 +88,7 @@ export function SettingsView() {
 
       <section className="card">
         <h2>
-          <Github size={18} /> {t('settings.github')}
+          <Github size={18} /> {st('settings.github')}
         </h2>
         {sync.account ? (
           <>
@@ -99,58 +105,58 @@ export function SettingsView() {
               <SyncBadge />
               {sync.lastSyncedAt && (
                 <span className="muted small">
-                  {t('settings.lastSynced', { time: new Date(sync.lastSyncedAt).toLocaleTimeString(getLang()) })}
+                  {st('settings.lastSynced', { time: new Date(sync.lastSyncedAt).toLocaleTimeString(getLang()) })}
                 </span>
               )}
             </div>
             {sync.error && <p className="error">{sync.error}</p>}
             <div className="row-gap">
               <Button icon={RefreshCw} onClick={() => void syncNow()}>
-                {t('settings.syncNow')}
+                {st('settings.syncNow')}
               </Button>
               <Button
                 variant="ghost"
                 icon={LogOut}
                 onClick={() => {
                   void confirmDialog({
-                    title: t('settings.disconnectTitle'),
-                    message: t('settings.confirmDisconnect'),
-                    confirmLabel: t('settings.disconnect'),
+                    title: st('settings.disconnectTitle'),
+                    message: st('settings.confirmDisconnect'),
+                    confirmLabel: st('settings.disconnect'),
                   }).then((ok) => {
                     if (ok) disconnect()
                   })
                 }}
               >
-                {t('settings.disconnect')}
+                {st('settings.disconnect')}
               </Button>
             </div>
             <SyncLog />
           </>
         ) : (
           <>
-            <p className="muted">{t('settings.githubIntro')}</p>
+            <p className="muted">{st('settings.githubIntro')}</p>
             {sync.error && <p className="error">{sync.error}</p>}
             {oauthAvailable && (
               <Button variant="primary" full onClick={() => startLogin()}>
-                <Github size={18} /> {t('settings.login')}
+                <Github size={18} /> {st('settings.login')}
               </Button>
             )}
             <details className="pat" open={!oauthAvailable}>
-              <summary>{oauthAvailable ? t('settings.patAdvanced') : t('settings.pat')}</summary>
+              <summary>{oauthAvailable ? st('settings.patAdvanced') : st('settings.pat')}</summary>
               <ol className="small muted">
                 <li>{parts('settings.patStep1', { repo: <code>{repo || 'webnota-data'}</code> })}</li>
                 <li>{parts('settings.patStep2', { permission: <b>Contents: Read and write</b> })}</li>
-                <li>{t('settings.patStep3')}</li>
+                <li>{st('settings.patStep3')}</li>
               </ol>
               <Input
-                label={t('settings.repoName')}
+                label={st('settings.repoName')}
                 value={repo}
                 onChange={(e) => setRepo(e.target.value)}
                 autoCapitalize="none"
                 spellCheck={false}
               />
               <Input
-                label={t('settings.token')}
+                label={st('settings.token')}
                 type="password"
                 value={pat}
                 onChange={(e) => setPat(e.target.value)}
@@ -161,7 +167,7 @@ export function SettingsView() {
               />
               {err && <p className="error">{err}</p>}
               <Button variant="primary" disabled={!pat.trim() || busy} onClick={doConnect}>
-                {busy ? t('settings.connecting') : t('settings.connect')}
+                {busy ? st('settings.connecting') : st('settings.connect')}
               </Button>
             </details>
           </>
@@ -169,31 +175,31 @@ export function SettingsView() {
       </section>
 
       <section className="card">
-        <h2>{t('settings.theme')}</h2>
+        <h2>{st('settings.theme')}</h2>
         <Segmented
-          label={t('settings.theme')}
+          label={st('settings.theme')}
           value={theme}
           onChange={setTheme}
           options={[
-            { value: 'system', label: t('settings.theme.system'), icon: Monitor },
-            { value: 'light', label: t('settings.theme.light'), icon: Sun },
-            { value: 'dark', label: t('settings.theme.dark'), icon: Moon },
+            { value: 'system', label: st('settings.theme.system'), icon: Monitor },
+            { value: 'light', label: st('settings.theme.light'), icon: Sun },
+            { value: 'dark', label: st('settings.theme.dark'), icon: Moon },
           ]}
         />
         <p className="settings-now" aria-live="polite">
-          {t('settings.now', {
-            value: t(
+          {st('settings.now', {
+            value: st(
               (theme === 'system' ? systemTheme : theme) === 'dark' ? 'settings.theme.dark' : 'settings.theme.light',
             ),
           })}
-          {theme === 'system' && ` · ${t('settings.theme.followsSystem')}`}
+          {theme === 'system' && ` · ${st('settings.theme.followsSystem')}`}
         </p>
       </section>
 
       <section className="card">
-        <h2>{t('settings.language')}</h2>
+        <h2>{st('settings.language')}</h2>
         <Segmented
-          label={t('settings.language')}
+          label={st('settings.language')}
           value={langPref}
           onChange={(v) => {
             if (v === langPref) return
@@ -201,23 +207,23 @@ export function SettingsView() {
             location.reload() // every string, including module-level ones, is resolved at load
           }}
           options={[
-            { value: 'system', label: t('settings.language.system') },
+            { value: 'system', label: st('settings.language.system') },
             ...LANGS.map((l) => ({ value: l, label: LANG_NAMES[l], lang: l })),
           ]}
         />
         <p className="settings-now">
-          {t('settings.now', { value: LANG_NAMES[getLang()] })}
-          {langPref === 'system' && ` · ${t('settings.language.followsBrowser')}`}
+          {st('settings.now', { value: LANG_NAMES[getLang()] })}
+          {langPref === 'system' && ` · ${st('settings.language.followsBrowser')}`}
         </p>
       </section>
 
       <section className="card">
-        <h2>{t('settings.files')}</h2>
+        <h2>{st('settings.files')}</h2>
         <Switch
           checked={imageOriginal}
           onChange={setImageOriginal}
-          label={t('settings.imageOriginal')}
-          description={t('settings.imageOriginal.desc')}
+          label={st('settings.imageOriginal')}
+          description={st('settings.imageOriginal.desc')}
         />
         <FileStorage connected={!!sync.account} />
       </section>
@@ -239,8 +245,8 @@ export function SettingsView() {
       <AdvancedSection />
 
       <section className="card">
-        <h2>{t('settings.about')}</h2>
-        <p className="muted small">{t('settings.aboutText', { version: __APP_VERSION__ })}</p>
+        <h2>{st('settings.about')}</h2>
+        <p className="muted small">{st('settings.aboutText', { version: __APP_VERSION__ })}</p>
         <LinkButton variant="ghost" icon={Trash2} href="#/trash">
           {t('common.trash')}
         </LinkButton>
@@ -270,16 +276,16 @@ function AdvancedSection() {
   const features = flagNames.filter((n) => (FLAGS[n].kind as string) === 'feature')
   return (
     <section className="card">
-      <h2>{t('settings.advanced')}</h2>
-      <h3 className="card-sub">{t('settings.devOptions')}</h3>
+      <h2>{st('settings.advanced')}</h2>
+      <h3 className="card-sub">{st('settings.devOptions')}</h3>
       {dev.map((n) => (
         <FlagSwitch key={n} name={n} />
       ))}
-      <h3 className="card-sub">{t('settings.experiments')}</h3>
+      <h3 className="card-sub">{st('settings.experiments')}</h3>
       {features.length ? (
         features.map((n) => <FlagSwitch key={n} name={n} />)
       ) : (
-        <p className="muted small">{t('settings.noExperiments')}</p>
+        <p className="muted small">{st('settings.noExperiments')}</p>
       )}
     </section>
   )
@@ -307,9 +313,9 @@ function FileStorage({ connected }: { connected: boolean }) {
 
   const run = async () => {
     const ok = await confirmDialog({
-      title: t('cleanup.title'),
-      message: t('cleanup.confirm'),
-      confirmLabel: t('cleanup.run'),
+      title: st('cleanup.title'),
+      message: st('cleanup.confirm'),
+      confirmLabel: st('cleanup.run'),
       danger: true,
     })
     if (!ok) return
@@ -317,14 +323,14 @@ function FileStorage({ connected }: { connected: boolean }) {
     const m = await loadCleanup()
     try {
       const r = await m.cleanupRepository()
-      toast(r.removed ? t('cleanup.done', { removed: r.removed, kept: r.kept }) : t('cleanup.nothing'))
+      toast(r.removed ? st('cleanup.done', { removed: r.removed, kept: r.kept }) : st('cleanup.nothing'))
     } catch (e) {
       const reason = e instanceof m.CleanupError ? e.reason : null
       toast(
         reason === 'offline'
           ? t('files.offline')
           : reason === 'sync-failed'
-            ? t('cleanup.syncFailed')
+            ? st('cleanup.syncFailed')
             : e instanceof Error
               ? e.message
               : String(e),
@@ -337,11 +343,11 @@ function FileStorage({ connected }: { connected: boolean }) {
 
   return (
     <div className="settings-files">
-      <p className="muted small">{t('cleanup.cache', { size: bytes === null ? '…' : mb(bytes) })}</p>
+      <p className="muted small">{st('cleanup.cache', { size: bytes === null ? '…' : mb(bytes) })}</p>
       <Button size="sm" disabled={!connected || busy} onClick={() => void run()}>
-        {busy ? t('cleanup.running') : t('cleanup.title')}
+        {busy ? st('cleanup.running') : st('cleanup.title')}
       </Button>
-      <p className="muted small">{connected ? t('cleanup.hint') : t('cleanup.needsGithub')}</p>
+      <p className="muted small">{connected ? st('cleanup.hint') : st('cleanup.needsGithub')}</p>
       {connected && (
         <Suspense fallback={null}>
           <RepoHistory />
@@ -352,11 +358,9 @@ function FileStorage({ connected }: { connected: boolean }) {
 }
 
 const loadHistory = () => import('@/core/files/history')
-const historyMessages = loadHistoryMessages()
 
 /** Repository size and "clean up repository history" (SY-03, M6-09). */
 function RepoHistory() {
-  use(historyMessages)
   const [size, setSize] = useState<number | null | undefined>(undefined)
   const [busy, setBusy] = useState(false)
   const [warn, setWarn] = useState(0)
@@ -377,9 +381,9 @@ function RepoHistory() {
   }, [busy])
   const run = async () => {
     const ok = await confirmDialog({
-      title: ht('history.confirmTitle'),
-      message: ht('history.confirm'),
-      confirmLabel: ht('history.confirmRun'),
+      title: st('history.confirmTitle'),
+      message: st('history.confirm'),
+      confirmLabel: st('history.confirmRun'),
       danger: true,
     })
     if (!ok) return
@@ -388,13 +392,13 @@ function RepoHistory() {
     const files = await loadCleanup()
     try {
       const r = await m.cleanHistory()
-      toast(r === 'done' ? ht('history.done') : r === 'moved' ? ht('history.moved') : ht('history.empty'), {
+      toast(r === 'done' ? st('history.done') : r === 'moved' ? st('history.moved') : st('history.empty'), {
         tone: r === 'moved' ? 'error' : undefined,
       })
     } catch (e) {
       const reason = e instanceof files.CleanupError ? e.reason : null
       toast(
-        reason === 'offline' ? t('files.offline') : reason === 'sync-failed' ? t('cleanup.syncFailed') : String(e),
+        reason === 'offline' ? t('files.offline') : reason === 'sync-failed' ? st('cleanup.syncFailed') : String(e),
         { tone: 'error' },
       )
     } finally {
@@ -404,13 +408,13 @@ function RepoHistory() {
   return (
     <div className="settings-history">
       <p className="muted small">
-        {size === undefined ? '…' : size === null ? ht('history.sizeUnknown') : ht('history.size', { size: mb(size) })}
+        {size === undefined ? '…' : size === null ? st('history.sizeUnknown') : st('history.size', { size: mb(size) })}
       </p>
-      {!!size && !!warn && size > warn && <p className="small settings-warn">{ht('history.big')}</p>}
+      {!!size && !!warn && size > warn && <p className="small settings-warn">{st('history.big')}</p>}
       <Button size="sm" disabled={busy} onClick={() => void run()}>
-        {busy ? ht('history.running') : ht('history.run')}
+        {busy ? st('history.running') : st('history.run')}
       </Button>
-      <p className="muted small">{ht('history.hint')}</p>
+      <p className="muted small">{st('history.hint')}</p>
     </div>
   )
 }

@@ -64,13 +64,13 @@
 
 - **초기 번들 (피드백 7)**: 페이지 화면(`loadPageView`, 앱 시작 시 바로 받음)과 폰 홈(`loadHome`)은 지연 청크 — 122.4/125KB. 에디터 예산은 `after: 'pageView'`. 사이드바는 `SpaceSections`(스페이스마다 `PageTree`), 목록 끌기는 `beginListDrag(e, list, onDrop, 'space-id')`.
 
-- **DB 탭·행 페이지·인라인 (M5-01~10)**: 탭 = 첫 뷰의 하위 뷰(같은 databaseId, `databaseTabs`). 행 페이지는 라우트 `…/v/<page>/r/<row>`(`openRow`/`useOpenRow`, 인라인은 `RowRouteContext`로 문서 id), 본문 `row/<db>/<row>`는 내용이 생길 때 `hasDoc`. 인라인 DB 블록의 뷰는 `embedded: true`(사이드바·`listViews`에 없음, `getView`로는 나옴). 데스크탑 `MainContent`는 행 라우트가 바뀌어도 다시 마운트하지 않음(App.tsx key). **에디터 청크 209.0/210KB(100%)** — 다음 에디터 기능은 먼저 기존 코드를 지연 청크로 빼서 자리를 만들 것.
+- **DB 탭·행 페이지·인라인 (M5-01~10)**: 탭 = 첫 뷰의 하위 뷰(같은 databaseId, `databaseTabs`). 행 페이지는 라우트 `…/v/<page>/r/<row>`(`openRow`/`useOpenRow`, 인라인은 `RowRouteContext`로 문서 id), 본문 `row/<db>/<row>`는 내용이 생길 때 `hasDoc`. 인라인 DB 블록의 뷰는 `embedded: true`(사이드바·`listViews`에 없음, `getView`로는 나옴). 데스크탑 `MainContent`는 행 라우트가 바뀌어도 다시 마운트하지 않음(App.tsx key). 에디터 청크 199.3/210KB (M7-00: bubble-menu의 `@tiptap/pm/tables` import를 `vite.config.ts` 플러그인이 `table/cellSelectionShim.ts`로 바꿈 — prosemirror-tables는 표 키트에서만).
 
 - **관계·롤업 (M6)**: 관계 쓰기는 반드시 `setLinks`(양방향이면 상대도), 셀 직접 `setCell` 금지(붙여넣기·범위 지우기는 관계 열 건너뜀) — 세션이 합집합 복구(`repairTwoWay`)를 하므로 한쪽만 지우면 되살아남. 대상 DB 문서는 세션이 열어 둠(`session.target`), 셀은 `RelationContext`. 필터·정렬·계산에 쓰이는 관계·롤업 값은 `QueryInput.derived`(세션이 계산). CSV는 `csvImport.ts`/`csvExport.ts`. 설정 지연 사전 `features/settings/historyI18n`.
 
 - **DB 첫 화면 캐시 (M5-00)**: 뷰를 열면 `wn:<wsId>:$dbscreen`의 캐시로 먼저 읽기 전용 미리보기(`state.preview`, `.db-view[data-preview]`, docs는 빈 자리 표시)를 그림. 레이아웃 컴포넌트는 `LayoutProps.readOnly`를 따르면 됨(미리보기 포함). **e2e에서 새로 고침 뒤 DB 값을 확인·편집할 때는 `dbLive(page)`** 먼저(캐시만 보고 통과하지 않게). Board·Calendar는 `BoardView.tsx`·`CalendarView.tsx`(별도 청크 `dbBoard`·`dbCalendar`), 카드 내용은 `CardBody`.
 
-- 기본 i18n 사전 7.9/8KB(99%): 새 문자열은 기능별 지연 사전(addMessages)에 넣을 것
+- 기본 i18n 사전 6.9/8KB (M7-00: `settings.*`·`cleanup.*`를 설정 지연 사전 `features/settings/i18n`(`st`/`stParts`)으로). 새 문자열은 기능별 지연 사전(addMessages)에. CSS 예산은 시작 CSS 10KB + 전체 35KB(DECISIONS 022)
 
 - 공유(M9)는 B안: 공유 스페이스마다 별도 저장소, 한 워크스페이스가 여러 저장소와 동기화(SY-08). M5~M8에서 새 문서·파일 경로를 만들 때 '어느 저장소(스페이스)에 속하는지'로 라우팅할 수 있게 스페이스 단위로 찾을 수 있도록 설계할 것 (spec/02 §2.1)
 
