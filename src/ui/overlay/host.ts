@@ -8,6 +8,8 @@ export interface ConfirmRequest {
   confirmLabel?: string
   cancelLabel?: string
   danger?: boolean
+  /** Only an OK button (a notice, not a question). */
+  info?: boolean
   /** Shows a text field; its value is passed to `resolve`. */
   prompt?: { label: string; value: string }
   resolve: (ok: boolean, value?: string) => void

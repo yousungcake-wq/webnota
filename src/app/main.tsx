@@ -8,6 +8,8 @@ import { currentWorkspaceId } from '@/core/docs/slots'
 import { initWorkspace, seedIfEmpty } from '@/core/docs/workspace'
 import { initSchema, isReadOnly } from '@/core/schema'
 import { debugFlag } from '@/platform/debug'
+import { captureInstall } from '@/platform/install'
+import { loadInstall } from '@/features/install'
 import { applyTheme, trashAutoEmptyStore } from '@/core/store/prefs'
 import { navigate } from '@/core/store/router'
 import { connect, initUser, pendingTarget, startAutoSync, syncStore } from '@/core/sync/controller'
@@ -19,6 +21,7 @@ import { App } from './App'
 import { installGlobalErrorToasts } from './errors'
 
 document.documentElement.lang = getLang()
+captureInstall() // MB-40: Chrome's install prompt can fire before the app has booted
 applyTheme()
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyTheme())
 
@@ -91,6 +94,8 @@ async function boot() {
   idle(() => {
     preloadEditor()
     preloadOverlays()
+    // MB-40: offer installing on touch devices from the third visit
+    if (window.matchMedia('(pointer: coarse)').matches) void loadInstall().then((m) => m.maybeOfferInstall())
     startSearchIndexing() // WS-07: build/refresh the full-text index in the background
   })
 

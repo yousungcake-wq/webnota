@@ -14,6 +14,7 @@ const ALLOW = new Set([
   'features/editor/mediaI18n/ko.ts', // lazy media toolbar dictionary
   'features/io/i18n/ko.ts', // lazy import / export dictionary
   'features/settings/i18n/ko.ts', // lazy settings dictionary (M6-09, M7-00)
+  'features/install/i18n/ko.ts', // lazy install dictionary (M7-09)
 ])
 
 function files(dir: string): string[] {

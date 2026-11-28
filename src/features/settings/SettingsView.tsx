@@ -32,9 +32,11 @@ const useSystemTheme = () => useSyncExternalStore(subscribeScheme, () => (darkQu
 
 const WorkspaceSettings = lazy(loadWorkspaceSettings)
 const IoSection = lazy(loadIoSection)
+const InstallCard = lazy(() => loadInstall().then((m) => ({ default: m.InstallCard })))
 import { SyncLog } from './SyncLog'
 import { loadSettingsMessages, st, stParts } from './i18n'
 import { canVibrate, haptic, hapticsOn, setHapticsOn } from '@/platform/haptics'
+import { loadInstall } from '@/features/install'
 
 // settings strings are a lazy dictionary (M7-00): loaded with this chunk
 const messages = loadSettingsMessages()
@@ -229,6 +231,10 @@ export function SettingsView() {
         />
         <FileStorage connected={!!sync.account} />
       </section>
+
+      <Suspense fallback={null}>
+        <InstallCard />
+      </Suspense>
 
       {canVibrate() && (
         <section className="card">

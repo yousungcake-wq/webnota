@@ -39,9 +39,11 @@ function Confirm({ req }: { req: ConfirmRequest }) {
       onClose={() => req.resolve(false)}
       actions={
         <>
-          <Button variant="ghost" onClick={() => req.resolve(false)}>
-            {req.cancelLabel ?? uiStrings.cancel}
-          </Button>
+          {!req.info && (
+            <Button variant="ghost" onClick={() => req.resolve(false)}>
+              {req.cancelLabel ?? uiStrings.cancel}
+            </Button>
+          )}
           <Button
             variant={req.danger ? 'danger' : 'primary'}
             {...(req.prompt ? {} : { 'data-autofocus': true })}
