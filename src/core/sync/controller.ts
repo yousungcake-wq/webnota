@@ -1,5 +1,5 @@
 import { debugLog } from '../flags'
-import { getToken, setToken } from '../auth/auth'
+import { freshToken, getToken, setToken } from '../auth/auth'
 import { getDirty, markDirty, onDirtyChange, openDoc, pageDocName, tabs } from '../docs/registry'
 import { currentWorkspaceId, wsKey } from '../docs/slots'
 import { adoptFavorites, listViews, referencedDatabaseIds, setCurrentUser } from '../model/views'
@@ -168,7 +168,8 @@ async function runSync(): Promise<SyncOutcome> {
   }
   set({ status: 'syncing', error: null })
   try {
-    return await (await remote()).runSession(account, token)
+    // GitHub App tokens last 8 hours: renew before a sync rather than fail it (M9-02)
+    return await (await remote()).runSession(account, (await freshToken()) ?? token)
   } catch (e) {
     // the sync chunk itself failed to load (offline, new deploy)
     set({ status: navigator.onLine ? 'error' : 'offline', error: e instanceof Error ? e.message : String(e) })

@@ -1,6 +1,6 @@
 import { LogOut, Monitor, Moon, RefreshCw, Sun, Trash2 } from 'lucide-react'
 import { Fragment, lazy, Suspense, use, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
-import { oauthAvailable, startLogin } from '@/core/auth/auth'
+import { appInstallUrl, isAppToken, oauthAvailable, startLogin } from '@/core/auth/auth'
 import { FLAGS, setFlag, type FlagName } from '@/core/flags'
 import { useFlag } from '@/core/store/flags'
 import { getLang, getLangPref, LANG_NAMES, LANGS, setLangPref, t, type MessageKey } from '@/core/i18n'
@@ -114,6 +114,23 @@ export function SettingsView() {
               )}
             </div>
             {sync.error && <p className="error">{sync.error}</p>}
+            {/* M9-02: which repositories this sign-in can use (shared spaces need each one) */}
+            <p className="muted small" data-token-kind>
+              {isAppToken() ? st('settings.appToken') : st('settings.patToken')}
+              {isAppToken() && appInstallUrl() && (
+                <>
+                  {' '}
+                  <a href={appInstallUrl()!} target="_blank" rel="noreferrer">
+                    {st('settings.appRepos')}
+                  </a>
+                </>
+              )}
+            </p>
+            {!!sync.deniedSpaces?.length && (
+              <p className="error" data-denied>
+                {st('settings.deniedSpaces', { count: sync.deniedSpaces.length })}
+              </p>
+            )}
             <div className="row-gap">
               <Button icon={RefreshCw} onClick={() => void syncNow()}>
                 {st('settings.syncNow')}

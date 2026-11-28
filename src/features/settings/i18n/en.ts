@@ -69,6 +69,13 @@ export const en: Record<HistoryKey, string> = {
   'data.deleteUnsynced': '{docs} documents and {files} files not synced yet will be lost.',
   'data.deleteLocalOnly': 'Not connected to GitHub: every page on this device will be lost for good.',
   'data.deleteRun': 'Delete all',
+  'settings.appToken':
+    'Signed in with the GitHub App: it uses only the repositories you picked when installing it. Shared space repositories must be included too (choosing all repositories includes new ones).',
+  'settings.appRepos': 'Change repositories',
+  'settings.patToken':
+    'Connected with a token. To use shared spaces, add each space repository to the token — signing in with the GitHub App is recommended.',
+  'settings.deniedSpaces':
+    '{count} shared space repositories cannot be reached (removed as a member, or the token / app has no access). The copy on this device stays read-only.',
   'settings.files': 'Files & images',
   'settings.imageOriginal': 'Upload original images',
   'settings.imageOriginal.desc':

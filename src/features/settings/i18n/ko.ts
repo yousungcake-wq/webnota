@@ -68,6 +68,13 @@ export const ko = {
   'data.deleteUnsynced': '아직 동기화되지 않은 문서 {docs}개, 파일 {files}개는 사라집니다.',
   'data.deleteLocalOnly': 'GitHub에 연결되어 있지 않아 이 기기의 페이지가 모두 영구히 사라집니다.',
   'data.deleteRun': '모두 지우기',
+  'settings.appToken':
+    'GitHub App으로 로그인했습니다: 앱을 설치할 때 고른 저장소만 씁니다. 공유 스페이스 저장소도 앱이 쓸 수 있어야 합니다(모든 저장소를 고르면 새 저장소도 자동 포함).',
+  'settings.appRepos': '저장소 선택 바꾸기',
+  'settings.patToken':
+    '토큰으로 연결했습니다. 공유 스페이스를 쓰려면 스페이스 저장소마다 토큰 권한에 추가해야 합니다 — GitHub App 로그인을 권장합니다.',
+  'settings.deniedSpaces':
+    '공유 스페이스 {count}개의 저장소에 접근할 수 없습니다(멤버에서 빠졌거나, 토큰·앱에 저장소 권한이 없음). 이 기기의 사본은 읽기 전용으로 남습니다.',
   'settings.files': '파일과 이미지',
   'settings.imageOriginal': '이미지 원본 그대로 올리기',
   'settings.imageOriginal.desc': '끄면 긴 변 2560px로 줄이고 WebP로 바꿔 저장 공간을 아낍니다 (사진 회전은 바로잡음)',

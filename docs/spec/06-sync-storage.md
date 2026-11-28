@@ -82,6 +82,7 @@
 | OAuth App + Worker | ✅ (Worker 배포 필요) | `repo` (넓음) |
 | GitHub App + Worker | M9 | 사용자가 고른 저장소만, 사용자 토큰 8시간 + 갱신 토큰 (Worker가 갱신) |
 
+- 구현(M9-02): GitHub App 로그인은 OAuth와 같은 화면(`login/oauth/authorize`, App의 client id)이고, Worker `/token`이 App 응답의 `refresh_token`·`expires_in`을 그대로 넘깁니다. 앱은 만료 시각과 갱신 토큰을 저장하고(`saveGrant`), 동기화 직전 만료 5분 전이면 Worker `/refresh`로 새 쌍을 받습니다(`freshToken`, 실패하면 옛 토큰 → 401이면 연결 해제 안내). 설정의 GitHub 카드에 로그인 종류별 안내: App이면 "고른 저장소만 씀 + 저장소 선택 바꾸기" 링크(`VITE_GITHUB_APP_SLUG`), 토큰(PAT)이면 "공유 스페이스 저장소마다 권한 추가 — App 권장". 공유 스페이스 저장소에 닿지 않으면(`deniedSpaces`) 개수와 이유를 표시. Worker 배포: GitHub App을 만들고(사용자 토큰 만료 켜기, Contents·Administration·Metadata 권한) client id/secret을 Worker 비밀로, `VITE_GITHUB_CLIENT_ID`에 App의 client id.
 - 토큰은 localStorage에 저장합니다. XSS 방지를 위해 CSP 메타 태그를 둡니다 (`script-src 'self'`, `connect-src` 허용 목록). 사용자 콘텐츠의 HTML은 렌더링 전에 정리합니다 (DOMPurify, 붙여넣기·가져오기 시).
 
 ## SY-07 내보내기 백업 (M8)
