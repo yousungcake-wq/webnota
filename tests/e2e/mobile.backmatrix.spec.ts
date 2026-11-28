@@ -6,6 +6,9 @@ import { failOnConsoleErrors, openApp, openQaDatabase } from './helpers'
  * then screens go back, tabs return home, and back from home leaves the app.
  */
 const home = (page: Page) => expect(page.locator('.tabbar')).toBeVisible()
+/** The open sheet / dialog has pushed its history entry (one frame after it shows). */
+const layered = (page: Page) =>
+  expect.poll(() => page.evaluate(() => !!(history.state as { wnOverlay?: number } | null)?.wnOverlay)).toBe(true)
 const left = (page: Page) => expect.poll(() => page.url()).not.toMatch(/^http:\/\/localhost/)
 
 test.describe('hardware back (MB-14)', () => {
@@ -20,6 +23,7 @@ test.describe('hardware back (MB-14)', () => {
     const sheet = page.locator('.sheet')
     await page.getByLabel('더보기').tap()
     await expect(sheet).toBeVisible()
+    await layered(page)
     await page.goBack()
     await expect(sheet).toHaveCount(0)
     await expect(page.locator('.wn-editor')).toBeVisible()
@@ -28,6 +32,7 @@ test.describe('hardware back (MB-14)', () => {
     await page.getByLabel('더보기').tap()
     await sheet.locator('.menu-item', { hasText: '아이콘 변경' }).tap()
     await expect(sheet).toHaveCount(1)
+    await layered(page)
     await page.goBack()
     await expect(sheet).toHaveCount(0)
     await expect(page.locator('.wn-editor')).toBeVisible()
@@ -36,6 +41,7 @@ test.describe('hardware back (MB-14)', () => {
     await page.getByLabel('더보기').tap()
     await sheet.getByRole('menuitem', { name: '이동', exact: true }).tap()
     await expect(page.locator('.dialog')).toBeVisible()
+    await layered(page)
     await page.goBack()
     await expect(page.locator('.dialog')).toHaveCount(0)
     await expect(page.locator('.wn-editor')).toBeVisible()
@@ -70,6 +76,7 @@ test.describe('hardware back (MB-14)', () => {
     await expect(rowPage).toBeVisible()
     await rowPage.getByRole('button', { name: '더보기' }).tap()
     await expect(page.locator('.sheet')).toBeVisible()
+    await layered(page)
     await page.goBack()
     await expect(page.locator('.sheet')).toHaveCount(0)
     await expect(rowPage).toBeVisible()

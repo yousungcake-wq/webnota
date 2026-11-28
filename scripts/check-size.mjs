@@ -39,8 +39,11 @@ const BUDGETS = {
   database: { kb: 120, entry: 'src/features/database/DatabaseView.tsx' },
   dbBoard: { kb: 30, entry: 'src/features/database/BoardView.tsx', after: 'database' },
   dbCalendar: { kb: 30, entry: 'src/features/database/CalendarView.tsx', after: 'database' },
+  // M8-00: desktop / tablet shell (sidebar, page tree, tree drag), fetched at start on wide screens
+  desktopShell: { kb: 14, entry: 'src/app/DesktopShell.tsx' },
+  settings: { kb: 20, entry: 'src/features/settings/index.ts' }, // settings screen + its dictionary
   // feedback 11: import / export (fflate, Notion Markdown & CSV), from Settings only
-  ioSection: { kb: 8, entry: 'src/features/io/IoSection.tsx' },
+  ioSection: { kb: 8, entry: 'src/features/io/IoSection.tsx', after: 'settings' },
   importer: { kb: 40, entry: 'src/features/io/importer.ts' },
   exporter: { kb: 40, entry: 'src/features/io/exporter.ts' },
 }

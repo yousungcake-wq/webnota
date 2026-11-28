@@ -7,10 +7,9 @@ import { ensureHomeBelow, goBack, href, navigate, previousIs, useRoute, type Rou
 import { loadHome } from '@/features/home'
 import { loadPageView, PageOverlays } from '@/features/page'
 import { loadSearchView, PaletteHost } from '@/features/search'
-import { useLayout } from '@/platform/layout'
+import { getLayout, useLayout } from '@/platform/layout'
 import { t } from '@/core/i18n'
 import { EmptyState, ErrorBoundary } from '@/ui'
-import { DesktopShell } from './DesktopShell'
 import { useGlobalShortcuts } from './shortcuts'
 import { SchemaBanner } from './SchemaBanner'
 
@@ -25,6 +24,10 @@ const FavoritesView = lazy(() => import('@/features/favorites').then((m) => ({ d
 const TrashView = lazy(() => import('@/features/trash').then((m) => ({ default: m.TrashView })))
 const SearchView = lazy(() => loadSearchView().then((m) => ({ default: m.SearchView })))
 const SettingsView = lazy(() => import('@/features/settings').then((m) => ({ default: m.SettingsView })))
+// M8-00: the desktop shell (sidebar, tree, drag) is its own chunk — phones never need it.
+// On a wide screen it is fetched right away, alongside the boot work.
+const desktopChunk = getLayout().layout === 'phone' ? null : import('./DesktopShell')
+const DesktopShell = lazy(() => (desktopChunk ?? import('./DesktopShell')).then((m) => ({ default: m.DesktopShell })))
 const Lazy = ({ children }: { children: ReactNode }) => <Suspense fallback={null}>{children}</Suspense>
 
 export function App() {
@@ -80,17 +83,19 @@ function DesktopFrame({ route, tablet }: { route: Route; tablet: boolean }) {
           <ShortcutHelp onClose={() => setHelp(false)} />
         </Lazy>
       )}
-      <DesktopShell route={route} tablet={tablet}>
-        {(hidden, openSidebar) => (
-          <>
-            <SchemaBanner />
-            {/* a row page (M5-09) opens over its view: same key, no remount */}
-            <ErrorBoundary key={href(route.name === 'page' ? { ...route, row: undefined } : route)}>
-              <MainContent route={route} sidebarOpen={!hidden} onToggleSidebar={openSidebar} />
-            </ErrorBoundary>
-          </>
-        )}
-      </DesktopShell>
+      <Lazy>
+        <DesktopShell route={route} tablet={tablet}>
+          {(hidden, openSidebar) => (
+            <>
+              <SchemaBanner />
+              {/* a row page (M5-09) opens over its view: same key, no remount */}
+              <ErrorBoundary key={href(route.name === 'page' ? { ...route, row: undefined } : route)}>
+                <MainContent route={route} sidebarOpen={!hidden} onToggleSidebar={openSidebar} />
+              </ErrorBoundary>
+            </>
+          )}
+        </DesktopShell>
+      </Lazy>
     </>
   )
 }
