@@ -24,6 +24,8 @@ export interface ControllerState {
   account: Account | null
   lastSyncedAt: number | null
   error: string | null
+  /** Shared spaces whose repository this account can no longer reach (M9-01): read-only here. */
+  deniedSpaces?: string[]
 }
 
 const ACCOUNT_KEY = wsKey('account')

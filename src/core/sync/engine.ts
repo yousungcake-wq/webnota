@@ -93,6 +93,9 @@ const LEGACY_DOC = new RegExp(`^data/pages/(${ID})\\.yjs$`)
 
 /** Repository path of a doc (spec/02 §1), or null if the doc is not synced. */
 export function pathForDoc(name: string): string | null {
+  return pathForDocName(name)
+}
+function pathForDocName(name: string): string | null {
   if (name === 'workspace') return `${DATA_DIR}workspace.yjs`
   const [kind, a, b] = name.split('/')
   if (!a || !new RegExp(`^${ID}$`).test(a)) return null
@@ -105,6 +108,9 @@ export function pathForDoc(name: string): string | null {
 
 /** Doc name for a repository path (legacy `data/pages/` included), or null. */
 export function docForPath(path: string): string | null {
+  return docForRepoPath(path)
+}
+function docForRepoPath(path: string): string | null {
   if (path === `${DATA_DIR}workspace.yjs`) return 'workspace'
   const legacy = LEGACY_DOC.exec(path)
   if (legacy) return `doc/${legacy[1]}`
@@ -140,9 +146,18 @@ export async function syncOnce(
     deviceName?: string
     /** Checked after each pull; false skips pushing (schema read-only gate). Docs stay dirty. */
     canPush?: () => boolean
+    /**
+     * Path of the root document (the one holding the views, named `workspace` in the store):
+     * `data/workspace.yjs` in the home repository, `data/space.yjs` in a shared space's (M9-01).
+     */
+    rootPath?: string
   } = {},
 ): Promise<SyncResult> {
   const maxAttempts = opts.maxAttempts ?? 5
+  const rootPath = opts.rootPath ?? `${DATA_DIR}workspace.yjs`
+  const pathForDoc = (name: string) => (name === 'workspace' ? rootPath : pathForDocName(name))
+  const docForPath = (path: string) =>
+    path === rootPath ? 'workspace' : path === `${DATA_DIR}workspace.yjs` ? null : docForRepoPath(path)
   const result: SyncResult = { pulled: 0, pushed: 0, deleted: 0, commitSha: null, attempts: 0 }
   const state = store.loadState()
 
@@ -175,9 +190,7 @@ export async function syncOnce(
       }
     }
     // Workspace first so we know which views exist before touching their files.
-    const remotePaths = [...remote.keys()].sort(
-      (a, b) => Number(b.endsWith('workspace.yjs')) - Number(a.endsWith('workspace.yjs')),
-    )
+    const remotePaths = [...remote.keys()].sort((a, b) => Number(b === rootPath) - Number(a === rootPath))
     for (const path of remotePaths) {
       const sha = remote.get(path)!
       if (state.blobs[path] === sha) continue
