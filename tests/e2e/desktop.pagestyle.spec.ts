@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, reload, waitForNewPage } from './helpers'
 
 // 1×1 PNG served for the cover image test
 const PNG = Buffer.from(
@@ -10,7 +10,7 @@ const PNG = Buffer.from(
 test.beforeEach(async ({ page }) => {
   await page.route('https://img.example.com/**', (route) => route.fulfill({ body: PNG, contentType: 'image/png' }))
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.fill('.page-title', '스타일')
 })

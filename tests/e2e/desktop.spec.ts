@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, pickDocument, reload, waitForNewPage } from './helpers'
 
 test.describe('desktop', () => {
   let assertNoErrors: () => void
@@ -15,7 +15,7 @@ test.describe('desktop', () => {
   })
 
   test('write a page: title, slash menu, markdown shortcut, block move', async ({ page }) => {
-    await page.click('.sidebar [data-new-page] >> nth=0')
+    await newPageFromSidebar(page)
     await waitForNewPage(page)
     await page.fill('.page-title', '회의록 2026')
     await page.keyboard.press('Enter')
@@ -40,7 +40,7 @@ test.describe('desktop', () => {
   })
 
   test('content persists across reload (IndexedDB) and the last page reopens', async ({ page }) => {
-    await page.click('.sidebar [data-new-page] >> nth=0')
+    await newPageFromSidebar(page)
     await waitForNewPage(page)
     await page.fill('.page-title', '저장 테스트')
     await page.keyboard.press('Enter')
@@ -52,12 +52,13 @@ test.describe('desktop', () => {
   })
 
   test('subpage, breadcrumbs, trash and restore', async ({ page }) => {
-    await page.click('.sidebar [data-new-page] >> nth=0')
+    await newPageFromSidebar(page)
     await waitForNewPage(page)
     await page.fill('.page-title', '부모')
     const row = page.locator('.tree-row', { hasText: '부모' })
     await row.hover()
     await row.getByLabel('하위 페이지 추가').click()
+    await pickDocument(page)
     await waitForNewPage(page)
     await page.fill('.page-title', '하위 페이지')
     await expect(page.locator('.tree [aria-level="2"] .tree-title', { hasText: '하위 페이지' })).toHaveCount(1)

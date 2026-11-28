@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { waitForNewPage } from './helpers'
+import { newPageFromSidebar, waitForNewPage } from './helpers'
 
 // These tests provoke errors on purpose, so they do not fail on console errors.
 async function openWithDebug(page: Page, flags: string) {
@@ -19,7 +19,7 @@ test.describe('error handling', () => {
     await expect(fallback).toBeVisible()
     await expect(page.locator('.page-title')).toBeVisible() // page header still rendered
 
-    await page.click('.sidebar [data-new-page] >> nth=0')
+    await newPageFromSidebar(page)
     await waitForNewPage(page)
     await page.fill('.page-title', '오류 중에도 작성')
     await expect(page.locator('.tree-title', { hasText: '오류 중에도 작성' })).toHaveCount(1)

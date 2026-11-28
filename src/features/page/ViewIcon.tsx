@@ -1,4 +1,4 @@
-import { FileText, Table2 } from 'lucide-react'
+import { CalendarDays, FileText, KanbanSquare, Table2 } from 'lucide-react'
 import { lazy, Suspense } from 'react'
 import type { IconValue, ViewLayout } from '@/core/model/views'
 import { loadNamedIcon } from '@/features/emoji'
@@ -10,8 +10,7 @@ const NamedIcon = lazy(loadNamedIcon)
  * Renders a view or space icon (spec/02 IconValue). Emoji and files render directly;
  * named icons (`type: 'icon'`) come from the lazy icon set (features/emoji).
  */
-// Board/Calendar get their own icons with M5 (initial bundle budget: one icon for databases now).
-const DEFAULT_ICON = { document: FileText, grid: Table2, board: Table2, calendar: Table2 }
+const DEFAULT_ICON = { document: FileText, grid: Table2, board: KanbanSquare, calendar: CalendarDays }
 
 export function ViewIcon({ icon, size = 16, layout }: { icon: IconValue | null; size?: number; layout?: ViewLayout }) {
   const Fallback = DEFAULT_ICON[layout ?? 'document'] ?? FileText

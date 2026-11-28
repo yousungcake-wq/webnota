@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, reload, waitForNewPage } from './helpers'
 
 test('callout: slash menu, change icon and color, persists (ED-B09)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
   await page.keyboard.type('/콜아웃')
@@ -35,7 +35,7 @@ test('callout: slash menu, change icon and color, persists (ED-B09)', async ({ p
 test('callout picker: keep open, named icons, clear; the page still scrolls (feedback 2-6)', async ({ page }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
   for (let i = 0; i < 40; i++) await page.keyboard.press('Enter') // a long page

@@ -462,6 +462,12 @@ export function Grid({
             />
           )}
         </div>
+        {/* empty database / nothing matches (M5-11) */}
+        {rowIds.length === 0 && (
+          <div className="db-empty-rows" style={{ width: totalWidth }}>
+            {state.view?.filter?.items.length || state.search ? dt('db.empty.filtered') : dt('db.empty.rows')}
+          </div>
+        )}
         {!readOnly && (
           <button type="button" className="dbg-newrow" style={{ width: totalWidth }} onClick={() => addRowAt({})}>
             <Plus size={14} aria-hidden /> {dt('db.row.new')}

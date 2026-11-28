@@ -1,5 +1,5 @@
 import { expect, test, type Locator } from '@playwright/test'
-import { dbLive, failOnConsoleErrors, openQaDatabase, reload, waitForNewPage } from './helpers'
+import { dbLive, failOnConsoleErrors, newPageFromSidebar, openQaDatabase, reload, waitForNewPage } from './helpers'
 
 test.describe('database views (M5)', () => {
   test('tab bar: add, switch, independent settings, rename, duplicate, reorder, delete (M5-01)', async ({ page }) => {
@@ -488,8 +488,7 @@ test.describe('database views (M5)', () => {
   }) => {
     const noErrors = failOnConsoleErrors(page)
     await openQaDatabase(page)
-    await page.click('.sidebar [data-new-page] >> nth=0')
-    await page.getByRole('menuitem', { name: '문서' }).click() // the flag offers layouts
+    await newPageFromSidebar(page)
     await waitForNewPage(page)
     const pageUrl = page.url()
     const ed = page.locator('.wn-editor').first()

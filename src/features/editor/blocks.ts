@@ -34,7 +34,6 @@ import {
   Database,
   type LucideIcon,
 } from 'lucide-react'
-import { isEnabled } from '@/core/flags'
 import { t, type MessageKey } from '@/core/i18n'
 import { rankBlocks, recentBlocks, type BlockCategory, type Rankable } from './rank'
 
@@ -371,8 +370,8 @@ export const BLOCKS: BlockItem[] = [
     icon: FileText,
     run: (c) => c.insertSubPage(),
   },
-  // inline databases (M5-10, ED-B20) — behind the `database` flag until M5-11
-  ...(isEnabled('database') ? databaseBlocks() : []),
+  // inline databases (M5-10, ED-B20)
+  ...databaseBlocks(),
   {
     id: 'divider',
     category: 'advanced',

@@ -48,7 +48,7 @@
 - 데이터 모델 v2 (M0-16, M1-01): workspace는 `views`/`spaces`/`users`. 모델은 `core/model/views.ts`(`ViewMeta`: `parentId`는 부모 뷰 또는 null, `spaceId`는 조상으로 계산, `icon`은 IconValue — 표시는 `features/page`의 `ViewIcon`). 스페이스 API(create/update/move/delete), 즐겨찾기 순서(`listFavoriteIds`/`moveFavorite`), `adoptFavorites`. React는 `core/store/views.ts`의 `useViews`/`useAliveViews`/`useSpaces`. 현재 사용자는 `getCurrentUser()`=`local` (DECISIONS 015). v1 `pages`는 **동결 사본으로 남아 있음 — 지우지 말 것** (구버전 앱이 원격 파일을 지움). 영구 삭제 시 `pages` 항목도 함께 지움.
 - 동기화 경로 v2 (M0-17): `doc/<id>` ↔ `data/docs/<id>.yjs`, DB 경로 매핑도 있음(엔진은 아직 DB 파일을 지우지 않음). 구 `data/pages/` 파일은 첫 동기화에서 이동·삭제 — 구버전 앱은 이후 본문을 못 받음 (사용자 결정).
 
-- **데이터베이스 (M4-00)**: 코드는 `features/database`(지연 청크, `loadDatabase()`만 공개, 예산 120KB). 플래그 `database`(설정 → 고급)로 새 뷰 메뉴에 Grid 노출. **DB 문자열은 `features/database/i18n/{ko,en}.ts`에 두고 `dt('db.…')`** — 부팅 사전(i18n 7.9/8KB)에 넣지 말 것. e2e는 `enableDatabase(page)`(helpers).
+- **데이터베이스 (M4-00, M5-11 플래그 제거)**: 코드는 `features/database`(지연 청크, 예산 120KB; Board·Calendar는 `dbBoard`·`dbCalendar` 청크, 인라인 블록은 `loadInlineDatabase`). 새 뷰 메뉴에 Grid·Board·Calendar. **e2e에서 사이드바 `+`로 문서를 만들 때는 `newPageFromSidebar(page)`** (+가 레이아웃 메뉴를 엶). **DB 문자열은 `features/database/i18n/{ko,en}.ts`에 두고 `dt('db.…')`** — 부팅 사전(i18n 7.9/8KB)에 넣지 말 것.
 
 - DB 모델 (M4-01): `core/model/database`(순수, `DbDocs = {schema, shards}`), 열기는 `core/docs/database.ts`의 `openDatabase(dbId)` → `{docs, release}`. 생성은 `@/features/database`의 `createDatabaseView`(지연). core/model/database는 상위 폴더(`../guard`, `../views`)만 import 가능(lint). **초기 번들 123.2/125KB** — 페이지·사이드바 코드에 DB 로직 추가 금지.
 
@@ -63,6 +63,8 @@
 - 미디어 도구 문자열은 지연 사전 `features/editor/mediaI18n`(`mt()`) — 부팅 사전 8KB 예산. 이미지·동영상은 `MediaToolbar`/`MediaCaption`(`MediaToolbar.tsx`, `media.css`) 공유.
 
 - **초기 번들 (피드백 7)**: 페이지 화면(`loadPageView`, 앱 시작 시 바로 받음)과 폰 홈(`loadHome`)은 지연 청크 — 122.4/125KB. 에디터 예산은 `after: 'pageView'`. 사이드바는 `SpaceSections`(스페이스마다 `PageTree`), 목록 끌기는 `beginListDrag(e, list, onDrop, 'space-id')`.
+
+- **DB 탭·행 페이지·인라인 (M5-01~10)**: 탭 = 첫 뷰의 하위 뷰(같은 databaseId, `databaseTabs`). 행 페이지는 라우트 `…/v/<page>/r/<row>`(`openRow`/`useOpenRow`, 인라인은 `RowRouteContext`로 문서 id), 본문 `row/<db>/<row>`는 내용이 생길 때 `hasDoc`. 인라인 DB 블록의 뷰는 `embedded: true`(사이드바·`listViews`에 없음, `getView`로는 나옴). 데스크탑 `MainContent`는 행 라우트가 바뀌어도 다시 마운트하지 않음(App.tsx key). 에디터 청크 208.9/210KB — 다음 노드는 정말 작게.
 
 - **DB 첫 화면 캐시 (M5-00)**: 뷰를 열면 `wn:<wsId>:$dbscreen`의 캐시로 먼저 읽기 전용 미리보기(`state.preview`, `.db-view[data-preview]`, docs는 빈 자리 표시)를 그림. 레이아웃 컴포넌트는 `LayoutProps.readOnly`를 따르면 됨(미리보기 포함). **e2e에서 새로 고침 뒤 DB 값을 확인·편집할 때는 `dbLive(page)`** 먼저(캐시만 보고 통과하지 않게). Board·Calendar는 `BoardView.tsx`·`CalendarView.tsx`(별도 청크 `dbBoard`·`dbCalendar`), 카드 내용은 `CardBody`.
 

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, waitForNewPage } from './helpers'
 
 test.describe('desktop overlays', () => {
   let assertNoErrors: () => void
@@ -27,7 +27,7 @@ test.describe('desktop overlays', () => {
   })
 
   test('move to trash shows an undo toast', async ({ page }) => {
-    await page.click('.sidebar [data-new-page] >> nth=0')
+    await newPageFromSidebar(page)
     await waitForNewPage(page)
     await page.fill('.page-title', '실행 취소 테스트')
     await page.locator('.topbar').getByLabel('더보기').click()
@@ -41,7 +41,7 @@ test.describe('desktop overlays', () => {
   })
 
   test('delete forever asks with an in-app dialog', async ({ page }) => {
-    await page.click('.sidebar [data-new-page] >> nth=0')
+    await newPageFromSidebar(page)
     await waitForNewPage(page)
     await page.fill('.page-title', '지울 페이지')
     await page.locator('.topbar').getByLabel('더보기').click()

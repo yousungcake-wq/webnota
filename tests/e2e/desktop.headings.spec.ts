@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
-import { openApp, reload, waitForNewPage } from './helpers'
+import { newPageFromSidebar, openApp, reload, waitForNewPage } from './helpers'
 
 test('headings 4–6 by markdown; nested numbered lists cycle 1/a/i (ED-B02, ED-B05)', async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   const ed = page.locator('.wn-editor')
   await ed.click()

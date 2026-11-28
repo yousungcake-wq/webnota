@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, reload, waitForNewPage } from './helpers'
 
 test('code block: language → highlighting (lazy), wrap, copy (ED-B10)', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
   await page.keyboard.type('```')

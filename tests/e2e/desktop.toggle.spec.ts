@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, reload, waitForNewPage } from './helpers'
 
 test('toggle: "> " creates it, Enter goes inside, collapse persists per device; quote is now " (ED-B06)', async ({
   page,
 }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   const ed = page.locator('.wn-editor')
   await ed.click()
@@ -37,7 +37,7 @@ test('toggle: "> " creates it, Enter goes inside, collapse persists per device; 
 
 test('slash menu creates a toggle heading', async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
   await page.keyboard.type('/토글') // the menu stops at a space: pick the 3rd match

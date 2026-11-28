@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { composeKorean, failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { composeKorean, failOnConsoleErrors, newPageFromSidebar, openApp, waitForNewPage } from './helpers'
 
 // M2-21 (MB-26): Korean IME composition in every text-bearing block (CDP composition events).
 const KO = ['ㅎ', '하', '한', '한ㄱ', '한그'] as const
@@ -51,7 +51,7 @@ test.describe('Korean IME in every block (MB-26)', () => {
     test(c.name, async ({ page }) => {
       const check = failOnConsoleErrors(page)
       await openApp(page)
-      await page.click('.sidebar [data-new-page] >> nth=0')
+      await newPageFromSidebar(page)
       await waitForNewPage(page)
       await page.locator('.wn-editor').click()
       await c.setup(page)

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { openApp, reload } from './helpers'
+import { newPageFromSidebar, openApp, reload } from './helpers'
 
 // spec/02 §6: data newer than the app → read-only + "update the app" banner.
 // `webnota:debug=schema-newer` makes the build pretend its schema version is 0.
@@ -21,7 +21,7 @@ test('newer data opens read-only with an update banner', async ({ page }) => {
   await expect(page.locator('.page-title')).toHaveAttribute('readonly', '')
 
   // model writes are refused with a toast instead of changing data
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await expect(page.getByText('읽기 전용 모드에서는 바꿀 수 없습니다')).toBeVisible()
   await expect(page)
     .not.toHaveURL(/#\/page\/(?!.*welcome)/, { timeout: 100 })

@@ -554,8 +554,6 @@ export const en: Record<MessageKey, string> = {
   'settings.noExperiments': 'No experimental features right now.',
   'flag.debugLog': 'Debug logging',
   'flag.debugLog.desc': 'Writes sync activity to the browser console',
-  'flag.database': 'Database (in development)',
-  'flag.database.desc': 'Shows the Grid database in the new view menu. Not finished yet',
   'settings.about': 'About',
   'settings.files': 'Files & images',
   'settings.imageOriginal': 'Upload original images',

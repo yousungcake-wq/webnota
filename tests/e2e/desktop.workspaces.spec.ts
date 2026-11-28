@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
-import { openApp, waitForNewPage } from './helpers'
+import { newPageFromSidebar, openApp, waitForNewPage } from './helpers'
 
 test('workspaces: create, switch (separate data), remove from the device (WS-01, ST-02)', async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.fill('.page-title', 'Only in first')
 

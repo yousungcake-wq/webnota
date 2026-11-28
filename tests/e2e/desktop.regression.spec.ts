@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, reload, waitForNewPage } from './helpers'
 
 // M0-25: PoC features not covered elsewhere, on the schema v2 model.
 test.describe('PoC regression (desktop)', () => {
@@ -11,7 +11,7 @@ test.describe('PoC regression (desktop)', () => {
   test.afterEach(() => assertNoErrors())
 
   async function newPage(page: Page, title: string) {
-    await page.click('.sidebar [data-new-page] >> nth=0')
+    await newPageFromSidebar(page)
     await waitForNewPage(page)
     await page.fill('.page-title', title)
   }

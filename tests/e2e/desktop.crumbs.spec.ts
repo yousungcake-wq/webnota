@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { openApp, waitForNewPage } from './helpers'
+import { openApp, pickDocument, waitForNewPage } from './helpers'
 
 test('long breadcrumb trails collapse the middle into a menu (WS-09)', async ({ page }) => {
   await openApp(page)
@@ -8,6 +8,7 @@ test('long breadcrumb trails collapse the middle into a menu (WS-09)', async ({ 
     const row = page.locator('.sidebar .tree-row', { hasText: parent }).first()
     await row.hover()
     await row.getByLabel('하위 페이지 추가').click()
+    await pickDocument(page)
     await waitForNewPage(page)
     await page.fill('.page-title', t)
     parent = t

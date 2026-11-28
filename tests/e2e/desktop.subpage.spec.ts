@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, waitForNewPage } from './helpers'
 
 test('sub-page block: /page creates a child, title follows, deleting the block trashes it (ED-B19)', async ({
   page,
 }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.fill('.page-title', '부모')
   const ed = page.locator('.wn-editor')

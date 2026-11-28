@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
-import { openApp, waitForNewPage } from './helpers'
+import { newPageFromSidebar, openApp, waitForNewPage } from './helpers'
 
 test('slash menu: categories when browsing, recent first, ranked search (ED-F01)', async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
   await page.keyboard.type('/')
@@ -24,7 +24,7 @@ test('slash menu: categories when browsing, recent first, ranked search (ED-F01)
 
 test('a click outside the slash menu closes it; nothing stays highlighted (feedback 2-7)', async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
   await page.keyboard.type('/he')

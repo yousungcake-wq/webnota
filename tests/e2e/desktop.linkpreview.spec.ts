@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, reload, waitForNewPage } from './helpers'
 import { editorJson } from './media'
 
 const WORKER = 'https://worker.test'
@@ -41,7 +41,7 @@ const nodesOf = async (page: Page, type: string) =>
 
 test.beforeEach(async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
 })

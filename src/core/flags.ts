@@ -17,8 +17,6 @@ interface FlagDef {
 
 export const FLAGS = {
   debugLog: { kind: 'dev', default: false, label: 'flag.debugLog', description: 'flag.debugLog.desc' },
-  // M4–M5 (spec/05): Grid view while the database is unfinished. Remove when M5 ships.
-  database: { kind: 'feature', default: false, label: 'flag.database', description: 'flag.database.desc' },
 } satisfies Record<string, FlagDef>
 
 export type FlagName = keyof typeof FLAGS

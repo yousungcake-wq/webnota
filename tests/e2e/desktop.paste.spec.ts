@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, waitForNewPage } from './helpers'
 
 async function paste(page: Page, data: Record<string, string>) {
   await page.evaluate((d) => {
@@ -13,7 +13,7 @@ async function paste(page: Page, data: Record<string, string>) {
 
 test.beforeEach(async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
 })

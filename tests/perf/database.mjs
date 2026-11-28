@@ -162,6 +162,31 @@ for (let i = 0; i < RUNS; i++) {
 }
 results.filterChangeMs = Math.round(median(filters))
 
+// 5. board (M5-12, spec/05 §11 "Board 1,000 cards: no jank"): 10,000 cards grouped by Status
+// (~2,500 per column, virtualized per column). Time to show the board, then frame times
+// while a card is dragged across columns (one pointer move per frame).
+await page.keyboard.press('Escape')
+await page.getByRole('button', { name: '보기 추가' }).click()
+const tb = Date.now()
+await page.getByRole('menuitem', { name: '보드' }).click()
+await page.locator('.dbk-card').first().waitFor()
+results.boardOpenMs = Date.now() - tb
+await page.waitForTimeout(1000)
+const card = await page.locator('.dbk-col').nth(1).locator('.dbk-card').first().boundingBox()
+const target = await page.locator('.dbk-col').nth(3).boundingBox()
+await page.mouse.move(card.x + 20, card.y + 20)
+await page.mouse.down()
+const frames = []
+for (let i = 0; i < 60; i++) {
+  const t0 = Date.now()
+  await page.mouse.move(card.x + 20 + ((target.x + 40 - card.x) * i) / 60, card.y + 20 + i * 3)
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => r())))
+  frames.push(Date.now() - t0)
+}
+await page.mouse.up()
+frames.sort((a, b) => a - b)
+results.boardDragFrameMs = { median: frames[30], p95: frames[57] }
+
 await browser.close()
 server.kill()
 console.log(JSON.stringify({ cpuThrottle: RATE, rows: 10000, fields: 20, runs: RUNS, ...results }, null, 2))

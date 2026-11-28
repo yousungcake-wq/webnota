@@ -716,3 +716,13 @@
 .db-prow > select {
   max-width: 60%;
 }
+
+/* empty database guide (M5-11) */
+.db-empty-rows {
+  position: sticky;
+  left: 0;
+  padding: 24px 16px;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  text-align: center;
+}

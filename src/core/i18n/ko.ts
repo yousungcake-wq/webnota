@@ -563,8 +563,6 @@ export const ko = {
   'settings.noExperiments': '지금은 실험 중인 기능이 없습니다.',
   'flag.debugLog': '디버그 로그',
   'flag.debugLog.desc': '동기화 과정을 브라우저 콘솔에 기록합니다',
-  'flag.database': '데이터베이스 (개발 중)',
-  'flag.database.desc': '표(Grid) 데이터베이스를 새 뷰 메뉴에 표시합니다. 아직 완성되지 않았습니다',
   'settings.about': '정보',
   'settings.files': '파일과 이미지',
   'settings.imageOriginal': '이미지 원본 그대로 올리기',

@@ -3,24 +3,39 @@ import { makeImage } from './media'
 import { dbLive, enableDatabase, failOnConsoleErrors, gridCell, openApp, openQaDatabase, reload } from './helpers'
 
 test.describe('database (M4)', () => {
-  test('without the flag, "+" creates a document directly', async ({ page }) => {
-    await openApp(page)
-    await page.click('.sidebar [data-new-page] >> nth=0')
-    await expect(page.getByRole('menu')).toHaveCount(0)
-    await expect(page.locator('.wn-editor')).toBeVisible()
-  })
-
-  test('with the flag, the new view menu offers Grid and opens a database view', async ({ page }) => {
+  test('"+" offers every layout (M5-11): Grid, Board with a Status field, Calendar asking for a date field', async ({
+    page,
+  }) => {
     const noErrors = failOnConsoleErrors(page)
-    await enableDatabase(page)
     await openApp(page)
-    await page.click('.sidebar [data-new-page] >> nth=0')
-    await expect(page.getByRole('menuitem', { name: '보드' })).toBeDisabled()
+    const plus = page.locator('.sidebar [data-new-page] >> nth=0')
+    await plus.click()
+    for (const name of ['문서', '표 (Grid)', '보드', '캘린더'])
+      await expect(page.getByRole('menuitem', { name })).toBeEnabled()
     await page.getByRole('menuitem', { name: '표 (Grid)' }).click()
     // a new database starts with three empty rows (DB-F05)
     await expect(page.locator('.db-view[data-layout="grid"]')).toHaveAttribute('data-rows', '3')
     await expect(page.locator('.wn-editor')).toHaveCount(0)
+    // board: grouped by a new Status select
+    await plus.click()
+    await page.getByRole('menuitem', { name: '보드' }).click()
+    await expect(page.locator('.dbk-col')).toHaveCount(4) // no value, to do, doing, done
+    await expect(
+      page.locator('.sidebar .tree-row svg.lucide-square-kanban, .sidebar .tree-row svg.lucide-kanban-square').first(),
+    ).toBeVisible()
+    // calendar: no date field yet → create one
+    await plus.click()
+    await page.getByRole('menuitem', { name: '캘린더' }).click()
+    await page.getByRole('button', { name: '날짜 필드 만들기' }).click()
+    await expect(page.locator('.dbc-week').first()).toBeVisible()
     noErrors()
+  })
+
+  test('an empty grid explains itself (M5-11)', async ({ page }) => {
+    await openQaDatabase(page)
+    await page.locator('.db-bar').getByRole('button', { name: '검색' }).click()
+    await page.locator('.db-search-input').fill('zzz-none')
+    await expect(page.locator('.db-empty-rows')).toHaveText('필터나 검색에 맞는 행이 없습니다.')
   })
 
   test('grid shows typed cells and edits text, number, time, url and checkbox (M4-05)', async ({ page }) => {

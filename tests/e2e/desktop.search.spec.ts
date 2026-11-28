@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, reload, waitForNewPage } from './helpers'
 
 // WS-07: full-text search in a worker, Hangul bigrams, persisted index.
 test('finds pages by body text and inside Korean words; index survives a reload', async ({ page }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.fill('.page-title', '주간 정리')
   await page.locator('.wn-editor').click()

@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, waitForNewPage } from './helpers'
 
 test.beforeEach(async ({ page }) => {
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.locator('.wn-editor').click()
   await page.mouse.move(0, 0) // keep the pointer off suggestion popups (hover moves their active item)

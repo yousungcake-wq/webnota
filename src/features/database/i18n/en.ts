@@ -283,4 +283,6 @@ export const en: Record<DbKey, string> = {
   'db.inline.linkTitle': 'Choose a database to link',
   'db.inline.search': 'Search databases',
   'db.inline.none': 'No databases',
+  'db.empty.rows': "No rows yet. Add one with 'New row' below.",
+  'db.empty.filtered': 'No rows match the filter or search.',
 }

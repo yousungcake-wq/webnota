@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, newPageFromSidebar, openApp, waitForNewPage } from './helpers'
 
 // Korean-aware search everywhere (es-hangul): 초성, and a syllable still being typed.
 test('palette, search screen, @ mention, / menu and emoji understand 초성 and in-progress syllables', async ({
@@ -7,7 +7,7 @@ test('palette, search screen, @ mention, / menu and emoji understand 초성 and 
 }) => {
   const check = failOnConsoleErrors(page)
   await openApp(page)
-  await page.click('.sidebar [data-new-page] >> nth=0')
+  await newPageFromSidebar(page)
   await waitForNewPage(page)
   await page.fill('.page-title', '사과 메모')
   const ed = page.locator('.wn-editor')

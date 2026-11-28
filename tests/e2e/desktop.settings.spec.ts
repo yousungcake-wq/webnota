@@ -11,8 +11,8 @@ test('settings → advanced: developer option toggles and persists per device (S
   await expect(sw).toHaveAttribute('aria-checked', 'true')
   await reload(page)
   await expect(page.getByRole('switch', { name: /디버그 로그/ })).toHaveAttribute('aria-checked', 'true')
-  // experimental features (M4: database) are listed with their own switches
-  await expect(page.getByRole('switch', { name: /데이터베이스 \(개발 중\)/ })).toHaveAttribute('aria-checked', 'false')
+  // the database flag is gone (M5-11): no unfinished features listed
+  await expect(page.getByRole('switch', { name: /데이터베이스/ })).toHaveCount(0)
   noErrors()
 })
 

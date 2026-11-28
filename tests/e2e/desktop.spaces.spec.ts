@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { failOnConsoleErrors, openApp, reload, waitForNewPage } from './helpers'
+import { failOnConsoleErrors, openApp, pickDocument, reload, waitForNewPage } from './helpers'
 
 test('spaces: all listed, create, new page per space, fold, edit, reorder, delete (WS-02, feedback 7)', async ({
   page,
@@ -26,6 +26,7 @@ test('spaces: all listed, create, new page per space, fold, edit, reorder, delet
   // "+" of a space creates the page in that space
   await section('업무').hover()
   await section('업무').getByRole('button', { name: '새 페이지' }).click()
+  await pickDocument(page)
   await waitForNewPage(page)
   await page.fill('.page-title', '업무 페이지')
   await expect(section('업무').locator('.tree-title')).toHaveText(['업무 페이지'])
@@ -86,6 +87,7 @@ test('deep pages: indentation stops and dots show the extra levels; "+" stays re
     const last = rows.last()
     await last.hover()
     await last.getByRole('button', { name: '하위 페이지 추가' }).click()
+    await pickDocument(page)
     await waitForNewPage(page)
   }
   const deepest = page.locator('.sidebar .tree-row').last()

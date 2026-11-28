@@ -5,7 +5,7 @@ import { visibleSpaces } from '@/core/model/views'
 import { setCurrentSpace, useRecent } from '@/core/store/prefs'
 import { href } from '@/core/store/router'
 import { useAliveViews, useCurrentSpace, useSpaces } from '@/core/store/views'
-import { displayTitle, newView, ViewIcon } from '@/features/page'
+import { addPage, displayTitle, newView, ViewIcon } from '@/features/page'
 import { PageTree } from '@/features/sidebar'
 import { SpaceBadge, SpaceSwitcher } from '@/features/spaces'
 import { SyncBadge } from '@/features/sync'
@@ -64,7 +64,8 @@ export function HomeView() {
         type="button"
         className="fab"
         aria-label={t('common.newPage')}
-        onClick={(e) => newView(e.currentTarget, null, spaceId)}
+        // the quick path: a document right away; "+" by the tree offers every layout (M5-11)
+        onClick={() => addPage(null, spaceId)}
       >
         <Plus size={26} />
       </button>

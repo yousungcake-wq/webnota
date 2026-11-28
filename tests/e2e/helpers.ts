@@ -124,3 +124,14 @@ export async function gridCell(page: Page, row: number, column: string) {
   await cell.scrollIntoViewIfNeeded()
   return cell
 }
+
+/** The sidebar "+" (first space): since M5-11 it offers every layout — pick "문서". */
+export async function newPageFromSidebar(page: Page) {
+  await page.click('.sidebar [data-new-page] >> nth=0')
+  await pickDocument(page)
+}
+
+/** After a "+" (new view menu, M5-11): choose a document. */
+export async function pickDocument(page: Page) {
+  await page.getByRole('menuitem', { name: /^(문서|Document)$/ }).click()
+}
