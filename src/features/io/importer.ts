@@ -91,14 +91,15 @@ async function withDoc<T>(name: string, f: (doc: Awaited<ReturnType<typeof openD
   }
 }
 
-export async function importZip(bytes: Uint8Array): Promise<ImportResult> {
+/** `into`: an existing space to import into (M8-11); by default a new space is made. */
+export async function importZip(bytes: Uint8Array, into?: string): Promise<ImportResult> {
   const files = readZip(bytes)
   const manifest = [...files.keys()].find((p) => nameOf(p) === 'webnota.json')
   if (manifest) {
     const data = JSON.parse(strFromU8(files.get(manifest)!)) as WebnotaExport
-    if (data.format === EXPORT_FORMAT) return importWebnota(data, files, dirOf(manifest))
+    if (data.format === EXPORT_FORMAT) return importWebnota(data, files, dirOf(manifest), into)
   }
-  return importTree(files, { pages: NOTION_PAGES, spaceName: it('io.notionSpace') })
+  return importTree(files, { pages: NOTION_PAGES, spaceName: it('io.notionSpace'), into })
 }
 
 /**
@@ -106,16 +107,16 @@ export async function importZip(bytes: Uint8Array): Promise<ImportResult> {
  * like `Notes/Ideas.md`, a folder `Notes/` beside `Notes.md` holds its sub-pages), with
  * the images and files they link to; a single zip is a Notion or WebNota export.
  */
-export async function importFiles(picked: { path: string; data: Uint8Array }[]): Promise<ImportResult> {
+export async function importFiles(picked: { path: string; data: Uint8Array }[], into?: string): Promise<ImportResult> {
   const zips = picked.filter((f) => /\.zip$/i.test(f.path))
-  if (zips.length === 1 && picked.length === 1) return importZip(zips[0]!.data)
+  if (zips.length === 1 && picked.length === 1) return importZip(zips[0]!.data, into)
   const files = new Map<string, Uint8Array>()
   for (const f of picked) {
     if (/\.zip$/i.test(f.path)) readZip(f.data, dirOf(f.path) ? `${dirOf(f.path)}/` : '', files)
     else files.set(f.path, f.data)
   }
   const { root, files: tree } = folderPages(files)
-  return importTree(tree, { pages: FILE_PAGES, spaceName: root ?? it('io.filesSpace'), dated: !root })
+  return importTree(tree, { pages: FILE_PAGES, spaceName: root ?? it('io.filesSpace'), dated: !root, into })
 }
 
 /**
@@ -202,7 +203,12 @@ function htmlAttachments(html: string, dir: string): string[] {
 
 // ---------- WebNota (lossless) ----------
 
-async function importWebnota(data: WebnotaExport, zip: Map<string, Uint8Array>, root: string): Promise<ImportResult> {
+async function importWebnota(
+  data: WebnotaExport,
+  zip: Map<string, Uint8Array>,
+  root: string,
+  into?: string,
+): Promise<ImportResult> {
   const io = await loadDocIO()
   const at = (p: string) => (root ? `${root}/${p}` : p)
   // files first: ids are content hashes, so the same bytes get the same id back
@@ -233,8 +239,11 @@ async function importWebnota(data: WebnotaExport, zip: Map<string, Uint8Array>, 
   const firstSpace = () => spaces.values().next().value as string
   for (const s of data.spaces)
     if (data.views.some((v) => v.spaceId === s.id && !v.parentId))
-      spaces.set(s.id, createSpace(ws(), { name: s.name, icon: s.icon, color: s.color, visibility: s.visibility }))
-  if (!spaces.size) spaces.set('', createSpace(ws(), { name: it('io.importedSpace') }))
+      spaces.set(
+        s.id,
+        into ?? createSpace(ws(), { name: s.name, icon: s.icon, color: s.color, visibility: s.visibility }),
+      )
+  if (!spaces.size) spaces.set('', into ?? createSpace(ws(), { name: it('io.importedSpace') }))
 
   for (const v of data.views)
     createView(ws(), {
@@ -352,7 +361,7 @@ export function stripNotionProperties(md: string): string {
 
 async function importTree(
   zip: Map<string, Uint8Array>,
-  opts: { pages: RegExp; spaceName: string; dated?: boolean },
+  opts: { pages: RegExp; spaceName: string; dated?: boolean; into?: string },
 ): Promise<ImportResult> {
   const text = (p: string) => decodeText(zip.get(p)!)
   const plan = linkParents(planNotionImport([...zip.keys()], opts.pages), (p) =>
@@ -367,7 +376,8 @@ async function importTree(
     }
   const [io, { markdownToHtml }] = await Promise.all([loadDocIO(), loadMarkdown()])
   const day = new Date().toISOString().slice(0, 10)
-  const spaceId = createSpace(ws(), { name: opts.dated === false ? opts.spaceName : `${opts.spaceName} ${day}` })
+  const spaceId =
+    opts.into ?? createSpace(ws(), { name: opts.dated === false ? opts.spaceName : `${opts.spaceName} ${day}` })
   const viewOf = new Map<string, string>()
   // imported databases: their rows by title, for relations and row pages (M8-04)
   const dbs = new Map<string, ImportedDb>()

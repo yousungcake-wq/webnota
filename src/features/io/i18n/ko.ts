@@ -16,6 +16,12 @@ export const ko = {
   'io.nothing': '가져올 Markdown·텍스트·HTML·CSV 파일을 찾지 못했습니다',
   'io.notionSpace': 'Notion',
   'io.importedSpace': '가져온 페이지',
+  'io.target': '가져올 곳',
+  'io.targetNew': '새 스페이스',
+  'io.targetCurrent': '현재 스페이스 ({name})',
+  'io.cancel': '멈추기',
+  'io.cancelled': '멈췄습니다. 그때까지 가져온 내용은 남아 있습니다.',
+  'io.hintCurrent': '현재 스페이스 맨 아래에 추가합니다. 기존 페이지는 바뀌지 않습니다.',
   'io.hint': '가져오기는 항상 새 스페이스를 만들며 기존 페이지는 바뀌지 않습니다.',
 }
 export type IoKey = keyof typeof ko

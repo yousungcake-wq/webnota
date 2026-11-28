@@ -17,5 +17,11 @@ export const en: Record<IoKey, string> = {
   'io.nothing': 'No Markdown, text, HTML or CSV files to import',
   'io.notionSpace': 'Notion',
   'io.importedSpace': 'Imported pages',
+  'io.target': 'Import into',
+  'io.targetNew': 'A new space',
+  'io.targetCurrent': 'This space ({name})',
+  'io.cancel': 'Stop',
+  'io.cancelled': 'Stopped. What was imported so far stays.',
+  'io.hintCurrent': 'Adds at the bottom of the current space; existing pages are not changed.',
   'io.hint': 'Importing always creates a new space; existing pages are not changed.',
 }
