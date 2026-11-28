@@ -22,6 +22,7 @@ import { SyncBadge } from '@/features/sync'
 import { useLayout } from '@/platform/layout'
 import { Button, confirmDialog, EmptyState, ErrorBoundary, IconButton, LinkButton, Menu, Skeleton } from '@/ui'
 import { collapseCrumbs } from './crumbs'
+import { useEdgeBack } from './edgeBack'
 import { deleteForever, restore, toggleFavorite } from './actions'
 import { PageMenu } from './LazyPageMenu'
 import './page.css'
@@ -54,6 +55,7 @@ export function PageView({
   const route = useRoute()
   const block = route.name === 'page' && route.id === id ? route.block : undefined
   const phone = useLayout().layout === 'phone'
+  useEdgeBack(phone, goBack)
   const [loaded, setLoaded] = useState<{ id: string; doc: Y.Doc } | null>(null)
   const doc = loaded?.id === id ? loaded.doc : null
   const editorRef = useRef<TEditor | null>(null)

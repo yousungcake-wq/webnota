@@ -1,5 +1,5 @@
 import { ChevronRight, MoreHorizontal, Plus } from 'lucide-react'
-import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { beginDrag, beginListDrag, keyboardMove, preloadDrag } from './dragStart'
 import { useAliveViews, useFavoriteIds, useViews } from '@/core/store/views'
 import { flattenTree } from './flatten'
@@ -24,6 +24,9 @@ interface RowProps {
   open: boolean
   current: boolean
 }
+
+/** Swipe actions on phones (MB-13): its own chunk. */
+const TreeSwipe = lazy(() => import('./TreeSwipe'))
 
 /** One tree row. Memoized: re-renders only when its own view or position changes. */
 const INDENT = 16
@@ -156,6 +159,7 @@ export function PageTree({ spaceId, currentId }: { spaceId: string; currentId?: 
     latest.current = { rows, views }
   })
   const held = useHeldMenu(listRef, (id) => latest.current.views.find((v) => v.id === id))
+  const phone = useLayout().layout === 'phone'
   const onPointerDown = (e: React.PointerEvent<HTMLUListElement>) => {
     held.pointer(e)
     beginDrag(
@@ -191,6 +195,11 @@ export function PageTree({ spaceId, currentId }: { spaceId: string; currentId?: 
         />
       ))}
       {held.menu}
+      {phone && (
+        <Suspense fallback={null}>
+          <TreeSwipe listRef={listRef} />
+        </Suspense>
+      )}
     </ul>
   )
 }

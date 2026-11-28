@@ -174,3 +174,35 @@ body.is-tree-dragging * {
 .tree-actions {
   flex: none;
 }
+
+/* Swipe actions on phones (MB-13, M7-04) */
+.phone .tree li {
+  position: relative;
+}
+.phone .tree-row {
+  touch-action: pan-y;
+  transition: transform var(--dur) var(--ease);
+}
+.phone .tree-row.is-swiped {
+  position: relative;
+  z-index: 1;
+  background: var(--bg);
+}
+.tree-swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 44px;
+  display: flex;
+}
+.tree-swipe-btn {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  background: var(--bg-active);
+  color: var(--text);
+}
+.tree-swipe-btn.is-danger {
+  background: var(--danger);
+  color: var(--text-on-accent);
+}
