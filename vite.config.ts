@@ -57,6 +57,13 @@ export default defineConfig({
           { src: 'icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
+        // MB-43: "Share" from other Android apps opens a new page with the text / link
+        share_target: {
+          action: base,
+          method: 'GET',
+          enctype: 'application/x-www-form-urlencoded',
+          params: { title: 'share-title', text: 'share-text', url: 'share-url' },
+        },
         // MB-44: long-press shortcuts. Names stay Korean like the rest of the manifest (lang: ko).
         shortcuts: [
           {

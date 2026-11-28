@@ -67,7 +67,7 @@ MB-30·34 구현 (M4-13): 터치 화면은 행·헤더 44px. 셀을 탭하면(�
 | MB-40 | 설치 안내: Android는 `beforeinstallprompt`로 설치 버튼, iOS는 "공유 → 홈 화면에 추가" 안내 시트 (최초 3회 방문 후 1회) ✅ — 구현(M7-09): `platform/install.ts`가 부팅 때 `beforeinstallprompt`를 잡아 두고 방문 수를 셈(탭 세션당 1). 터치 기기에서 3번째 방문부터 한 번: Android/Chrome은 "설치" 버튼이 있는 토스트, iOS Safari는 3단계 안내 대화상자. 설정 "앱 설치" 카드: 설치 버튼 / iOS 설치 방법 / 설치됨. 설치 후(standalone·`appinstalled`) 숨김. 문자열은 지연 사전(features/install) |
 | MB-41 | 업데이트 알림: 새 버전 감지 시 "업데이트 준비됨 [새로 고침]" 토스트 (편집 중 강제 새로 고침 금지) ✅ — 구현(M7-10, DECISIONS 023): 새 서비스 워커는 대기, 토스트의 "새로 고침"으로만 바로 적용(그 외엔 다음 실행). 1시간마다·앱이 앞으로 올 때 확인. 스키마 배너의 "앱 업데이트"도 같은 경로 |
 | MB-42 | 앱 아이콘: PNG 192/512 + maskable + Apple touch icon 180 (SVG만으로는 일부 Android 런처가 무시) — ✅ M0-26: `public/icons/`, SVG에서 `scripts/gen-icons.mjs`(Playwright Chromium)로 생성 |
-| MB-43 | 공유 대상(Web Share Target, Android): 다른 앱에서 텍스트/링크 공유 → 새 페이지 또는 "빠른 메모" 페이지에 추가 (P2) |
+| MB-43 | 공유 대상(Web Share Target, Android): 다른 앱에서 텍스트/링크 공유 → 새 페이지 또는 "빠른 메모" 페이지에 추가 (P2) ✅ — 구현(M7-11): manifest `share_target`(GET, `share-title/share-text/share-url`) → 새 페이지. 제목은 공유 제목, 없으면 첫 줄, 없으면 링크의 사이트 이름. 본문은 줄마다 문단, 링크는 링크 문단(텍스트 안의 링크도 꺼냄, http(s)만). "빠른 메모"에 붙이기는 빠른 메모 기능이 생길 때(M10) 함께 |
 | MB-44 | 앱 바로가기(manifest shortcuts): 새 페이지, 검색 — ✅ M0-26: 새 페이지는 `?action=new-page`(부팅 시 페이지 생성 후 URL에서 제거), 검색은 `#/search` |
 
 ## 7. 실기기 검증 매트릭스

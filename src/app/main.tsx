@@ -62,9 +62,13 @@ async function boot() {
   if ((debugFlag('seed-db') || debugFlag('seed-db-10k')) && !isReadOnly()) await (await import('./qa/seedDb')).seedDb() // QA: M4 grid
 
   // Home-screen shortcut "new page" (MB-44): `?action=new-page`, removed from the URL.
-  const action = new URLSearchParams(location.search).get('action')
-  if (action) history.replaceState(history.state, '', location.pathname + location.hash)
+  // Shared from another app (MB-43): `?share-title=…&share-text=…&share-url=…`, a new page.
+  const query = new URLSearchParams(location.search)
+  const action = query.get('action')
+  const shared = ['share-title', 'share-text', 'share-url'].some((k) => query.has(k))
+  if (action || shared) history.replaceState(history.state, '', location.pathname + location.hash)
   if (action === 'new-page' && !isReadOnly()) addPage(null)
+  if (shared && !isReadOnly()) void import('./share').then((m) => m.handleShare(query))
 
   root.render(
     <StrictMode>
