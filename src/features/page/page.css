@@ -546,3 +546,36 @@
     break-inside: avoid;
   }
 }
+
+/* empty page: start from a template (M8-09) */
+.template-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+.template-strip-label {
+  margin-right: 4px;
+}
+.template-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  color: var(--text-2);
+}
+.template-chip:hover {
+  background: var(--bg-hover);
+}
+@media (pointer: coarse) {
+  .template-chip {
+    min-height: 44px;
+    border-radius: 22px;
+  }
+}

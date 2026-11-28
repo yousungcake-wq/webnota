@@ -14,7 +14,7 @@ interface Entry {
 
 const stack: Entry[] = []
 let nextId = 1
-/** Programmatic `history.back()` calls whose popstate has not arrived yet. */
+/** Programmatic `history.go(-n)` calls whose popstate has not arrived yet (one event per call). */
 let ownPops = 0
 let idle: Promise<void> = Promise.resolve()
 let settle: (() => void) | null = null
@@ -52,7 +52,9 @@ export function pushOverlayEntry(onPop: () => void): () => void {
     // us now, and going back would undo that navigation (feedback 10). Leave it.
     if (stateId() < entry.id) return
     if (ownPops === 0) idle = new Promise((r) => (settle = r))
-    ownPops += removed
+    // one popstate per go() call, however many entries it skips (a sheet and its submenu
+    // closing together used to leave the count at 1 forever — M8-09)
+    ownPops += 1
     history.go(-removed)
   }
 }

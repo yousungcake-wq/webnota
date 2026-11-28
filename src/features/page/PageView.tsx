@@ -24,6 +24,7 @@ import { Button, confirmDialog, EmptyState, ErrorBoundary, IconButton, LinkButto
 import { collapseCrumbs } from './crumbs'
 import { useEdgeBack } from './edgeBack'
 import { keepPosition, restorePosition } from './keepPosition'
+import { TemplateStrip } from './TemplateStrip'
 import { deleteForever, restore, toggleFavorite } from './actions'
 import { PageMenu } from './LazyPageMenu'
 import './page.css'
@@ -251,6 +252,7 @@ export function PageView({
                   locked={page.locked || inTrash}
                 />
               </ErrorBoundary>
+              {!readOnly && <TemplateStrip doc={doc} viewId={id} />}
             </Suspense>
           ) : (
             <Skeleton className="editor-loading" />

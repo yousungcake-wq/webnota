@@ -57,6 +57,8 @@ export const en: Record<MessageKey, string> = {
   'page.copyLink': 'Copy link',
   'page.export': 'Export',
   'page.exportMarkdown': 'Markdown',
+  'newView.template': 'Templates',
+  'page.templates': 'Start from a template',
   'page.print': 'Print / Save as PDF',
   'page.exportHtml': 'HTML file',
   'page.exportDone': 'Saved {name}',

@@ -63,6 +63,8 @@ export const ko = {
   'page.copyLink': '링크 복사',
   'page.export': '내보내기',
   'page.exportMarkdown': 'Markdown',
+  'newView.template': '템플릿',
+  'page.templates': '템플릿으로 시작',
   'page.print': '인쇄 / PDF로 저장',
   'page.exportHtml': 'HTML 파일',
   'page.exportDone': '{name}을(를) 저장했습니다',

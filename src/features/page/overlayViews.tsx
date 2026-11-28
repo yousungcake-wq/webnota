@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { openDoc, pageDocName } from '@/core/docs/registry'
 import { getLang, t } from '@/core/i18n'
 import { getView } from '@/core/model/views'
 import { ws } from '@/core/docs/workspace'
 import { Button, Dialog, Menu } from '@/ui'
 import { addPage } from './actions'
+import { afterMenuClosed } from './rename'
 import { importCsvAsDatabase } from '@/features/database'
+import { loadTemplateActions, loadTemplates } from '@/features/templates'
 import { VIEW_LAYOUTS } from './newView'
 import { IconPicker } from './IconPicker'
 import { MoveDialog } from './MoveDialog'
@@ -28,24 +30,43 @@ function pickCsv(parentId: string | null, spaceId?: string) {
 }
 
 export default function OverlayViews({ open, close }: { open: Open; close: () => void }) {
-  if (open.kind === 'newView')
-    return (
-      <Menu
-        anchor={open.anchor}
-        title={t('common.newPage')}
-        onClose={close}
-        items={[
-          ...VIEW_LAYOUTS.map((l) => ({
-            label: t(l.label),
-            disabled: !l.available(),
-            onSelect: () => addPage(open.parentId, open.spaceId, l.layout),
+  if (open.kind === 'newView') return <NewViewMenu open={open} close={close} />
+  return <OtherOverlays open={open} close={close} />
+}
+
+function NewViewMenu({ open, close }: { open: Extract<Open, { kind: 'newView' }>; close: () => void }) {
+  const templates = use(loadTemplates()) // M8-09
+  return (
+    <Menu
+      anchor={open.anchor}
+      title={t('common.newPage')}
+      onClose={close}
+      items={[
+        ...VIEW_LAYOUTS.map((l) => ({
+          label: t(l.label),
+          disabled: !l.available(),
+          onSelect: () => addPage(open.parentId, open.spaceId, l.layout),
+        })),
+        'separator',
+        // M6-06: the file picker opens inside the click (browsers need the gesture)
+        { label: t('newView.csv'), onSelect: () => pickCsv(open.parentId, open.spaceId) },
+        {
+          label: t('newView.template'),
+          children: templates.map((tpl) => ({
+            label: `${tpl.icon}  ${tpl.name}`,
+            // after the menu (phone sheets) has closed: its history pop must not undo the navigation
+            onSelect: () =>
+              void Promise.all([loadTemplateActions(), afterMenuClosed()]).then(([m]) =>
+                m.createFromTemplate(tpl, open.parentId, open.spaceId),
+              ),
           })),
-          'separator',
-          // M6-06: the file picker opens inside the click (browsers need the gesture)
-          { label: t('newView.csv'), onSelect: () => pickCsv(open.parentId, open.spaceId) },
-        ]}
-      />
-    )
+        },
+      ]}
+    />
+  )
+}
+
+function OtherOverlays({ open, close }: { open: Exclude<Open, { kind: 'newView' }>; close: () => void }) {
   const view = getView(ws(), open.viewId)
   if (!view) return null
   if (open.kind === 'icon') {
