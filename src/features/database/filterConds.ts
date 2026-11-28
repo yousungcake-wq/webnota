@@ -32,8 +32,12 @@ export function condsFor(type: FieldType): FilterCond[] {
       return ['checked', 'unchecked']
     case 'checklist':
       return ['allDone', 'notAllDone', 'isEmpty', 'isNotEmpty']
-    case 'media':
     case 'relation':
+      // by the linked rows' titles (M6-05)
+      return ['contains', 'notContains', 'isEmpty', 'isNotEmpty']
+    case 'rollup':
+      return ['contains', 'notContains', 'eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'isEmpty', 'isNotEmpty']
+    case 'media':
     case 'person':
       return ['isEmpty', 'isNotEmpty']
     default:

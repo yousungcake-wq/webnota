@@ -181,7 +181,8 @@ function FilterValue({
   onChange: (v: unknown) => void
 }) {
   const label = dt('db.filter.value')
-  switch (field.type) {
+  const numeric = ['eq', 'neq', 'gt', 'gte', 'lt', 'lte'].includes(filter.cond)
+  switch (field.type === 'rollup' ? (numeric ? 'number' : 'text') : field.type) {
     case 'number':
     case 'time':
       return (

@@ -134,7 +134,7 @@ export function FieldMenu({
             onPick={(t) => {
               setTypesOpen(false)
               onClose()
-              void changeFieldType(docs, field, t)
+              void changeFieldType(docs, field, t, rel ? rel.target(targetOf(field, rel.dbId)) : null)
             }}
           />
         ) : (

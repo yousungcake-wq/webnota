@@ -27,10 +27,12 @@ export function convertValue(
   to: FieldType,
   v: unknown,
   choices: SelectChoice[],
+  /** Display text of a value that needs another database (relation titles, M6-05). */
+  textOf?: (v: unknown) => string,
 ): CellValue | undefined {
   if (from.type === to) return v as CellValue
   if (emptyValue(v) && from.type !== 'createdTime' && from.type !== 'updatedTime') return undefined
-  const text = () => (from.type === 'checkbox' ? (v === true ? 'true' : '') : cellText(from, v))
+  const text = () => (textOf ? textOf(v) : from.type === 'checkbox' ? (v === true ? 'true' : '') : cellText(from, v))
   const option = (name: string) => {
     const n = name.trim()
     if (!n) return null
@@ -63,8 +65,9 @@ export function convertValue(
           if (!choices.some((c) => c.id === id)) choices.push(choicesOf(from).find((c) => c.id === id)!)
         return to === 'select' ? (ids[0] ?? undefined) : ids.length ? ids : undefined
       }
-      if (from.type !== 'text' && from.type !== 'url') return undefined
-      const s = asText(v)
+      // text, or relation titles (M6-05) → options
+      if (from.type !== 'text' && from.type !== 'url' && !textOf) return undefined
+      const s = textOf ? text() : asText(v)
       if (to === 'select') return option(s) ?? undefined
       const ids = [
         ...new Set(
@@ -114,7 +117,12 @@ export interface ConversionPlan {
 }
 
 /** What converting `fieldId` to `to` would do, without changing anything. */
-export function planConversion(db: DbDocs, fieldId: string, to: FieldType): ConversionPlan {
+export function planConversion(
+  db: DbDocs,
+  fieldId: string,
+  to: FieldType,
+  textOf?: (v: unknown) => string,
+): ConversionPlan {
   const field = getField(db, fieldId)
   const plan: ConversionPlan = { lostCount: 0, choices: [], cells: new Map() }
   if (!field) return plan
@@ -131,7 +139,7 @@ export function planConversion(db: DbDocs, fieldId: string, to: FieldType): Conv
     const cells = rm.get('cells')
     const stored = cells instanceof Y.Map ? cells.get(fieldId) : undefined
     const v = computedFrom ? rm.get(field.type === 'createdTime' ? 'createdAt' : 'updatedAt') : stored
-    const out = COMPUTED.has(to) ? undefined : convertValue(field, to, v, plan.choices)
+    const out = COMPUTED.has(to) ? undefined : convertValue(field, to, v, plan.choices, textOf)
     if (!computedFrom && lost(field, v, out)) plan.lostCount++
     if (computedFrom ? out !== undefined : JSON.stringify(out ?? null) !== JSON.stringify(stored ?? null))
       plan.cells.set(rowId, out)
@@ -144,12 +152,17 @@ export function planConversion(db: DbDocs, fieldId: string, to: FieldType): Conv
  * old type, options and values back — except cells edited after the conversion. The UI
  * offers it for 30 seconds.
  */
-export function convertField(db: DbDocs, fieldId: string, to: FieldType): (() => void) | null {
+export function convertField(
+  db: DbDocs,
+  fieldId: string,
+  to: FieldType,
+  textOf?: (v: unknown) => string,
+): (() => void) | null {
   assertWritable()
   if (fieldId === readDbMeta(db).primaryFieldId) throw new PrimaryFieldError()
   const field = getField(db, fieldId)
   if (!field || field.type === to) return null
-  const plan = planConversion(db, fieldId, to)
+  const plan = planConversion(db, fieldId, to, textOf)
   const before = new Map<string, CellValue | undefined>()
   const fm = db.schema.getMap<Y.Map<unknown>>('fields').get(fieldId)!
   const opts = fm.get('options') as Y.Map<unknown>

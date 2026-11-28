@@ -524,3 +524,46 @@ describe('query properties (fast-check)', () => {
 })
 
 const hasNoValue = (f: Filter) => f.value === '' || (Array.isArray(f.value) && f.value.length === 0)
+
+describe('relations and rollups in queries (M6-05)', () => {
+  const rel: FieldMeta = { id: 'rel', name: 'Rel', type: 'relation', options: {}, createdAt: 0 }
+  const roll: FieldMeta = { id: 'roll', name: 'Roll', type: 'rollup', options: {}, createdAt: 0 }
+  const row = (id: string, order: string): RowSnapshot => ({
+    id,
+    order,
+    cells: { rel: id === 'c' ? [] : ['x'] },
+    icon: null,
+    cover: null,
+    hasDoc: false,
+    createdAt: 0,
+    createdBy: '',
+    updatedAt: 0,
+    updatedBy: '',
+  })
+  const rows = [row('a', 'a0'), row('b', 'a1'), row('c', 'a2')]
+  const derived = { rel: { a: 'Ann, Bob', b: 'Cid' }, roll: { a: 5, b: 12 } }
+  const run = (view: QueryInput['view'], search?: string) =>
+    runQuery({ fields: [rel, roll], rows, view, now: 0, derived, search }).rowIds
+
+  it('filters relations by linked titles and emptiness', () => {
+    const f = (cond: string, value?: unknown) => ({
+      op: 'and' as const,
+      items: [{ id: 'f', fieldId: 'rel', cond: cond as never, value }],
+    })
+    expect(run({ filter: f('contains', 'bob'), sorts: [] })).toEqual(['a'])
+    expect(run({ filter: f('notContains', 'bob'), sorts: [] })).toEqual(['b', 'c'])
+    expect(run({ filter: f('isEmpty'), sorts: [] })).toEqual(['c'])
+  })
+
+  it('filters rollups by number or text, sorts by derived values (empty last), searches them', () => {
+    const f = (cond: string, value?: unknown) => ({
+      op: 'and' as const,
+      items: [{ id: 'f', fieldId: 'roll', cond: cond as never, value }],
+    })
+    expect(run({ filter: f('gt', 6), sorts: [] })).toEqual(['b'])
+    expect(run({ filter: f('isEmpty'), sorts: [] })).toEqual(['c'])
+    expect(run({ filter: null, sorts: [{ id: 's', fieldId: 'roll', dir: 'desc' }] })).toEqual(['b', 'a', 'c'])
+    expect(run({ filter: null, sorts: [{ id: 's', fieldId: 'rel', dir: 'asc' }] })).toEqual(['a', 'b', 'c'])
+    expect(run({ filter: null, sorts: [] }, 'cid')).toEqual(['b'])
+  })
+})

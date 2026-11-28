@@ -165,4 +165,68 @@ test.describe('relations (M6)', () => {
     await expect(page.locator('.dbc-editor')).toHaveCount(0)
     noErrors()
   })
+
+  test('filter and sort by a relation, search its titles, convert it to text (M6-05)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    const grid = page.getByRole('grid')
+    const rowCount = async () => Number(await grid.getAttribute('aria-rowcount')) - 1
+    await page.getByRole('button', { name: '필드 추가' }).click()
+    await page.getByRole('dialog', { name: '필드 추가' }).getByRole('option', { name: '관계' }).click()
+    await expect(page.getByRole('dialog', { name: /필드 메뉴/ })).toBeVisible()
+    await page.keyboard.press('Escape')
+    for (const [row, target] of [
+      [0, 'Item 9'],
+      [1, 'Item 7'],
+    ] as const) {
+      const c = await gridCell(page, row, '관계')
+      await c.click({ position: { x: 5, y: 5 } })
+      if (!(await page.getByRole('dialog', { name: '관계' }).isVisible())) await c.click({ position: { x: 5, y: 5 } })
+      const pop = page.getByRole('dialog', { name: '관계' })
+      await pop.getByLabel('행 검색').fill(target)
+      await pop.getByRole('option', { name: target, exact: true }).click()
+      await page.keyboard.press('Escape')
+      await expect(pop).toHaveCount(0)
+    }
+    // filter: relation contains "Item 7"
+    await page.getByRole('button', { name: '필터', exact: true }).click()
+    const panel = page.getByRole('dialog', { name: '필터' })
+    await panel.getByRole('button', { name: '필터 추가' }).click()
+    await panel.getByLabel('필드').selectOption({ label: '관계' })
+    await panel.getByLabel('값').fill('Item 7')
+    await expect.poll(rowCount).toBe(1)
+    await expect(await gridCell(page, 0, 'Name')).toHaveText(/Item 2/)
+    await panel.getByLabel('조건').selectOption('isEmpty')
+    await expect.poll(rowCount).toBe(48)
+    await page.keyboard.press('Escape')
+    await page.getByRole('button', { name: /^필터/ }).click()
+    await page
+      .getByRole('dialog', { name: '필터' })
+      .getByRole('button', { name: /필터 삭제|삭제/ })
+      .first()
+      .click()
+    await page.keyboard.press('Escape')
+    await expect.poll(rowCount).toBe(50)
+    // sort by relation titles: Item 7 (row 2) before Item 9 (row 1), empty last
+    await page.getByRole('button', { name: '정렬', exact: true }).click()
+    const sort = page.getByRole('dialog', { name: '정렬' })
+    await sort.getByRole('button', { name: '정렬 추가' }).click()
+    await sort.getByLabel('필드').first().selectOption({ label: '관계' })
+    await page.keyboard.press('Escape')
+    await expect(await gridCell(page, 0, 'Name')).toHaveText(/Item 2/)
+    await expect(await gridCell(page, 1, 'Name')).toHaveText(/Item 1/)
+    // search finds a row by its linked title
+    await page.locator('.db-bar').getByRole('button', { name: '검색' }).click()
+    await page.locator('.db-search-input').fill('Item 9')
+    await expect.poll(rowCount).toBe(2) // Item 9 itself and the row linking it
+    await page.keyboard.press('Escape')
+    // convert to text: the titles stay
+    await gridCell(page, 0, '관계')
+    await page.locator('.dbg-hcell', { hasText: '관계' }).click()
+    const menu = page.getByRole('dialog', { name: /필드 메뉴/ })
+    await menu.getByRole('button', { name: /유형/ }).click()
+    await menu.getByRole('option', { name: '텍스트' }).click()
+    await expect(await gridCell(page, 0, '관계')).toHaveText('Item 7')
+    noErrors()
+  })
 })

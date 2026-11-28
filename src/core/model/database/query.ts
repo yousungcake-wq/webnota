@@ -35,6 +35,12 @@ export interface QueryInput {
   searchFields?: string[]
   /** First day of the week for "this week": 0 = Sunday, 1 = Monday. */
   weekStart?: 0 | 1
+  /**
+   * Values from other databases (M6-05), by field then row: a relation's linked titles
+   * (text), a rollup's result (number for calculations, text for value lists). Plain data
+   * so it can go to the query worker. Missing = empty.
+   */
+  derived?: Record<string, Record<string, string | number>>
 }
 
 export interface CalcResult {
@@ -61,7 +67,60 @@ export interface CompiledQuery {
   compare(a: RowSnapshot, b: RowSnapshot): number
 }
 
-type Ctx = Pick<QueryInput, 'now' | 'weekStart'>
+type Ctx = Pick<QueryInput, 'now' | 'weekStart' | 'derived'>
+
+/** A relation / rollup value for filtering, sorting and search (M6-05). */
+const derivedOf = (ctx: Ctx, field: FieldMeta, row: RowSnapshot) => ctx.derived?.[field.id]?.[row.id]
+const DERIVED: ReadonlySet<string> = new Set(['rollup'])
+const TEXT_CONDS: ReadonlySet<FilterCond> = new Set([
+  'contains',
+  'notContains',
+  'is',
+  'isNot',
+  'startsWith',
+  'endsWith',
+])
+
+function testText(cond: FilterCond, text: string, value: unknown): boolean {
+  const cell = text.toLocaleLowerCase()
+  const q = String(value).toLocaleLowerCase()
+  switch (cond) {
+    case 'contains':
+      return cell.includes(q)
+    case 'notContains':
+      return !cell.includes(q)
+    case 'is':
+      return cell === q
+    case 'isNot':
+      return cell !== q
+    case 'startsWith':
+      return cell.startsWith(q)
+    case 'endsWith':
+      return cell.endsWith(q)
+  }
+  return true
+}
+
+function testNumber(cond: FilterCond, n: number | null, value: unknown): boolean {
+  const q = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(q)) return true
+  if (n === null) return cond === 'neq'
+  switch (cond) {
+    case 'eq':
+      return n === q
+    case 'neq':
+      return n !== q
+    case 'gt':
+      return n > q
+    case 'gte':
+      return n >= q
+    case 'lt':
+      return n < q
+    case 'lte':
+      return n <= q
+  }
+  return true
+}
 
 const collator = new Intl.Collator('ko', { numeric: true })
 
@@ -111,7 +170,20 @@ const hasValue = (v: unknown) => !(v === undefined || v === null || v === '' || 
 /** Does `row` pass one filter condition? Unknown fields/conditions pass (spec/05 §4.2). */
 function testFilter(f: Filter, field: FieldMeta | undefined, row: RowSnapshot, ctx: Ctx): boolean {
   if (!field) return true
+  if (DERIVED.has(field.type)) {
+    // a rollup: its computed value decides (number conditions for calculations)
+    const d = derivedOf(ctx, field, row)
+    const empty = d === undefined || d === ''
+    if (f.cond === 'isEmpty') return empty
+    if (f.cond === 'isNotEmpty') return !empty
+    if (!hasValue(f.value)) return true
+    return TEXT_CONDS.has(f.cond)
+      ? testText(f.cond, d === undefined ? '' : String(d), f.value)
+      : testNumber(f.cond, typeof d === 'number' ? d : null, f.value)
+  }
   const v = cellOf(field, row)
+  if (field.type === 'relation' && TEXT_CONDS.has(f.cond))
+    return !hasValue(f.value) || testText(f.cond, String(derivedOf(ctx, field, row) ?? ''), f.value)
   if (f.cond === 'isEmpty') return isEmptyCell(field, v)
   if (f.cond === 'isNotEmpty') return !isEmptyCell(field, v)
   if (!NO_VALUE.has(f.cond) && !hasValue(f.value)) return true
@@ -247,6 +319,10 @@ function testGroup(g: FilterGroup, fields: Map<string, FieldMeta>, row: RowSnaps
 /** Sort key compare for one field, ascending; both values non-empty. */
 function compareValues(field: FieldMeta, a: unknown, b: unknown): number {
   switch (field.type) {
+    case 'relation':
+    case 'rollup':
+      // derived values (M6-05): titles / rollup results
+      return typeof a === 'number' && typeof b === 'number' ? a - b : collator.compare(String(a), String(b))
     case 'number':
     case 'time':
       return asNumber(a)! - asNumber(b)!
@@ -291,17 +367,23 @@ export function compileQuery(input: Omit<QueryInput, 'rows'>): CompiledQuery {
     .map((id) => fields.get(id))
     .filter((f): f is FieldMeta => !!f)
 
+  const text = (f: FieldMeta, row: RowSnapshot) =>
+    f.type === 'relation' || DERIVED.has(f.type) ? String(derivedOf(input, f, row) ?? '') : cellText(f, cellOf(f, row))
   const matches = (row: RowSnapshot) => {
     if (filter && !testGroup(filter, fields, row, input)) return false
-    if (q && !searchIn.some((f) => cellText(f, cellOf(f, row)).toLocaleLowerCase().includes(q))) return false
+    if (q && !searchIn.some((f) => text(f, row).toLocaleLowerCase().includes(q))) return false
     return true
   }
+  /** The value a sort compares: relations and rollups by their derived value (M6-05). */
+  const sortValue = (field: FieldMeta, row: RowSnapshot) =>
+    field.type === 'relation' || DERIVED.has(field.type) ? derivedOf(input, field, row) : cellOf(field, row)
   const compareBy = (s: Sort, a: RowSnapshot, b: RowSnapshot) => {
     const field = fields.get(s.fieldId)!
-    const va = cellOf(field, a)
-    const vb = cellOf(field, b)
-    const ea = emptyForSort(field, va)
-    const eb = emptyForSort(field, vb)
+    const va = sortValue(field, a)
+    const vb = sortValue(field, b)
+    const derived = field.type === 'relation' || DERIVED.has(field.type)
+    const ea = derived ? va === undefined || va === '' : emptyForSort(field, va)
+    const eb = derived ? vb === undefined || vb === '' : emptyForSort(field, vb)
     if (ea || eb) return ea === eb ? 0 : ea ? 1 : -1 // empty last in either direction (spec/05 §4.1)
     const c = compareValues(field, va, vb)
     return s.dir === 'desc' ? -c : c

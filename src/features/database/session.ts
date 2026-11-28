@@ -7,7 +7,12 @@ import {
   observeSchema,
   readDbMeta,
   readViewSettings,
+  computeRollup,
+  relationIds,
   relationOptions,
+  relationTitles,
+  rollupRelation,
+  type FilterGroup,
   repairTwoWay,
   type DbDocs,
   type DbMeta,
@@ -99,7 +104,51 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
     now: Date.now(),
     me: getCurrentUser(),
     search,
+    derived: computeDerived(fields, view),
   })
+
+  // relations and rollups in filters, sorts or a search (M6-05): their values come from
+  // other databases, so they are computed here (plain data, the worker can take it)
+  const derivedFields = (fields: FieldMeta[], view: ViewSettings | null) => {
+    const used = new Set<string>(view?.sorts.map((x) => x.fieldId) ?? [])
+    const walk = (g: FilterGroup | null) => g?.items.forEach((x) => ('items' in x ? walk(x) : used.add(x.fieldId)))
+    walk(view?.filter ?? null)
+    return fields.filter((f) => (f.type === 'relation' || f.type === 'rollup') && (used.has(f.id) || search))
+  }
+  const docsOf = (id: string | null) => (!id || id === dbId ? docs : (targets.get(id)?.docs ?? null))
+  const computeDerived = (fields: FieldMeta[], view: ViewSettings | null) => {
+    const need = derivedFields(fields, view)
+    if (!need.length || !docs) return undefined
+    const out: Record<string, Record<string, string | number>> = {}
+    const rows = [...rowCache.values()].filter((r): r is RowSnapshot => !!r)
+    for (const f of need) {
+      const m: Record<string, string | number> = {}
+      for (const row of rows) {
+        if (f.type === 'relation') {
+          const target = docsOf(relationOptions(f).targetDatabaseId)
+          if (!target) continue
+          const t = relationTitles(target, relationIds(row.cells[f.id]))
+            .map((x) => x.title)
+            .join(', ')
+          if (t) m[row.id] = t
+        } else {
+          const relation = rollupRelation(f, fields)
+          const v = relation ? computeRollup(f, row, fields, docsOf(relationOptions(relation).targetDatabaseId)) : null
+          if (v?.kind === 'calc' && v.result.value !== null) m[row.id] = v.result.value
+          else if (v?.kind === 'list' && v.items.length) m[row.id] = v.items.join(', ')
+        }
+      }
+      out[f.id] = m
+    }
+    return out
+  }
+  /** Re-run the whole query when derived values may have changed (rows here or in a target). */
+  const refreshDerived = () => {
+    if (!docs || !runner) return
+    const fields = listFields(docs)
+    const view = readViewSettings(docs, viewId)
+    if (derivedFields(fields, view).length) runner.setQuery(queryInput(fields, view))
+  }
 
   // relation targets (M6-02): other databases this one links to, open while the view is
   const targets = new Map<string, { docs: DbDocs | null; release: () => void; off: () => void }>()
@@ -146,8 +195,10 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
         entry.off = observeRows(t, () => {
           bumpTargets()
           scheduleRepair()
+          refreshDerived()
         })
         bumpTargets()
+        refreshDerived()
         scheduleRepair()
       })
     }
@@ -232,6 +283,7 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
         // repaint the changed cells now; order and filter follow when the query answers (worker)
         store.set((s) => (s && !s.preview ? { ...s, rowsVersion: s.rowsVersion + 1 } : s))
         runner!.apply({ upserts, deletes })
+        refreshDerived()
       })
       const offSchema = observeSchema(d, refreshSchema)
       const r = runner

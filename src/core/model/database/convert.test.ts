@@ -129,3 +129,15 @@ describe('convertField', () => {
     expect(() => convertField(db, readDbMeta(db).primaryFieldId, 'number')).toThrow(PrimaryFieldError)
   })
 })
+
+describe('relation → text keeps the linked titles (M6-05)', () => {
+  it('uses the resolver for relation values; without one the value is lost', () => {
+    const rel = { id: 'r', name: 'R', type: 'relation' as const, options: {}, createdAt: 0 }
+    const titles: Record<string, string> = { a: 'Ann', b: 'Bob' }
+    const textOf = (v: unknown) => (v as string[]).map((id) => titles[id]).join(', ')
+    expect(convertValue(rel, 'text', ['a', 'b'], [], textOf)).toBe('Ann, Bob')
+    const choices: { id: string; name: string; color: string }[] = []
+    expect(convertValue(rel, 'multiSelect', ['a', 'b'], choices, textOf)).toHaveLength(2)
+    expect(choices.map((c) => c.name)).toEqual(['Ann', 'Bob'])
+  })
+})
