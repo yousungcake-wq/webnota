@@ -286,6 +286,14 @@ export const ko = {
   'db.empty.filtered': '필터나 검색에 맞는 행이 없습니다.',
   'db.inline.trashed': '이 데이터베이스 보기는 휴지통에 있습니다',
   'db.inline.restore': '복원',
+  'db.rel.loading': '연결할 데이터베이스를 불러오는 중…',
+  'db.rel.linked': '연결된 행',
+  'db.rel.unlink': '{name} 연결 해제',
+  'db.rel.search': '행 검색',
+  'db.rel.none': '행이 없습니다',
+  'db.rel.more': '{count}개 더 — 검색으로 좁히세요',
+  'db.rel.target': '연결할 데이터베이스',
+  'db.rel.self': '이 데이터베이스',
 }
 
 export type DbKey = keyof typeof ko

@@ -7,6 +7,7 @@ import {
   observeSchema,
   readDbMeta,
   readViewSettings,
+  relationOptions,
   type DbDocs,
   type DbMeta,
   type FieldMeta,
@@ -29,6 +30,8 @@ export interface DbState {
   result: QueryResult
   /** Bumped on every row change: cells read with `getRow` are fresh after it. */
   rowsVersion: number
+  /** Bumped when a relation target database loads or its rows change (M6-02). */
+  targetsVersion: number
   search: string
   /**
    * Showing the first-screen cache while the docs load (M5-00): `docs` are empty
@@ -60,6 +63,8 @@ export interface DbSession {
   store: Store<DbState | null>
   setSearch(q: string): void
   row(id: string): RowSnapshot | null
+  /** The docs of a relation target database (this one included), null while loading. */
+  target(dbId: string): DbDocs | null
   close(): void
 }
 
@@ -95,9 +100,40 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
     search,
   })
 
+  // relation targets (M6-02): other databases this one links to, open while the view is
+  const targets = new Map<string, { docs: DbDocs | null; release: () => void; off: () => void }>()
+  const bumpTargets = () => store.set((s) => (s && !s.preview ? { ...s, targetsVersion: s.targetsVersion + 1 } : s))
+  const syncTargets = (fields: FieldMeta[]) => {
+    const want = new Set(
+      fields
+        .filter((f) => f.type === 'relation')
+        .map((f) => relationOptions(f).targetDatabaseId)
+        .filter((id): id is string => !!id && id !== dbId),
+    )
+    for (const [id, t] of targets)
+      if (!want.has(id)) {
+        t.off()
+        t.release()
+        targets.delete(id)
+      }
+    for (const id of want) {
+      if (targets.has(id)) continue
+      const entry = { docs: null as DbDocs | null, release: () => {}, off: () => {} }
+      targets.set(id, entry)
+      void openDatabase(id).then(({ docs: t, release: rel }) => {
+        if (closed || targets.get(id) !== entry) return rel()
+        entry.docs = t
+        entry.release = rel
+        entry.off = observeRows(t, bumpTargets)
+        bumpTargets()
+      })
+    }
+  }
+
   const refreshSchema = () => {
     if (!docs || !runner) return
     const fields = listFields(docs)
+    syncTargets(fields)
     const view = readViewSettings(docs, viewId)
     store.set((s) => (s && !s.preview ? { ...s, fields, view, meta: readDbMeta(docs!) } : s))
     runner.setQuery(queryInput(fields, view))
@@ -119,6 +155,7 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
       view: c.view,
       result: c.result,
       rowsVersion: 0,
+      targetsVersion: 0,
       search: '',
       preview: true,
     })
@@ -148,6 +185,7 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
                 view: readViewSettings(d, viewId),
                 result,
                 rowsVersion: (s?.rowsVersion ?? 0) + 1,
+                targetsVersion: s?.targetsVersion ?? 0,
                 search,
               },
         )
@@ -173,7 +211,13 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
       })
       const offSchema = observeSchema(d, refreshSchema)
       const r = runner
+      syncTargets(listFields(d))
       cleanup = () => {
+        for (const t of targets.values()) {
+          t.off()
+          t.release()
+        }
+        targets.clear()
         offRows()
         offSchema()
         r.dispose()
@@ -183,6 +227,9 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
 
   return {
     store,
+    target(id) {
+      return id === dbId ? docs : (targets.get(id)?.docs ?? null)
+    },
     setSearch(q) {
       if (q === search) return
       search = q

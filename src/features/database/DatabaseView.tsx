@@ -2,8 +2,8 @@ import { lazy, Suspense, use, useContext, useState } from 'react'
 import { wsKey } from '@/core/docs/slots'
 import { useLayout } from '@/platform/layout'
 import { ws } from '@/core/docs/workspace'
-import { databaseIdOf, type ViewMeta } from '@/core/model/views'
-import { useRoute } from '@/core/store/router'
+import { databaseIdOf, listViews, type ViewMeta } from '@/core/model/views'
+import { navigate, useRoute } from '@/core/store/router'
 import { EmptyState, ErrorBoundary, Skeleton } from '@/ui'
 import { DbTabs } from './DbTabs'
 import { DbToolbar } from './DbToolbar'
@@ -13,6 +13,7 @@ import { dt, loadDbMessages } from './i18n'
 import type { LayoutProps } from './layoutProps'
 import { RowModal } from './RowModal'
 import { RowRouteContext } from './rowNav'
+import { RelationContext, type RelationAccess } from './relationContext'
 import { getRow } from '@/core/model/database'
 import { useDbSession } from './useDbSession'
 import './database.css'
@@ -51,36 +52,49 @@ export function DatabaseView({ view, readOnly }: { view: ViewMeta; readOnly: boo
   const props: LayoutProps = { session, state, title: view.title, readOnly: readOnly || !!state.preview }
   const layout = state.view?.layout ?? (view.layout === 'document' ? 'grid' : view.layout)
   const Layout = layout === 'grid' ? null : LAYOUTS[layout]
+  // relation cells (M6-02): target docs, and a target row opens over its own database view
+  const relations: RelationAccess = {
+    dbId,
+    target: (id) => session.target(id),
+    version: state.targetsVersion + state.rowsVersion,
+    openTarget: (id, rowId) => {
+      if (id === dbId) return navigate({ name: 'page', id: routeId, row: rowId })
+      const host = listViews(ws()).find((v) => v.databaseId === id && !v.deletedAt)
+      if (host) navigate({ name: 'page', id: host.id, row: rowId })
+    },
+  }
   return (
-    <div
-      className="db-view"
-      data-layout={layout}
-      data-rows={state.result.rowIds.length}
-      data-preview={state.preview ? '' : undefined}
-    >
-      <div className="db-head">
-        <DbTabs viewId={view.id} docs={state.docs} readOnly={props.readOnly} />
-        <DbToolbar
-          session={session}
-          state={state}
-          readOnly={props.readOnly}
-          cards={phone && layout === 'grid' ? cards : undefined}
-          onToggleCards={toggleCards}
-        />
+    <RelationContext value={relations}>
+      <div
+        className="db-view"
+        data-layout={layout}
+        data-rows={state.result.rowIds.length}
+        data-preview={state.preview ? '' : undefined}
+      >
+        <div className="db-head">
+          <DbTabs viewId={view.id} docs={state.docs} readOnly={props.readOnly} />
+          <DbToolbar
+            session={session}
+            state={state}
+            readOnly={props.readOnly}
+            cards={phone && layout === 'grid' ? cards : undefined}
+            onToggleCards={toggleCards}
+          />
+        </div>
+        {Layout ? (
+          <ErrorBoundary key={layout}>
+            <Suspense fallback={<Skeleton className="editor-loading" />}>
+              <Layout {...props} />
+            </Suspense>
+          </ErrorBoundary>
+        ) : (
+          <GridLayout {...props} cards={phone && cards} />
+        )}
+        {openRowId && !state.preview && (
+          <RowModal session={session} state={state} routeId={routeId} rowId={openRowId} readOnly={props.readOnly} />
+        )}
       </div>
-      {Layout ? (
-        <ErrorBoundary key={layout}>
-          <Suspense fallback={<Skeleton className="editor-loading" />}>
-            <Layout {...props} />
-          </Suspense>
-        </ErrorBoundary>
-      ) : (
-        <GridLayout {...props} cards={phone && cards} />
-      )}
-      {openRowId && !state.preview && (
-        <RowModal session={session} state={state} routeId={routeId} rowId={openRowId} readOnly={props.readOnly} />
-      )}
-    </div>
+    </RelationContext>
   )
 }
 

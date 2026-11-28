@@ -19,6 +19,8 @@ import { useLayout } from '@/platform/layout'
 import { confirmDialog, Overlay, Switch } from '@/ui'
 import { changeFieldType } from './fieldActions'
 import { FIELD_TYPE_INFO } from './fieldTypes'
+import { targetOf, useRelations } from './relationContext'
+import { useAliveViews } from '@/core/store/views'
 import { dt, type DbKey } from './i18n'
 
 const WRAPPABLE = new Set<FieldType>(['text', 'select', 'multiSelect', 'url', 'media', 'checklist'])
@@ -297,6 +299,7 @@ function TypeOptions({ docs, field }: { docs: DbDocs; field: FieldMeta }) {
         </label>
       </div>
     )
+  if (field.type === 'relation') return <RelationTarget docs={docs} field={field} />
   if (field.type === 'media')
     return (
       <Switch
@@ -306,4 +309,31 @@ function TypeOptions({ docs, field }: { docs: DbDocs; field: FieldMeta }) {
       />
     )
   return null
+}
+
+/** The database a relation field links to (M6-02): any database, this one first. */
+function RelationTarget({ docs, field }: { docs: DbDocs; field: FieldMeta }) {
+  const rel = useRelations()
+  const { alive } = useAliveViews()
+  if (!rel) return null
+  const seen = new Set<string>([rel.dbId])
+  const others = alive.filter((v) => {
+    if (v.kind !== 'database' || !v.databaseId || seen.has(v.databaseId)) return false
+    seen.add(v.databaseId)
+    return true
+  })
+  const current = targetOf(field, rel.dbId)
+  return (
+    <label className="db-date-select db-typeopts">
+      {dt('db.rel.target')}
+      <select value={current} onChange={(e) => setFieldOptions(docs, field.id, { targetDatabaseId: e.target.value })}>
+        <option value={rel.dbId}>{dt('db.rel.self')}</option>
+        {others.map((v) => (
+          <option key={v.databaseId!} value={v.databaseId!}>
+            {v.title || dt('db.row.untitled')}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
 }

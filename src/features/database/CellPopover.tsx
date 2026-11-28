@@ -4,10 +4,11 @@ import { Overlay } from '@/ui'
 import { ChecklistEditor } from './ChecklistEditor'
 import { DateEditor } from './DateEditor'
 import { MediaEditor } from './MediaEditor'
+import { RelationEditor } from './RelationEditor'
 import { SelectEditor } from './SelectEditor'
 
 /** Field types edited in a popover (desktop) / bottom sheet (phone). */
-export const POPOVER_EDITED = new Set(['select', 'multiSelect', 'date', 'checklist', 'media'])
+export const POPOVER_EDITED = new Set(['select', 'multiSelect', 'date', 'checklist', 'media', 'relation'])
 
 /** The editor of one popover-edited cell, anchored at the cell (spec/05 §3.2). */
 export function CellPopover({
@@ -34,6 +35,8 @@ export function CellPopover({
           <DateEditor {...props} />
         ) : field.type === 'media' ? (
           <MediaEditor {...props} />
+        ) : field.type === 'relation' ? (
+          <RelationEditor {...props} />
         ) : field.type === 'checklist' ? (
           <ChecklistEditor {...props} />
         ) : (

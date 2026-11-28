@@ -7,12 +7,13 @@ import { DateEditor } from './DateEditor'
 import { FIELD_TYPE_INFO } from './fieldTypes'
 import { dt } from './i18n'
 import { MediaEditor } from './MediaEditor'
+import { RelationEditor } from './RelationEditor'
 import { SelectEditor } from './SelectEditor'
 import { editText, parseEdit, TEXT_EDITED } from './cellEdit'
 import type { DbState } from './session'
 
 const READ_ONLY_TYPES = new Set(['createdTime', 'updatedTime', 'rollup'])
-const POPOVER_TYPES = new Set(['select', 'multiSelect', 'date', 'checklist', 'media'])
+const POPOVER_TYPES = new Set(['select', 'multiSelect', 'date', 'checklist', 'media', 'relation'])
 
 /** One property of a row on the row page (M5-08): name and value, edited in place. */
 export function RowProperty({
@@ -53,6 +54,7 @@ export function RowProperty({
     else if (field.type === 'date') editor = <DateEditor {...props} />
     else if (field.type === 'checklist') editor = <ChecklistEditor {...props} />
     else if (field.type === 'media') editor = <MediaEditor {...props} />
+    else if (field.type === 'relation') editor = <RelationEditor {...props} />
   }
   return (
     <div className="db-prop">

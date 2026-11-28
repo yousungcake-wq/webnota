@@ -13,6 +13,8 @@ import {
   formatMinutes,
   formatNumber,
   isOpenableUrl,
+  relationIds,
+  relationTitles,
   type CellValue,
   type FieldMeta,
 } from '@/core/model/database'
@@ -21,6 +23,7 @@ import { Chip } from './Chip'
 import { MediaThumb } from './MediaEditor'
 import { dt } from './i18n'
 import { appLocale } from './locale'
+import { targetOf, useRelations } from './relationContext'
 
 /** Read-only presentation of one cell (spec/05 §3.2). Editing is the grid's job. */
 export function CellView({
@@ -116,6 +119,8 @@ export function CellView({
         </span>
       )
     }
+    case 'relation':
+      return <RelationChips field={field} value={value} wrap={wrap} />
     case 'date': {
       const d = asDate(value)
       return <span className="dbc-text">{d ? formatDateValue(d, field.options, appLocale()) : ''}</span>
@@ -153,4 +158,32 @@ export function CellView({
     default:
       return <span className="dbc-text">{cellText(field, value)}</span>
   }
+}
+
+/** Linked rows as chips (M6-02); a chip opens that row's page (DB-R05). */
+function RelationChips({ field, value, wrap }: { field: FieldMeta; value: CellValue | undefined; wrap: boolean }) {
+  const rel = useRelations()
+  const ids = relationIds(value)
+  if (!rel || !ids.length) return null
+  const dbId = targetOf(field, rel.dbId)
+  const target = rel.target(dbId)
+  if (!target) return <span className="dbc-muted">…</span>
+  return (
+    <span className={`dbc-chips${wrap ? ' is-wrap' : ''}`}>
+      {relationTitles(target, ids).map((r) => (
+        <button
+          key={r.id}
+          type="button"
+          className="db-rel-chip is-link"
+          tabIndex={-1}
+          onClick={(e) => {
+            e.stopPropagation()
+            rel.openTarget(dbId, r.id)
+          }}
+        >
+          {r.title || dt('db.row.untitled')}
+        </button>
+      ))}
+    </span>
+  )
 }

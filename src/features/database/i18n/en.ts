@@ -287,4 +287,12 @@ export const en: Record<DbKey, string> = {
   'db.empty.filtered': 'No rows match the filter or search.',
   'db.inline.trashed': 'This database view is in the trash',
   'db.inline.restore': 'Restore',
+  'db.rel.loading': 'Loading the linked database…',
+  'db.rel.linked': 'Linked rows',
+  'db.rel.unlink': 'Unlink {name}',
+  'db.rel.search': 'Search rows',
+  'db.rel.none': 'No rows',
+  'db.rel.more': '{count} more — narrow with search',
+  'db.rel.target': 'Linked database',
+  'db.rel.self': 'This database',
 }

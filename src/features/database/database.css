@@ -726,3 +726,81 @@
   font-size: var(--fs-sm);
   text-align: center;
 }
+
+/* relation (M6-02) */
+.db-rel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 1px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-elev);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.db-rel-chip.is-link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 2px;
+}
+.db-rel-chip.is-link:hover {
+  background: var(--bg-hover);
+}
+.db-rel-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 260px;
+}
+.db-rel-linked {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.db-chip-x {
+  border: 0;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0 2px;
+}
+.db-rel-search {
+  display: flex;
+}
+.db-rel-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.db-rel-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.db-rel-option:hover {
+  background: var(--bg-hover);
+}
+.db-rel-check {
+  display: inline-flex;
+  width: 16px;
+}
+@media (pointer: coarse) {
+  .db-rel-option {
+    min-height: 44px;
+  }
+}
