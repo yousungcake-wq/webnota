@@ -4,10 +4,10 @@
 
 ## 현재 위치
 
-- **마일스톤**: M8 가져오기·내보내기·템플릿 (M7 완료 — 실기기 확인은 docs/QA.md "M7"·"M6"·"M5"(와 이전 항목), 사용자 확인 대기)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12, M4 16/16, M5 13/13, M6 11/11, M7 14/14 완료. M8 12/13 (체크리스트 세부화 완료). 사용자 피드백 1·2차 반영 완료
+- **마일스톤**: M9 공유 스페이스·게시·기록 (M8 완료 — 실기기 확인은 docs/QA.md "M8"·"M7"·"M6"·"M5"(와 이전 항목), 사용자 확인 대기)
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12, M4 16/16, M5 13/13, M6 11/11, M7 14/14, M8 13/13 완료. M9 0/14 (체크리스트 세부화 완료). 사용자 피드백 1·2차 반영 완료
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M8-12
+- **다음 할 일**: M9-00 (M5~M8 실기기 확인은 사용자 대기)
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -19,6 +19,7 @@
 
 ## 알려진 문제·주의
 
+- **M8 (가져오기·내보내기·템플릿)**: 가져오기는 `features/io/importer.ts`(`importFiles`·`importZip`, Notion·Markdown·텍스트·HTML 모두 `importTree` 한 경로, 대상 스페이스 `into`), 내보내기는 `exporter.ts`(전체, `_yjs/` 포함)·`pageExport.ts`(페이지 Markdown/HTML), 진행·멈추기는 `progress.ts`. 템플릿은 `features/templates`(언어별 `contentKo/En.ts`). **시트 두 개(메뉴+하위 메뉴)가 함께 닫힐 때 history 카운트 버그를 고침(M8-09)** — `platform/history.ts`는 `go(-n)` 한 번에 popstate 한 번. 성능 측정 전 반드시 `pkill -f "vite preview"`(남은 서버가 이전 빌드를 내보냄). 헤드리스 Chromium은 한글 다운로드 파일 이름을 "download"로 저장(실제 브라우저는 정상) — e2e는 앵커의 `download` 속성을 기록해 확인.
 - **M7 (모바일)**: 시트는 `ui/overlay/Sheet.tsx`(단계 auto/full, 제스처는 지연 `sheetGestures.ts`), Sheet·Popover 자체도 지연(`overlay/lazy.tsx`, 유휴 시 `preloadOverlays`). 터치 영역 규칙·자동 감사는 spec/12(`tests/e2e/touchAudit.ts`, 새 폰 화면은 `mobile.touch.spec.ts`에 추가). 진동은 `platform/haptics.ts`의 `haptic()`만. 폰 판정은 화면 짧은 변 < 500도 폰(가로 폰). 하단 탭 전환은 `App.tsx`의 `switchTab`(탭→탭 replace, 탭→홈 뒤로), 시작 화면 아래 홈은 `ensureHomeBelow`. 서비스 워커는 `registerType: 'prompt'` + `platform/sw.ts` 직접 등록(첫 화면 뒤 유휴+3초) — DECISIONS 023. **에디터 청크를 부팅 직후(i18n 준비 전) import하면 데스크탑 e2e 다수가 깨짐**(원인: 에디터 모듈이 import 때 문자열 등을 읽음) — 미리 받기는 유휴 시간에만. Chrome은 스와이프 직후 탭의 click을 보내지 않으므로 스와이프 버튼은 pointerup에서 동작.
 - 시작 번들 118.4/125KB (M8-00): 데스크탑 셸은 `desktopShell` 청크.
 - 구조 (M0-07): 다른 최상위 모듈은 `@/` 경로로 import (lint 강제). feature 공개 API는 `index.ts`만. 에디터는 `@/features/editor`의 `loadEditor()`/`loadSeed()`로만 접근 (정적 import 금지 — 초기 번들에 섞임). 라우터는 `core/store/router.ts`, 테마·펼침 상태는 `core/store/prefs.ts` (DECISIONS 012).
@@ -257,3 +258,4 @@
 | 2026-11-28 | M8-09: 템플릿 7종(새 보기 메뉴·빈 페이지 칩), history go(-n) 카운트 버그 수정 | 47a7a7a |
 | 2026-11-28 | M8-10: 데이터 관리(사용량·캐시·로컬 삭제) | 78e7179 |
 | 2026-11-28 | M8-11: 가져올 곳 선택, 멈추기 | cf09547 |
+| 2026-11-28 | M8-12: M8 e2e·성능(가져오기 1,000페이지)·QA, M9 세부화 | 96a4306 |
