@@ -220,3 +220,64 @@ export function rewriteNotionMarkdown(md: string, title: string, ctx: RewriteCon
   })
   return s
 }
+
+/** One linked page in a Notion relation cell: `Task A (Task%20A%20<id>.md)` or `Task A (https://www.notion.so/…)`. */
+export interface RelationEntry {
+  name: string
+  /** The link in parentheses (a relative `.md` path or a notion.so URL), if any. */
+  link: string | null
+}
+
+/** A relation cell's entries: commas outside the parentheses separate them (M8-04). */
+export function parseRelationCell(cell: string): RelationEntry[] {
+  const out: RelationEntry[] = []
+  let depth = 0
+  let cur = ''
+  const push = () => {
+    const s = cur.trim()
+    cur = ''
+    if (!s) return
+    const m = /^(.*?)\s*\(([^()]*(?:\.md|notion\.so[^()]*))\)$/i.exec(s)
+    out.push(m ? { name: m[1]!.trim(), link: m[2]! } : { name: s, link: null })
+  }
+  for (const ch of cell) {
+    if (ch === '(') depth++
+    else if (ch === ')') depth = Math.max(0, depth - 1)
+    if (ch === ',' && depth === 0) push()
+    else cur += ch
+  }
+  push()
+  return out
+}
+
+/**
+ * Which database a relation column points at: the one holding the rows its relative
+ * links lead to, else the one whose row titles match most of its names. Null when this
+ * does not look like a relation (no links, or fewer than half of the names match).
+ */
+export function relationTarget<T extends { folder: string; titles: Set<string> }>(
+  cells: string[],
+  fromDir: string,
+  dbs: T[],
+): T | null {
+  const entries = cells.flatMap(parseRelationCell)
+  if (!entries.length || !entries.some((e) => e.link)) return null
+  const bare = (p: string) =>
+    p
+      .split('/')
+      .map((x) => notionTitle(x + '.md'))
+      .join('/')
+  for (const e of entries) {
+    if (!e.link || !/\.md$/i.test(e.link)) continue
+    const path = resolveRelative(fromDir, e.link)
+    const db = path ? dbs.find((d) => bare(d.folder) === bare(dirOf(path))) : undefined
+    if (db) return db
+  }
+  let best: T | null = null
+  let score = 0
+  for (const db of dbs) {
+    const hits = entries.filter((e) => db.titles.has(e.name)).length
+    if (hits > score) [best, score] = [db, hits]
+  }
+  return best && score * 2 >= entries.length ? best : null
+}

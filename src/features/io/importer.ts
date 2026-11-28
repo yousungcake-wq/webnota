@@ -4,7 +4,20 @@ import { openDoc, pageDocName, retainDoc } from '@/core/docs/registry'
 import { ws } from '@/core/docs/workspace'
 import { addFile, ingestFile } from '@/core/files/ingest'
 import { parseCSV } from '@/core/io/csv'
-import { addField, createDatabase, importCsvRows, restoreDatabase, type InferredColumn } from '@/core/model/database'
+import {
+  addField,
+  addRelationField,
+  createDatabase,
+  deleteField,
+  importCsvRows,
+  listFields,
+  listRows,
+  readDbMeta,
+  restoreDatabase,
+  setRelation,
+  updateRow,
+  type InferredColumn,
+} from '@/core/model/database'
 import { createSpace, createView, newId } from '@/core/model/views'
 import { loadDocIO, loadMarkdown } from '@/features/editor'
 import type { WebnotaExport } from './exporter'
@@ -15,7 +28,9 @@ import {
   FILE_PAGES,
   linkParents,
   NOTION_PAGES,
+  parseRelationCell,
   planNotionImport,
+  relationTarget,
   resolveRelative,
   rewriteNotionMarkdown,
 } from './notion'
@@ -265,6 +280,59 @@ async function importWebnota(data: WebnotaExport, zip: Map<string, Uint8Array>, 
 
 // ---------- Notion (Markdown & CSV) ----------
 
+/** A row whose body was written gets its page flag (hasDoc), like a row page made in the app. */
+async function markRowPage(dbId: string, rowId: string) {
+  const { docs, release } = await openDatabase(dbId)
+  try {
+    updateRow(docs, rowId, { hasDoc: true })
+  } finally {
+    release()
+  }
+}
+
+type ImportedDb = {
+  dbId: string
+  folder: string
+  header: string[]
+  records: string[][]
+  rowIds: string[]
+  titles: Set<string>
+  rowOf: Map<string, string>
+}
+
+/**
+ * Notion relation columns (M8-04, moved from M6): a column whose cells link to rows of an
+ * imported database (`Task A (Task%20A%20<id>.md)` or a notion.so link) becomes a relation
+ * field to that database, its cells the matching rows (by title). One-way, like Notion's
+ * export (the other side's column, if exported, becomes its own relation).
+ */
+async function linkRelations(entries: [string, ImportedDb][]) {
+  const all = entries.map(([, d]) => d)
+  for (const [path, db] of entries) {
+    for (let c = 1; c < db.header.length; c++) {
+      const cells = db.records.map((r) => r[c] ?? '')
+      const target = relationTarget(cells, dirOf(path), all)
+      if (!target) continue
+      const { docs, release } = await openDatabase(db.dbId)
+      try {
+        const name = db.header[c] || `Column ${c + 1}`
+        const old = listFields(docs).find((f) => f.name === name && f.id !== readDbMeta(docs).primaryFieldId)
+        if (old) deleteField(docs, old.id)
+        const fieldId = addRelationField(docs, { name, targetDatabaseId: target.dbId })
+        cells.forEach((cell, i) => {
+          const ids = parseRelationCell(cell)
+            .map((e) => target.rowOf.get(e.name))
+            .filter((x): x is string => !!x)
+          const rowId = db.rowIds[i]
+          if (rowId && ids.length) setRelation(docs, rowId, fieldId, ids)
+        })
+      } finally {
+        release()
+      }
+    }
+  }
+}
+
 /** Notion row pages repeat the row's properties under the title ("Status: Done"): dropped, the CSV has them. */
 export function stripNotionProperties(md: string): string {
   const lines = md.split('\n')
@@ -294,7 +362,8 @@ async function importTree(
   const day = new Date().toISOString().slice(0, 10)
   const spaceId = createSpace(ws(), { name: opts.dated === false ? opts.spaceName : `${opts.spaceName} ${day}` })
   const viewOf = new Map<string, string>()
-  const csvRows = new Map<string, string[][]>()
+  // imported databases: their rows by title, for relations and row pages (M8-04)
+  const dbs = new Map<string, ImportedDb>()
   const dbOf = (path: string) => plan.find((p) => p.path === path && p.kind === 'database')
   let skipped = 0
   let pages = 0
@@ -307,7 +376,6 @@ async function importTree(
       const rows = parseCSV(strFromU8(zip.get(item.path)!))
       const header = rows[0] ?? ['Name']
       const records = rows.slice(1).filter((r) => r.some((c) => c.trim()))
-      csvRows.set(item.path, rows)
       const dbId = newId()
       const { docs, release } = await openDatabase(dbId)
       try {
@@ -321,6 +389,14 @@ async function importTree(
         importCsvRows(docs, header, records, (name: string, col: InferredColumn) =>
           addField(docs, { name, type: col.type, options: col.options }),
         )
+        const primary = readDbMeta(docs).primaryFieldId
+        const rowIds = listRows(docs).map((r) => r.id)
+        const rowOf = new Map<string, string>()
+        listRows(docs).forEach((r) => {
+          const title = String(r.cells[primary] ?? '').trim()
+          if (title && !rowOf.has(title)) rowOf.set(title, r.id)
+        })
+        dbs.set(item.path, { dbId, folder: item.folder, header, records, rowIds, titles: new Set(rowOf.keys()), rowOf })
         viewOf.set(item.path, viewId)
         databases++
       } finally {
@@ -328,13 +404,16 @@ async function importTree(
       }
       continue
     }
-    // a database row: a child page only when it has a body beyond its properties
+    // a database row: its body becomes the row page (M8-04); a row page with no matching
+    // row (renamed) stays a child page, and an empty body is nothing
     if (item.parent && dbOf(item.parent)) {
       const md = text(item.path).replace(/^#\s+.*\n?/, '')
       if (!stripNotionProperties(md).trim()) continue
+      if (dbs.get(item.parent)?.rowOf.has(item.title)) continue
     }
     viewOf.set(item.path, createView(ws(), { parentId, spaceId, title: item.title }))
   }
+  await linkRelations([...dbs.entries()])
   // links may point at either `X.csv` or `X_all.csv`
   for (const item of plan)
     if (item.kind === 'database') {
@@ -347,8 +426,11 @@ async function importTree(
   const fileIds = new Map<string, string | null>()
   for (const item of plan) {
     if (item.kind !== 'page') continue
+    const rowDb = item.parent ? dbs.get(item.parent) : undefined
+    const rowId = rowDb && !viewOf.has(item.path) ? rowDb.rowOf.get(item.title) : undefined
     const viewId = viewOf.get(item.path)
-    if (!viewId) continue
+    if (!viewId && !rowId) continue
+    const docName = rowId ? rowDocName(rowDb!.dbId, rowId) : pageDocName(viewId!)
     const dir = dirOf(item.path)
     const store = async (paths: string[]) => {
       for (const path of paths) {
@@ -368,7 +450,7 @@ async function importTree(
       }
     }
     if (/\.txt$/i.test(item.path)) {
-      await withDoc(pageDocName(viewId), (doc) => io.htmlIntoDoc(doc, textToHtml(text(item.path))))
+      await withDoc(docName, (doc) => io.htmlIntoDoc(doc, textToHtml(text(item.path))))
       pages++
       continue
     }
@@ -376,7 +458,7 @@ async function importTree(
       const html = text(item.path)
       await store(htmlAttachments(html, dir))
       const body = htmlFileToHtml(html, dir, (p) => fileIds.get(p) ?? null)
-      await withDoc(pageDocName(viewId), (doc) => io.htmlIntoDoc(doc, body))
+      await withDoc(docName, (doc) => io.htmlIntoDoc(doc, body))
       pages++
       continue
     }
@@ -397,7 +479,8 @@ async function importTree(
         },
       }),
     )
-    await withDoc(pageDocName(viewId), (doc) => io.htmlIntoDoc(doc, html))
+    await withDoc(docName, (doc) => io.htmlIntoDoc(doc, html))
+    if (rowId) await markRowPage(rowDb!.dbId, rowId)
     pages++
   }
   const first = plan.find((i) => !i.parent)

@@ -112,3 +112,42 @@ test('a database survives export → import exactly: fields, rows, view settings
   await expect(await gridCell(page, 0, headers[0]!)).toHaveText(first)
   check()
 })
+
+test('Notion: relation columns become relations, row bodies become row pages, date ranges (M8-04)', async ({
+  page,
+}) => {
+  await openApp(page)
+  const check = failOnConsoleErrors(page)
+  const P = '4c0a2b3c4d5e6f708192a3b4c5d6e7f8'
+  const R = '5d0a2b3c4d5e6f708192a3b4c5d6e7f8'
+  const zip = zipSync({
+    [`Home ${H1}.md`]: strToU8(
+      `# Home\n\n[Tasks](Home%20${H1}/Tasks%20${H3}.csv)\n\n[People](Home%20${H1}/People%20${P}.csv)\n`,
+    ),
+    [`Home ${H1}/Tasks ${H3}_all.csv`]: strToU8(
+      `Name,Owner,When\nWrite,Kim (People%20${P}/Kim%20${R}.md),"June 1, 2024 → June 3, 2024"\nReview,"Kim (People%20${P}/Kim%20${R}.md), Lee (https://www.notion.so/Lee-1)","June 5, 2024"\n`,
+    ),
+    [`Home ${H1}/Tasks ${H3}/Write ${R}.md`]: strToU8('# Write\n\nOwner: Kim\n\nRow page body here\n'),
+    [`Home ${H1}/Tasks ${H3}/Review ${R}.md`]: strToU8('# Review\n\nOwner: Kim, Lee\n'),
+    [`Home ${H1}/People ${P}_all.csv`]: strToU8('Name\nKim\nLee\n'),
+  })
+  await importZip(page, zip)
+  await expect(page.locator('.page-title')).toHaveValue('Home')
+  // the row with a body is not a child page any more
+  await expect(page.locator('.sidebar .tree-row', { hasText: 'Write' })).toHaveCount(0)
+  const home = page.locator('.sidebar .tree-row', { hasText: 'Home' }).first()
+  if (!(await home.locator('.tree-toggle.is-open').count())) await home.locator('.tree-toggle').click()
+  await page.locator('.sidebar .tree-row', { hasText: 'Tasks' }).first().locator('.tree-link').click()
+  await expect(page.locator('.dbg-row')).toHaveCount(2)
+  await expect(await gridCell(page, 0, 'Owner')).toContainText('Kim')
+  await expect((await gridCell(page, 1, 'Owner')).locator('.db-rel-chip')).toHaveText(['Kim', 'Lee'])
+  await expect(await gridCell(page, 0, 'When')).toContainText('→')
+  // the row page holds the body
+  await page.locator('.dbg-row').first().hover()
+  await page.locator('.dbg-row').first().locator('.dbg-open').click()
+  const rowPage = page.getByRole('dialog', { name: '행 페이지' })
+  await expect(rowPage.locator('.db-rowpage-title')).toHaveValue('Write')
+  await expect(rowPage).toContainText('Row page body here')
+  await expect(rowPage).not.toContainText('Owner: Kim')
+  check()
+})

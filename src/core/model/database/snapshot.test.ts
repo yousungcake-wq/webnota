@@ -36,6 +36,15 @@ describe('CSV column types (Notion import)', () => {
     expect((multi.values[0] as string[]).length).toBe(2)
     expect(inferColumn(['hello', 'world']).type).toBe('text')
   })
+  it('reads Notion date ranges and times (M8-04)', () => {
+    const c = inferColumn(['June 1, 2024 → June 3, 2024', 'June 5, 2024 10:30 AM', ''])
+    expect(c.type).toBe('date')
+    const [a, b] = c.values as { start: number; end?: number; includeTime: boolean }[]
+    expect(a!.end! - a!.start).toBe(2 * 86400000)
+    expect(a!.includeTime).toBe(false)
+    expect(b!.includeTime).toBe(true)
+    expect(b!.end).toBeUndefined()
+  })
   it('imports rows with the first column as the title', () => {
     const db = docs()
     createDatabase(new Y.Doc(), db, { dbId: 'd', primaryName: 'Name' })

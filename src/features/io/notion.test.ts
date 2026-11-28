@@ -3,6 +3,8 @@ import {
   attachmentsOf,
   linkParents,
   notionTitle,
+  parseRelationCell,
+  relationTarget,
   planNotionImport,
   resolveRelative,
   rewriteNotionMarkdown,
@@ -101,5 +103,33 @@ describe('Notion exports with other layouts (feedback 2-10)', () => {
     }
     const out = rewriteNotionMarkdown(`# T\n\n<aside>\n📄 [Child](Child%20${H}.md)\n</aside>\n`, 'T', ctx)
     expect(out.trim()).toBe('<div data-sub-page data-view-id="c1"></div>')
+  })
+})
+
+describe('Notion relation columns (M8-04)', () => {
+  it('parses relation cells: commas outside parentheses separate entries', () => {
+    expect(
+      parseRelationCell('Task A (Tasks%20abc/Task%20A%201f0a.md), Task, B (https://www.notion.so/Task-B-1)'),
+    ).toEqual([
+      { name: 'Task A', link: 'Tasks%20abc/Task%20A%201f0a.md' },
+      { name: 'Task', link: null },
+      { name: 'B', link: 'https://www.notion.so/Task-B-1' },
+    ])
+  })
+  it('finds the target database by link folder, else by titles; plain text is not a relation', () => {
+    const dbs = [
+      {
+        folder: 'Home 1f0a2b3c4d5e6f708192a3b4c5d6e7f8/Tasks 3b0a2b3c4d5e6f708192a3b4c5d6e7f8',
+        titles: new Set(['A', 'B']),
+      },
+      { folder: 'People', titles: new Set(['Kim', 'Lee']) },
+    ]
+    const dir = 'Home 1f0a2b3c4d5e6f708192a3b4c5d6e7f8'
+    expect(relationTarget(['A (Tasks%20abc1234567890/A%20aaa.md)'], dir, dbs)).toBe(dbs[0])
+    expect(relationTarget(['Kim (https://www.notion.so/Kim-1)', 'Lee (https://www.notion.so/Lee-2)'], dir, dbs)).toBe(
+      dbs[1],
+    )
+    expect(relationTarget(['Kim, Lee'], dir, dbs)).toBeNull()
+    expect(relationTarget(['Nobody (https://www.notion.so/x)'], dir, dbs)).toBeNull()
   })
 })

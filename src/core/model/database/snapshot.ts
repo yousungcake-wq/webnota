@@ -147,13 +147,18 @@ export function inferColumn(raw: string[]): InferredColumn {
     return { type: 'number', options: {}, values: vals.map((v) => parseNumber(v) ?? undefined) }
   if (filled.length > 0 && vals.every((v) => TRUE.has(v.toLowerCase()) || FALSE.has(v.toLowerCase())))
     return { type: 'checkbox', options: {}, values: vals.map((v) => (TRUE.has(v.toLowerCase()) ? true : undefined)) }
-  if (all((v) => parseLooseDate(v) !== null))
+  // a date, or a range "start → end" (Notion, M8-04)
+  const range = (v: string) => v.split(/\s+→\s+/)
+  if (all((v) => range(v).length <= 2 && range(v).every((p) => parseLooseDate(p) !== null)))
     return {
       type: 'date',
       options: {},
       values: vals.map((v) => {
-        const t = parseLooseDate(v)
-        return t === null ? undefined : { start: t, includeTime: /\d:\d\d/.test(v) }
+        const [a, b] = range(v)
+        const t = a ? parseLooseDate(a) : null
+        if (t === null) return undefined
+        const e = b ? parseLooseDate(b) : null
+        return { start: t, ...(e !== null ? { end: e } : {}), includeTime: /\d:\d\d/.test(v) }
       }),
     }
   if (all((v) => /^https?:\/\/\S+$/i.test(v)))
