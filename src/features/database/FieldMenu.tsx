@@ -9,6 +9,11 @@ import {
   enableTwoWay,
   pairedField,
   relationOptions,
+  listFields,
+  readDbMeta,
+  rollupFns,
+  rollupOptions,
+  rollupRelation,
   duplicateField,
   renameField,
   setFieldOptions,
@@ -307,6 +312,7 @@ function TypeOptions({ docs, field }: { docs: DbDocs; field: FieldMeta }) {
       </div>
     )
   if (field.type === 'relation') return <RelationTarget docs={docs} field={field} />
+  if (field.type === 'rollup') return <RollupSettings docs={docs} field={field} />
   if (field.type === 'media')
     return (
       <Switch
@@ -369,4 +375,62 @@ function RelationTarget({ docs, field }: { docs: DbDocs; field: FieldMeta }) {
 function deleteRelationAware(docs: DbDocs, field: FieldMeta, target: DbDocs | null) {
   if (field.type === 'relation' && target) disableTwoWay(docs, target, field.id)
   deleteField(docs, field.id)
+}
+
+/** Rollup settings (M6-04): relation field, target field, function. */
+function RollupSettings({ docs, field }: { docs: DbDocs; field: FieldMeta }) {
+  const rel = useRelations()
+  if (!rel) return null
+  const o = rollupOptions(field)
+  const relations = rel.fields.filter((f) => f.type === 'relation')
+  const relation = rollupRelation(field, rel.fields)
+  const target = relation ? rel.target(targetOf(relation, rel.dbId)) : null
+  const targetFields = target ? listFields(target) : []
+  const targetField =
+    targetFields.find((f) => f.id === o.targetFieldId) ??
+    (target ? targetFields.find((f) => f.id === readDbMeta(target).primaryFieldId) : undefined)
+  const set = (patch: Record<string, unknown>) => setFieldOptions(docs, field.id, patch)
+  return (
+    <div className="db-typeopts">
+      <label className="db-date-select">
+        {dt('db.rollup.relation')}
+        <select
+          value={relation?.id ?? ''}
+          onChange={(e) => set({ relationFieldId: e.target.value, targetFieldId: null })}
+        >
+          {!relation && <option value="">—</option>}
+          {relations.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      {target && (
+        <label className="db-date-select">
+          {dt('db.rollup.property')}
+          <select value={targetField?.id ?? ''} onChange={(e) => set({ targetFieldId: e.target.value })}>
+            {targetFields.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {targetField && (
+        <label className="db-date-select">
+          {dt('db.rollup.fn')}
+          <select value={o.fn} onChange={(e) => set({ fn: e.target.value })}>
+            {rollupFns(targetField).map((fn) => (
+              <option key={fn} value={fn}>
+                {fn === 'showOriginal' || fn === 'unique' ? dt(`db.rollup.${fn}`) : dt(`db.calc.${fn}` as DbKey)}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {!relations.length && <p className="db-empty">{dt('db.rollup.noRelation')}</p>}
+    </div>
+  )
 }

@@ -11,6 +11,8 @@ export interface RelationAccess {
   dbId: string
   target(dbId: string): DbDocs | null
   openTarget(dbId: string, rowId: string): void
+  /** This database's fields (rollups find their relation field here, M6-04). */
+  fields: FieldMeta[]
   version: number
 }
 

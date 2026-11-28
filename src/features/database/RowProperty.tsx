@@ -80,8 +80,8 @@ export function RowProperty({
               disabled={readOnly && !POPOVER_TYPES.has(field.type)}
               onClick={() => setOpen(true)}
             >
-              <CellView field={field} value={value} wrap readOnly={readOnly} onToggle={() => {}} />
-              {value === undefined || value === null || value === '' ? (
+              <CellView field={field} value={value} wrap readOnly={readOnly} onToggle={() => {}} row={row} />
+              {field.type !== 'rollup' && (value === undefined || value === null || value === '') ? (
                 <span className="db-prop-empty">{dt('db.row.empty')}</span>
               ) : null}
             </button>

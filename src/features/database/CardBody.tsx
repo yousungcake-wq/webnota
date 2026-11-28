@@ -28,11 +28,11 @@ export const CardBody = memo(function CardBody({
       <span className={`db-card-title${name ? '' : ' is-empty'}`}>{name || dt('db.row.untitled')}</span>
       {fields.map((f) => {
         const value = cellOf(f, row)
-        if (!labels && isEmptyCell(f, value)) return null
+        if (!labels && f.type !== 'rollup' && isEmptyCell(f, value)) return null
         return (
           <span key={f.id} className="db-card-prop" data-type={f.type}>
             {labels && <span className="db-card-name">{f.name}</span>}
-            <CellView field={f} value={value} wrap={false} readOnly onToggle={noop} />
+            <CellView field={f} value={value} wrap={false} readOnly onToggle={noop} row={row} />
           </span>
         )
       })}

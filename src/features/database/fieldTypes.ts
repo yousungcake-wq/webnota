@@ -33,6 +33,6 @@ export const FIELD_TYPE_INFO: Record<FieldType, { icon: LucideIcon; label: DbKey
   media: { icon: Image, label: 'db.type.media', available: true },
   time: { icon: Timer, label: 'db.type.time', available: true },
   relation: { icon: ArrowUpRight, label: 'db.type.relation', available: true }, // M6-02
-  rollup: { icon: Sigma, label: 'db.type.rollup', available: false }, // M6
+  rollup: { icon: Sigma, label: 'db.type.rollup', available: true }, // M6-04
   person: { icon: User, label: 'db.type.person', available: false }, // M9
 }

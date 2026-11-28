@@ -119,4 +119,50 @@ test.describe('relations (M6)', () => {
     await expect((await gridCell(page, 0, '관계')).locator('.db-rel-chip')).toHaveCount(0)
     noErrors()
   })
+
+  test('rollup: values and calculations of linked rows, read-only, follows changes (M6-04)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.getByRole('button', { name: '필드 추가' }).click()
+    await page.getByRole('dialog', { name: '필드 추가' }).getByRole('option', { name: '관계' }).click()
+    await expect(page.getByRole('dialog', { name: /필드 메뉴/ })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog', { name: /필드 메뉴/ })).toHaveCount(0)
+    const rel = await gridCell(page, 0, '관계')
+    await rel.click()
+    await rel.click()
+    const pop = page.getByRole('dialog', { name: '관계' })
+    for (const n of ['Item 2', 'Item 3']) {
+      await pop.getByLabel('행 검색').fill(n)
+      await pop.getByRole('option', { name: n, exact: true }).click()
+    }
+    await page.keyboard.press('Escape')
+
+    await page.getByRole('button', { name: '필드 추가' }).click()
+    await page.getByRole('dialog', { name: '필드 추가' }).getByRole('option', { name: '롤업' }).click()
+    const menu = page.getByRole('dialog', { name: /필드 메뉴/ })
+    await menu.getByLabel('관계 필드').selectOption({ label: '관계' })
+    await page.keyboard.press('Escape')
+    const roll = await gridCell(page, 0, '롤업')
+    await expect(roll).toHaveText('Item 2, Item 3') // titles by default
+    // count instead
+    await page.locator('.dbg-hcell', { hasText: '롤업' }).click()
+    await menu.getByLabel('계산').selectOption({ label: '개수' })
+    await page.keyboard.press('Escape')
+    await expect(roll).toHaveText('2')
+    // follows a change of the relation
+    const rel2 = await gridCell(page, 0, '관계')
+    const edge = { position: { x: 5, y: 5 } } // not on a chip (a chip opens the row)
+    await rel2.click(edge)
+    if (!(await page.getByRole('dialog', { name: '관계' }).isVisible())) await rel2.click(edge)
+    await page.getByRole('dialog', { name: '관계' }).getByRole('button', { name: 'Item 2 연결 해제' }).click()
+    await page.keyboard.press('Escape')
+    const roll2 = await gridCell(page, 0, '롤업')
+    await expect(roll2).toHaveText('1')
+    // read-only: typing does not edit it
+    await roll2.click()
+    await page.keyboard.type('9')
+    await expect(page.locator('.dbc-editor')).toHaveCount(0)
+    noErrors()
+  })
 })

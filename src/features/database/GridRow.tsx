@@ -87,6 +87,7 @@ export const GridRow = memo(function GridRow({
             wrap={c.wrap}
             readOnly={readOnly}
             onToggle={() => onToggle(row.id, c.field.id)}
+            row={row}
           />
         )}
         {c.field.id === primaryId && !isEditing && (

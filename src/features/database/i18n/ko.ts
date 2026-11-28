@@ -297,6 +297,12 @@ export const ko = {
   'db.rel.twoWay': '양방향',
   'db.rel.twoWayHint': '연결한 데이터베이스에도 이 관계를 보여 주는 필드를 만듭니다',
   'db.rel.pairedAs': '상대 필드: {name}',
+  'db.rollup.relation': '관계 필드',
+  'db.rollup.property': '가져올 속성',
+  'db.rollup.fn': '계산',
+  'db.rollup.showOriginal': '원래 값 보기',
+  'db.rollup.unique': '고유 값 보기',
+  'db.rollup.noRelation': '먼저 관계 필드를 만드세요',
 }
 
 export type DbKey = keyof typeof ko

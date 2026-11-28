@@ -56,6 +56,7 @@ export function DatabaseView({ view, readOnly }: { view: ViewMeta; readOnly: boo
   const relations: RelationAccess = {
     dbId,
     target: (id) => session.target(id),
+    fields: state.fields,
     version: state.targetsVersion + state.rowsVersion,
     openTarget: (id, rowId) => {
       if (id === dbId) return navigate({ name: 'page', id: routeId, row: rowId })

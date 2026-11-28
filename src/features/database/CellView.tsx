@@ -13,7 +13,10 @@ import {
   formatMinutes,
   formatNumber,
   isOpenableUrl,
+  computeRollup,
   relationIds,
+  rollupRelation,
+  type RowSnapshot,
   relationTitles,
   type CellValue,
   type FieldMeta,
@@ -23,6 +26,7 @@ import { Chip } from './Chip'
 import { MediaThumb } from './MediaEditor'
 import { dt } from './i18n'
 import { appLocale } from './locale'
+import { formatCalc } from './CalcRow'
 import { targetOf, useRelations } from './relationContext'
 
 /** Read-only presentation of one cell (spec/05 §3.2). Editing is the grid's job. */
@@ -32,12 +36,15 @@ export function CellView({
   wrap,
   readOnly,
   onToggle,
+  row,
 }: {
   field: FieldMeta
   value: CellValue | undefined
   wrap: boolean
   readOnly: boolean
   onToggle: () => void
+  /** The row: computed cells (rollup, M6-04) read it. */
+  row?: RowSnapshot
 }) {
   switch (field.type) {
     case 'number': {
@@ -121,6 +128,8 @@ export function CellView({
     }
     case 'relation':
       return <RelationChips field={field} value={value} wrap={wrap} />
+    case 'rollup':
+      return row ? <RollupCell field={field} row={row} wrap={wrap} /> : null
     case 'date': {
       const d = asDate(value)
       return <span className="dbc-text">{d ? formatDateValue(d, field.options, appLocale()) : ''}</span>
@@ -186,4 +195,15 @@ function RelationChips({ field, value, wrap }: { field: FieldMeta; value: CellVa
       ))}
     </span>
   )
+}
+
+/** A rollup (M6-04): computed from the linked rows, read-only. */
+function RollupCell({ field, row, wrap }: { field: FieldMeta; row: RowSnapshot; wrap: boolean }) {
+  const rel = useRelations()
+  if (!rel) return null
+  const relation = rollupRelation(field, rel.fields)
+  const v = computeRollup(field, row, rel.fields, relation ? rel.target(targetOf(relation, rel.dbId)) : null)
+  if (!v) return null
+  if (v.kind === 'calc') return <span className="dbc-num">{formatCalc(v.field, v.result)}</span>
+  return <span className={`dbc-text${wrap ? ' is-wrap' : ''}`}>{v.items.join(', ')}</span>
 }

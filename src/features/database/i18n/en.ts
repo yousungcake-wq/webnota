@@ -298,4 +298,10 @@ export const en: Record<DbKey, string> = {
   'db.rel.twoWay': 'Two-way',
   'db.rel.twoWayHint': 'Adds a field showing these links in the linked database',
   'db.rel.pairedAs': 'Paired field: {name}',
+  'db.rollup.relation': 'Relation',
+  'db.rollup.property': 'Property',
+  'db.rollup.fn': 'Calculate',
+  'db.rollup.showOriginal': 'Show original',
+  'db.rollup.unique': 'Show unique values',
+  'db.rollup.noRelation': 'Add a relation field first',
 }
