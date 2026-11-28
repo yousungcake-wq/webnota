@@ -10,7 +10,15 @@ import { loadDocIO, loadMarkdown } from '@/features/editor'
 import type { WebnotaExport } from './exporter'
 import { EXPORT_FORMAT } from './format'
 import { it } from './i18n'
-import { attachmentsOf, linkParents, planNotionImport, rewriteNotionMarkdown } from './notion'
+import {
+  attachmentsOf,
+  FILE_PAGES,
+  linkParents,
+  NOTION_PAGES,
+  planNotionImport,
+  resolveRelative,
+  rewriteNotionMarkdown,
+} from './notion'
 
 /**
  * Import (feedback 11): a WebNota export zip (its `webnota.json` restores everything
@@ -74,7 +82,106 @@ export async function importZip(bytes: Uint8Array): Promise<ImportResult> {
     const data = JSON.parse(strFromU8(files.get(manifest)!)) as WebnotaExport
     if (data.format === EXPORT_FORMAT) return importWebnota(data, files, dirOf(manifest))
   }
-  return importNotion(files)
+  return importTree(files, { pages: NOTION_PAGES, spaceName: it('io.notionSpace') })
+}
+
+/**
+ * Picked files (M8-01~03): Markdown, text and HTML pages — a folder keeps its tree (paths
+ * like `Notes/Ideas.md`, a folder `Notes/` beside `Notes.md` holds its sub-pages), with
+ * the images and files they link to; a single zip is a Notion or WebNota export.
+ */
+export async function importFiles(picked: { path: string; data: Uint8Array }[]): Promise<ImportResult> {
+  const zips = picked.filter((f) => /\.zip$/i.test(f.path))
+  if (zips.length === 1 && picked.length === 1) return importZip(zips[0]!.data)
+  const files = new Map<string, Uint8Array>()
+  for (const f of picked) {
+    if (/\.zip$/i.test(f.path)) readZip(f.data, dirOf(f.path) ? `${dirOf(f.path)}/` : '', files)
+    else files.set(f.path, f.data)
+  }
+  const { root, files: tree } = folderPages(files)
+  return importTree(tree, { pages: FILE_PAGES, spaceName: root ?? it('io.filesSpace'), dated: !root })
+}
+
+/**
+ * A picked folder (M8-01): its name names the space, and every sub-folder with pages but
+ * no page of its own (`Projects/` without `Projects.md`) gets an empty page, so the tree
+ * keeps its shape.
+ */
+export function folderPages(files: Map<string, Uint8Array>): { root: string | null; files: Map<string, Uint8Array> } {
+  const pages = [...files.keys()].filter((p) => FILE_PAGES.test(p))
+  const firsts = new Set(pages.map((p) => (p.includes('/') ? p.split('/')[0] : '')))
+  const root = firsts.size === 1 && !firsts.has('') ? [...firsts][0]! : null
+  const out = new Map<string, Uint8Array>()
+  for (const [p, b] of files) out.set(root ? p.slice(root.length + 1) : p, b)
+  const has = (dir: string) => [...out.keys()].some((p) => FILE_PAGES.test(p) && p.replace(/\.[^./]+$/, '') === dir)
+  for (const p of [...out.keys()].filter((x) => FILE_PAGES.test(x)))
+    for (let d = dirOf(p); d; d = dirOf(d)) if (!has(d)) out.set(`${d}.md`, new Uint8Array())
+  return { root, files: out }
+}
+
+/** Text in UTF-8, or else the Korean legacy encoding (EUC-KR / CP949) of older files. */
+export function decodeText(b: Uint8Array): string {
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(b).replace(/^\uFEFF/, '')
+  } catch {
+    return new TextDecoder('euc-kr').decode(b)
+  }
+}
+
+/** YAML front matter: removed from the body; its `title:` names the page. */
+export function frontMatter(md: string): { title: string | null; body: string } {
+  const m = /^\uFEFF?---\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/.exec(md)
+  if (!m) return { title: null, body: md }
+  const t = /^title:\s*(.+)$/m
+    .exec(m[1]!)?.[1]
+    ?.trim()
+    .replace(/^(['"])(.*)\1$/, '$2')
+  return { title: t || null, body: md.slice(m[0].length) }
+}
+
+const escHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/** Plain text → paragraphs, one per line (empty lines dropped). */
+export function textToHtml(text: string): string {
+  return text
+    .split(/\r?\n/)
+    .map((l) => l.trimEnd())
+    .filter((l) => l.trim())
+    .map((l) => `<p>${escHtml(l)}</p>`)
+    .join('')
+}
+
+/**
+ * An HTML file → the markup the editor reads: its body without scripts, styles and
+ * frames; images with a relative `src` point at the stored file. The editor's schema then
+ * keeps only what it knows (headings, lists, tables, links…) — no attribute survives
+ * that the schema does not define, so nothing active gets in.
+ */
+export function htmlFileToHtml(html: string, dir: string, file: (path: string) => string | null): string {
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  doc
+    .querySelectorAll('script, style, iframe, object, embed, noscript, template, link, meta')
+    .forEach((n) => n.remove())
+  doc.querySelectorAll<HTMLImageElement>('img[src]').forEach((img) => {
+    const src = img.getAttribute('src')!
+    const id = /^(https?:|data:)/i.test(src) ? null : file(resolveRelative(dir, src) ?? '')
+    if (!id) return
+    const stored = doc.createElement('img')
+    stored.alt = img.alt
+    stored.setAttribute('data-file', id)
+    img.replaceWith(stored)
+  })
+  return doc.body.innerHTML
+}
+
+/** Relative image paths an HTML file uses. */
+function htmlAttachments(html: string, dir: string): string[] {
+  const out = new Set<string>()
+  for (const m of html.matchAll(/<img\b[^>]*\bsrc=["']([^"']+)["']/gi)) {
+    const p = /^(https?:|data:)/i.test(m[1]!) ? null : resolveRelative(dir, m[1]!)
+    if (p) out.add(p)
+  }
+  return [...out]
 }
 
 // ---------- WebNota (lossless) ----------
@@ -168,12 +275,24 @@ export function stripNotionProperties(md: string): string {
   return j > i ? lines.slice(j).join('\n') : md
 }
 
-async function importNotion(zip: Map<string, Uint8Array>): Promise<ImportResult> {
-  const plan = linkParents(planNotionImport([...zip.keys()]), (p) => strFromU8(zip.get(p)!))
+async function importTree(
+  zip: Map<string, Uint8Array>,
+  opts: { pages: RegExp; spaceName: string; dated?: boolean },
+): Promise<ImportResult> {
+  const text = (p: string) => decodeText(zip.get(p)!)
+  const plan = linkParents(planNotionImport([...zip.keys()], opts.pages), (p) =>
+    /\.(md|markdown)$/i.test(p) ? text(p) : '',
+  )
   if (!plan.length) throw new Error(it('io.nothing'))
+  // a Markdown page's front matter title wins over its file name
+  for (const item of plan)
+    if (item.kind === 'page' && /\.(md|markdown)$/i.test(item.path)) {
+      const t = frontMatter(text(item.path)).title
+      if (t) item.title = t
+    }
   const [io, { markdownToHtml }] = await Promise.all([loadDocIO(), loadMarkdown()])
   const day = new Date().toISOString().slice(0, 10)
-  const spaceId = createSpace(ws(), { name: `${it('io.notionSpace')} ${day}` })
+  const spaceId = createSpace(ws(), { name: opts.dated === false ? opts.spaceName : `${opts.spaceName} ${day}` })
   const viewOf = new Map<string, string>()
   const csvRows = new Map<string, string[][]>()
   const dbOf = (path: string) => plan.find((p) => p.path === path && p.kind === 'database')
@@ -211,7 +330,7 @@ async function importNotion(zip: Map<string, Uint8Array>): Promise<ImportResult>
     }
     // a database row: a child page only when it has a body beyond its properties
     if (item.parent && dbOf(item.parent)) {
-      const md = strFromU8(zip.get(item.path)!).replace(/^#\s+.*\n?/, '')
+      const md = text(item.path).replace(/^#\s+.*\n?/, '')
       if (!stripNotionProperties(md).trim()) continue
     }
     viewOf.set(item.path, createView(ws(), { parentId, spaceId, title: item.title }))
@@ -231,26 +350,42 @@ async function importNotion(zip: Map<string, Uint8Array>): Promise<ImportResult>
     const viewId = viewOf.get(item.path)
     if (!viewId) continue
     const dir = dirOf(item.path)
-    let md = strFromU8(zip.get(item.path)!)
+    const store = async (paths: string[]) => {
+      for (const path of paths) {
+        if (fileIds.has(path)) continue
+        const b = zip.get(path)
+        if (!b) {
+          fileIds.set(path, null)
+          continue
+        }
+        try {
+          const ref = await ingestFile(new Blob([b as BlobPart], { type: mimeOf(path) }), nameOf(path))
+          fileIds.set(path, ref.id)
+        } catch {
+          fileIds.set(path, null)
+          skipped++
+        }
+      }
+    }
+    if (/\.txt$/i.test(item.path)) {
+      await withDoc(pageDocName(viewId), (doc) => io.htmlIntoDoc(doc, textToHtml(text(item.path))))
+      pages++
+      continue
+    }
+    if (/\.html?$/i.test(item.path)) {
+      const html = text(item.path)
+      await store(htmlAttachments(html, dir))
+      const body = htmlFileToHtml(html, dir, (p) => fileIds.get(p) ?? null)
+      await withDoc(pageDocName(viewId), (doc) => io.htmlIntoDoc(doc, body))
+      pages++
+      continue
+    }
+    let md = frontMatter(text(item.path)).body
     if (item.parent && dbOf(item.parent)) {
       const m = md.match(/^#\s+.*\n?/)
       md = (m ? m[0] : '') + stripNotionProperties(md.slice(m ? m[0].length : 0))
     }
-    for (const path of attachmentsOf(md, dir)) {
-      if (fileIds.has(path)) continue
-      const b = zip.get(path)
-      if (!b) {
-        fileIds.set(path, null)
-        continue
-      }
-      try {
-        const ref = await ingestFile(new Blob([b as BlobPart], { type: mimeOf(path) }), nameOf(path))
-        fileIds.set(path, ref.id)
-      } catch {
-        fileIds.set(path, null)
-        skipped++
-      }
-    }
+    await store(attachmentsOf(md, dir))
     const html = markdownToHtml(
       rewriteNotionMarkdown(md, item.title, {
         dir,

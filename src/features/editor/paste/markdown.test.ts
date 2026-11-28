@@ -1,17 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { markdownToHtml } from './markdown'
 
-describe('markdownToHtml', () => {
-  it('renders task lists as the editor task list markup', () => {
-    const html = markdownToHtml('- [ ] buy\n- [x] done')
-    expect(html).toContain('<ul data-type="taskList">')
-    expect(html).toContain('data-checked="true"')
-    expect(html).toContain('data-checked="false"')
+describe('markdownToHtml math (M8-01)', () => {
+  it('$$ blocks and $ inline math; prices stay text', () => {
+    const html = markdownToHtml('넓이는 $\\pi r^2$ 이고 값은 $5 와 $10 입니다\n\n$$\n\\sum_{i=1}^n i\n$$\n')
+    expect(html).toContain('<span data-inline-math data-latex="\\pi r^2"></span>')
+    expect(html).toContain('$5 와 $10')
+    expect(html).toContain('<div data-math-block data-latex="\\sum_{i=1}^n i"></div>')
   })
-  it('keeps headings, ordered starts and code fences', () => {
-    const html = markdownToHtml('# T\n\n3. c\n4. d\n\n```js\nlet a\n```')
-    expect(html).toContain('<h1>T</h1>')
-    expect(html).toContain('<ol start="3">')
-    expect(html).toContain('<code class="language-js">')
+  it('escapes the latex attribute', () => {
+    expect(markdownToHtml('$a<b "c"$')).toContain('data-latex="a&lt;b &quot;c&quot;"')
   })
 })

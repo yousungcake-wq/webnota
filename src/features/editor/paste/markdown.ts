@@ -1,9 +1,44 @@
 // Loaded on demand when Markdown is pasted (ED-F06), so `marked` stays out of the editor chunk.
 import { Marked, type Tokens } from 'marked'
 
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
+
+interface MathToken {
+  type: string
+  raw: string
+  text: string
+}
+
 const marked = new Marked({
   gfm: true,
   breaks: false,
+  // M8-01: `$$…$$` → math block, `$…$` → inline math (prices like "$5 and $10" stay text:
+  // no space just inside the dollars, no digit right after the closing one — like ED-I06)
+  extensions: [
+    {
+      name: 'mathBlock',
+      level: 'block',
+      start: (src: string) => src.match(/^\$\$/m)?.index,
+      tokenizer(src: string): MathToken | undefined {
+        const m = /^\$\$([\s\S]+?)\$\$[ \t]*(?:\n|$)/.exec(src)
+        return m ? { type: 'mathBlock', raw: m[0], text: m[1]!.trim() } : undefined
+      },
+      renderer: (t) => `<div data-math-block data-latex="${esc((t as MathToken).text)}"></div>`,
+    },
+    {
+      name: 'inlineMath',
+      level: 'inline',
+      start: (src: string) => {
+        const i = src.indexOf('$')
+        return i < 0 ? undefined : i
+      },
+      tokenizer(src: string): MathToken | undefined {
+        const m = /^\$(?![\s$])([^$\n]+?)(?<!\s)\$(?!\d)/.exec(src)
+        return m ? { type: 'inlineMath', raw: m[0], text: m[1]! } : undefined
+      },
+      renderer: (t) => `<span data-inline-math data-latex="${esc((t as MathToken).text)}"></span>`,
+    },
+  ],
   renderer: {
     // to-do items become the editor's task list markup
     list(this: { listitem: (i: Tokens.ListItem) => string }, token: Tokens.List) {

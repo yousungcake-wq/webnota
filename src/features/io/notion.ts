@@ -21,15 +21,19 @@ const SHORT_HEX = /\s+[0-9a-f]{12,}$/i
 
 /** "Meeting notes 1f0a…e2.md" → "Meeting notes". */
 export function notionTitle(fileName: string): string {
-  const base = fileName.replace(/\.(md|csv)$/i, '').replace(/_all$/, '')
+  const base = fileName.replace(/\.(md|markdown|txt|html?|csv)$/i, '').replace(/_all$/, '')
   return base.replace(HEX, '').replace(SHORT_HEX, '').trim() || base
 }
 
 const dirOf = (p: string) => (p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '')
 const nameOf = (p: string) => p.slice(p.lastIndexOf('/') + 1)
 
+/** Page files in a Notion zip; picked files may also be text and HTML (M8-01~03). */
+export const NOTION_PAGES = /\.md$/i
+export const FILE_PAGES = /\.(md|markdown|txt|html?)$/i
+
 /** The pages and databases of an export, parents before children. */
-export function planNotionImport(paths: string[]): NotionItem[] {
+export function planNotionImport(paths: string[], pages: RegExp = NOTION_PAGES): NotionItem[] {
   const files = paths.filter((p) => !p.endsWith('/'))
   const csv = files.filter((p) => /\.csv$/i.test(p))
   // a database: prefer `X_all.csv` (every row) over `X.csv` (the default view's rows)
@@ -39,8 +43,14 @@ export function planNotionImport(paths: string[]): NotionItem[] {
     if (!dbs.has(key) || /_all\.csv$/i.test(p)) dbs.set(key, p)
   }
   const items: NotionItem[] = []
-  for (const p of files.filter((x) => /\.md$/i.test(x)))
-    items.push({ path: p, title: notionTitle(nameOf(p)), kind: 'page', folder: p.slice(0, -3), parent: null })
+  for (const p of files.filter((x) => pages.test(x)))
+    items.push({
+      path: p,
+      title: notionTitle(nameOf(p)),
+      kind: 'page',
+      folder: p.replace(/\.[^./]+$/, ''),
+      parent: null,
+    })
   for (const [key, p] of dbs)
     items.push({ path: p, title: notionTitle(nameOf(p)), kind: 'database', folder: key.slice(0, -4), parent: null })
   // the sub-page folder is "Title <id>/" or, in newer exports, just "Title/"
