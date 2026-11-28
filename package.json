@@ -15,7 +15,8 @@
     "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm run size",
     "e2e": "playwright test",
     "perf": "node tests/perf/baseline.mjs",
-    "perf:db": "node tests/perf/database.mjs"
+    "perf:db": "node tests/perf/database.mjs",
+    "perf:import": "node tests/perf/import.mjs"
   },
   "dependencies": {
     "@tiptap/core": "^3.35.0",
