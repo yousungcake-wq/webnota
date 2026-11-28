@@ -481,3 +481,68 @@
 .edge-back.is-ready::after {
   border-color: var(--accent);
 }
+
+/* Print / save as PDF (M8-07, ED-F18, IO-12): only the page — no app chrome, the whole
+   document instead of the scroll box, link addresses printed, blocks kept whole */
+@media print {
+  @page {
+    margin: 16mm 14mm;
+  }
+  html,
+  body,
+  #root,
+  .desktop,
+  .phone,
+  .phone-content,
+  .main,
+  .page,
+  .page-scroll {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+  .sidebar-dock,
+  .sidebar-hover-zone,
+  .sidebar-resizer,
+  .topbar,
+  .tabbar,
+  .kb-toolbar,
+  .toasts,
+  .schema-banner,
+  .find-bar,
+  .block-actions,
+  .phone-grip,
+  .add-icon,
+  .fab,
+  [role='tooltip'] {
+    display: none !important;
+  }
+  .page-body {
+    padding: 0 !important;
+  }
+  .wn-editor p.is-empty::before,
+  .wn-editor h1.is-empty::before,
+  .wn-editor h2.is-empty::before,
+  .wn-editor h3.is-empty::before {
+    content: none !important;
+  }
+  .wn-editor a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.8em;
+    color: var(--text-3);
+    word-break: break-all;
+  }
+  .wn-editor h1,
+  .wn-editor h2,
+  .wn-editor h3 {
+    break-after: avoid;
+  }
+  .wn-editor figure,
+  .wn-editor pre,
+  .wn-editor table,
+  .wn-editor .callout,
+  .wn-editor .math-block {
+    break-inside: avoid;
+  }
+}

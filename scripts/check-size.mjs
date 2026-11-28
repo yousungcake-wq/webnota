@@ -46,6 +46,7 @@ const BUDGETS = {
   ioSection: { kb: 8, entry: 'src/features/io/IoSection.tsx', after: 'settings' },
   importer: { kb: 40, entry: 'src/features/io/importer.ts' },
   exporter: { kb: 40, entry: 'src/features/io/exporter.ts' },
+  pageExport: { kb: 40, entry: 'src/features/io/pageExport.ts' }, // M8-05~07: one page as Markdown / HTML
 }
 
 const manifest = JSON.parse(readFileSync(join(DIST, '.vite/manifest.json'), 'utf8'))

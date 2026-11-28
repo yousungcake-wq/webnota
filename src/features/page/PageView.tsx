@@ -57,6 +57,7 @@ export function PageView({
   const block = route.name === 'page' && route.id === id ? route.block : undefined
   const phone = useLayout().layout === 'phone'
   useEdgeBack(phone, goBack)
+  usePrintLight()
   const [loaded, setLoaded] = useState<{ id: string; doc: Y.Doc } | null>(null)
   const doc = loaded?.id === id ? loaded.doc : null
   const editorRef = useRef<TEditor | null>(null)
@@ -413,4 +414,25 @@ function Crumbs({ crumbs }: { crumbs: ViewMeta[] }) {
       ))}
     </>
   )
+}
+
+/** Printing (M8-07) uses the light theme: dark text on white paper, whatever the screen uses. */
+function usePrintLight() {
+  useEffect(() => {
+    let before: string | null = null
+    const on = () => {
+      before = document.documentElement.getAttribute('data-theme')
+      document.documentElement.setAttribute('data-theme', 'light')
+    }
+    const off = () => {
+      if (before === null) document.documentElement.removeAttribute('data-theme')
+      else document.documentElement.setAttribute('data-theme', before)
+    }
+    window.addEventListener('beforeprint', on)
+    window.addEventListener('afterprint', off)
+    return () => {
+      window.removeEventListener('beforeprint', on)
+      window.removeEventListener('afterprint', off)
+    }
+  }, [])
 }

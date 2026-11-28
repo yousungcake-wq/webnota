@@ -1,4 +1,4 @@
-import { DOMParser as PMDOMParser } from '@tiptap/pm/model'
+import { DOMParser as PMDOMParser, DOMSerializer, Node as PMNode } from '@tiptap/pm/model'
 import { prosemirrorJSONToYXmlFragment, yXmlFragmentToProsemirrorJSON } from '@tiptap/y-tiptap'
 import type * as Y from 'yjs'
 import { docSchema } from './schema'
@@ -26,4 +26,12 @@ export function htmlIntoDoc(doc: Y.Doc, html: string) {
   const dom = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html').body
   const node = PMDOMParser.fromSchema(getSchema()).parse(dom)
   prosemirrorJSONToYXmlFragment(getSchema(), node.toJSON() as Record<string, unknown>, doc.getXmlFragment('default'))
+}
+
+/** A page document's body as HTML, the schema's own markup (export, M8-06). */
+export function docToHtml(doc: Y.Doc): string {
+  const node = PMNode.fromJSON(getSchema(), docToJSON(doc))
+  const box = document.createElement('div')
+  box.append(DOMSerializer.fromSchema(getSchema()).serializeFragment(node.content, { document }))
+  return box.innerHTML
 }

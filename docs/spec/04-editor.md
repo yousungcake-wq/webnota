@@ -74,7 +74,7 @@ AppFlowy `plugins/document/presentation/editor_plugins/*`를 기준으로 합니
 | ED-F15 | 블록 링크 | `#/w/<ws>/v/<page>/b/<blockId>`로 이동 후 강조 (앱 안 링크는 같은 탭에서 이동) | ✅ M2-13 |
 | ED-F16 | 마크다운 단축키 | 블록(위 표) + 인라인 `**굵게**`, `*기울임*`, `` `코드` ``, `~~취소~~` | ✅ (M2-17: `[텍스트](url)` → 링크, `==형광펜==`) |
 | ED-F17 | 잠금 페이지 읽기 전용 | WS-13 | ✅ M2-18 (상단 잠금 배너 + 해제 버튼, 제목·아이콘·커버 편집 숨김) |
-| ED-F18 | 인쇄 / PDF | 인쇄용 CSS (`@media print`) | M8 |
+| ED-F18 | 인쇄 / PDF | 인쇄용 CSS (`@media print`) | ✅ M8-07 (spec/09 IO-12) |
 
 ## 5. 키보드 단축키 (에디터)
 
