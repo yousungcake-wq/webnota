@@ -90,6 +90,7 @@ export function DatabaseView({ view, readOnly }: { view: ViewMeta; readOnly: boo
             cards={phone && layout === 'grid' ? cards : undefined}
             onToggleCards={toggleCards}
             onImportCsv={(file) => setCsv({ file, fresh: false })}
+            title={view.title}
           />
         </div>
         {Layout ? (

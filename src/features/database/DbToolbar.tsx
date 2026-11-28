@@ -5,6 +5,7 @@ import {
   KanbanSquare,
   LayoutList,
   ListChecks,
+  Download,
   MoreHorizontal,
   Upload,
   Search,
@@ -34,6 +35,7 @@ export function DbToolbar({
   cards,
   onToggleCards,
   onImportCsv,
+  title,
 }: {
   session: DbSession
   state: DbState
@@ -43,6 +45,8 @@ export function DbToolbar({
   onToggleCards?: () => void
   /** "Import CSV" in the database menu (M6-06). */
   onImportCsv?: (file: File) => void
+  /** The view's title (CSV export file name). */
+  title?: string
 }) {
   const phone = useLayout().layout === 'phone'
   const [open, setOpen] = useState<{
@@ -133,7 +137,7 @@ export function DbToolbar({
           {cards ? <Table2 size={16} aria-hidden /> : <LayoutList size={16} aria-hidden />}
         </button>
       )}
-      {onImportCsv && !readOnly && (
+      {onImportCsv && (
         <>
           <input
             ref={fileInput}
@@ -163,7 +167,21 @@ export function DbToolbar({
           anchor={more}
           title={dt('db.more')}
           onClose={() => setMore(null)}
-          items={[{ label: dt('db.csv.importRows'), icon: Upload, onSelect: () => fileInput.current?.click() }]}
+          items={[
+            ...(onImportCsv && !readOnly
+              ? [{ label: dt('db.csv.importRows'), icon: Upload, onSelect: () => fileInput.current?.click() }]
+              : []),
+            {
+              label: dt('db.csv.export'),
+              icon: Download,
+              children: (['view', 'all'] as const).map((scope) => ({
+                label: dt(scope === 'view' ? 'db.csv.exportView' : 'db.csv.exportAll'),
+                onSelect: () => {
+                  void import('./csvExport').then((m) => m.saveCsv(m.databaseCsv(session, state, scope), title ?? ''))
+                },
+              })),
+            },
+          ]}
         />
       )}
       {open && (

@@ -57,4 +57,34 @@ test.describe('CSV (M6)', () => {
     await expect(page.locator('.dbg-hname', { hasText: /^Hours$/ })).toHaveCount(0)
     noErrors()
   })
+
+  test('export the current view (filter, sort, visible fields) or everything (M6-07)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    // filter Status = Doing, sort by Name descending
+    await page.getByRole('button', { name: '필터', exact: true }).click()
+    const panel = page.getByRole('dialog', { name: '필터' })
+    await panel.getByRole('button', { name: '필터 추가' }).click()
+    await panel.getByLabel('필드').selectOption({ label: 'Status' })
+    await panel.getByRole('group', { name: '값' }).getByRole('checkbox').nth(1).check()
+    await page.keyboard.press('Escape')
+    const n = Number(await page.getByRole('grid').getAttribute('aria-rowcount')) - 1
+    const exportCsv = async (scope: string) => {
+      await page.getByRole('button', { name: '데이터베이스 메뉴' }).click()
+      await page.getByRole('menuitem', { name: 'CSV 내보내기' }).click()
+      const dl = page.waitForEvent('download')
+      await page.getByRole('menuitem', { name: scope }).click()
+      const d = await dl
+      expect(d.suggestedFilename()).toBe('QA database 50.csv')
+      const fs = await import('node:fs/promises')
+      return (await fs.readFile((await d.path())!, 'utf8')).replace(/^\uFEFF/, '')
+    }
+    const view = (await exportCsv('현재 보기 (필터·정렬·보이는 속성)')).trim().split(/\r\n/)
+    expect(view).toHaveLength(n + 1)
+    expect(view[0]!.split(',').slice(0, 4)).toEqual(['Name', 'Amount', 'Done', 'Status'])
+    expect(view.slice(1).every((l) => l.split(',')[3] === 'Doing')).toBe(true)
+    const all = (await exportCsv('전체 데이터베이스')).trim().split(/\r\n/)
+    expect(all).toHaveLength(51)
+    noErrors()
+  })
 })

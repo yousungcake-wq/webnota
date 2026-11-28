@@ -321,4 +321,6 @@ export const en: Record<DbKey, string> = {
   'db.csv.importRows': 'Import CSV',
   'db.csv.export': 'Export CSV',
   'db.more': 'Database menu',
+  'db.csv.exportView': 'This view (filter, sort, visible properties)',
+  'db.csv.exportAll': 'The whole database',
 }

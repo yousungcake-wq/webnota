@@ -320,6 +320,8 @@ export const ko = {
   'db.csv.importRows': 'CSV 가져오기',
   'db.csv.export': 'CSV 내보내기',
   'db.more': '데이터베이스 메뉴',
+  'db.csv.exportView': '현재 보기 (필터·정렬·보이는 속성)',
+  'db.csv.exportAll': '전체 데이터베이스',
 }
 
 export type DbKey = keyof typeof ko
