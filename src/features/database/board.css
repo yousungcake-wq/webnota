@@ -253,6 +253,10 @@
   .dbk-handle {
     min-height: 44px;
   }
+  .dbk-head .db-icon-btn {
+    min-width: 44px;
+    height: 44px;
+  }
 }
 .dbk-calc {
   color: var(--text-3);

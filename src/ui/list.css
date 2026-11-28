@@ -49,3 +49,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.phone .section-head {
+  height: 44px; /* room for its 44px buttons (MB-11) */
+}

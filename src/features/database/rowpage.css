@@ -72,6 +72,9 @@
     min-width: 44px;
     height: 44px;
   }
+  .db-rowpage-title {
+    min-height: 44px; /* MB-11 */
+  }
 }
 .db-rowpage {
   color: var(--text);

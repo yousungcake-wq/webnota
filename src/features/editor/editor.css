@@ -120,6 +120,17 @@
   margin-top: 5px;
   user-select: none;
 }
+@media (pointer: coarse) {
+  /* MB-11: 44px wide (into the margin), as tall as the line — the list keeps its spacing */
+  .wn-editor ul[data-type='taskList'] li > label {
+    position: relative;
+  }
+  .wn-editor ul[data-type='taskList'] li > label::after {
+    content: '';
+    position: absolute;
+    inset: -5px -14px;
+  }
+}
 .wn-editor ul[data-type='taskList'] li > div {
   flex: 1;
   min-width: 0;
@@ -193,18 +204,24 @@
 /* touch screens: a handle beside the block with the caret (feedback 1) */
 .phone-grip {
   position: absolute;
-  left: -34px;
+  left: -36px;
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 32px;
+  width: 36px;
+  height: 44px;
+  margin-top: -6px; /* 44px target, icon still beside the first line */
   padding: 0;
   border: 0;
   border-radius: var(--r-sm);
   background: transparent;
   color: var(--text-2);
   touch-action: manipulation;
+}
+.phone-grip::after {
+  content: '';
+  position: absolute;
+  inset: 0 -6px 0 0; /* 44px wide: over the text margin a little */
 }
 .phone-grip:active {
   background: var(--bg-hover);
@@ -335,8 +352,8 @@
 .kb-btn {
   display: grid;
   place-items: center;
-  min-width: 42px;
-  height: 40px;
+  min-width: 44px;
+  height: 44px;
   border-radius: 8px;
   color: var(--text-2);
   flex: none;

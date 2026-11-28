@@ -99,6 +99,7 @@
 @media (pointer: coarse) {
   .add-icon {
     opacity: 1;
+    height: 44px;
   }
 }
 .page-title {
@@ -143,6 +144,9 @@
 }
 .phone .page-title {
   font-size: 28px;
+  /* a 44px tall target (MB-11) without moving the text */
+  padding: 5px 0;
+  margin: -1px 0 7px;
 }
 .phone .page-icon {
   font-size: 44px;
@@ -151,6 +155,20 @@
   height: 52px;
   padding: 0 4px;
   border-bottom: 1px solid var(--border);
+}
+/* MB-11: full 44px buttons side by side (the hit areas must not overlap) */
+.phone .topbar .icon-btn {
+  width: 44px;
+  height: 44px;
+}
+.phone .topbar-actions {
+  gap: 0;
+}
+.phone .topbar .sync-badge {
+  height: 44px;
+  min-width: 44px;
+  justify-content: center;
+  border-radius: 22px;
 }
 .phone .crumbs {
   font-size: 15px;

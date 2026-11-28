@@ -417,7 +417,7 @@ textarea.dbc-editor {
     display: none;
   }
   .dbg-gbtn.is-grip {
-    width: 40px;
+    width: 44px;
     height: 44px;
     opacity: 0.7;
   }
@@ -443,5 +443,16 @@ textarea.dbc-editor {
 @media (pointer: coarse) {
   .dbg-calc {
     min-height: 44px;
+  }
+}
+@media (pointer: coarse) {
+  /* a 44px hit area (inside a grid cell it is clipped to the cell, which is the target) */
+  .dbc-check {
+    position: relative;
+  }
+  .dbc-check::after {
+    content: '';
+    position: absolute;
+    inset: -15px; /* from inside the 1.5px border */
   }
 }

@@ -89,3 +89,19 @@
   box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent);
   z-index: var(--z-sticky);
 }
+/* touch screens (MB-11, M7-02): small buttons keep their look but get a 44×44 hit area */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 44px;
+  }
+  .icon-btn,
+  .btn.sm {
+    position: relative;
+  }
+  .icon-btn::after,
+  .btn.sm::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, calc((100% - 44px) / 2));
+  }
+}

@@ -90,8 +90,19 @@
   font-size: 16px;
 }
 .phone .tree-toggle {
-  width: 32px;
-  height: 32px;
+  position: relative;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  margin-right: -8px; /* a 44px target; the page icon sits a little into it */
+}
+.phone .tree-actions {
+  gap: 0;
+}
+.phone .tree-actions .icon-btn,
+.phone .tree-actions .icon-btn.sm {
+  width: 44px;
+  height: 44px;
 }
 @media (min-width: 768px) and (pointer: coarse) {
   .tree-row {

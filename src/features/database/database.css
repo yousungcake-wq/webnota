@@ -848,3 +848,10 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* touch targets (MB-11, M7-02) */
+@media (pointer: coarse) {
+  .db-option-create,
+  .db-prop-btn {
+    min-height: 44px;
+  }
+}

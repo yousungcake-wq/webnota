@@ -21,3 +21,13 @@
 .sync-badge.is-error {
   color: var(--danger);
 }
+@media (pointer: coarse) {
+  .sync-badge {
+    position: relative;
+  }
+  .sync-badge::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, calc((100% - 44px) / 2));
+  }
+}

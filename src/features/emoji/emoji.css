@@ -27,6 +27,28 @@
 .emoji-search-row .search-box {
   flex: 1;
   margin: 0;
+  /* own styles: the search screen's stylesheet may not be loaded here */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--text-3);
+}
+.emoji-search-row .search-box input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 16px;
+  color: var(--text);
+}
+.emoji-search-row .emoji-btn {
+  flex: none;
+  width: 36px;
 }
 .emoji-skin {
   height: 36px;
@@ -81,5 +103,15 @@
   }
   .emoji-scroll .emoji-grid {
     grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  }
+  .emoji-search-row .search-box,
+  .emoji-skin {
+    height: 44px;
+  }
+  .emoji-skin {
+    min-width: 48px;
+  }
+  .emoji-search-row .emoji-btn {
+    width: 44px;
   }
 }
