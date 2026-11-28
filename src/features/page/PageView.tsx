@@ -1,6 +1,6 @@
 import type { Editor as TEditor } from '@tiptap/react'
 import { ChevronLeft, ImagePlus, Lock, MoreHorizontal, PanelLeft, SmilePlus, Star } from 'lucide-react'
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { openDoc, pageDocName, retainDoc } from '@/core/docs/registry'
 import { ws } from '@/core/docs/workspace'
 import { ancestorsOf, getView, updateView, type ViewMeta } from '@/core/model/views'
@@ -23,6 +23,7 @@ import { useLayout } from '@/platform/layout'
 import { Button, confirmDialog, EmptyState, ErrorBoundary, IconButton, LinkButton, Menu, Skeleton } from '@/ui'
 import { collapseCrumbs } from './crumbs'
 import { useEdgeBack } from './edgeBack'
+import { keepPosition, restorePosition } from './keepPosition'
 import { deleteForever, restore, toggleFavorite } from './actions'
 import { PageMenu } from './LazyPageMenu'
 import './page.css'
@@ -59,9 +60,20 @@ export function PageView({
   const [loaded, setLoaded] = useState<{ id: string; doc: Y.Doc } | null>(null)
   const doc = loaded?.id === id ? loaded.doc : null
   const editorRef = useRef<TEditor | null>(null)
-  const onReady = useCallback((e: TEditor) => {
-    editorRef.current = e
-  }, [])
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const onReady = useCallback(
+    (e: TEditor) => {
+      editorRef.current = e
+      restorePosition(id, scrollRef.current, e)
+    },
+    [id],
+  )
+  // a layout switch rebuilds this screen: keep the reading position for the next one (MB-18)
+  // (a layout effect: its cleanup runs while the old screen is still laid out)
+  useLayoutEffect(() => {
+    const scroller = scrollRef.current
+    return () => keepPosition(id, scroller, editorRef.current)
+  }, [id])
 
   const isDb = page?.kind === 'database'
   useEffect(() => {
@@ -191,7 +203,7 @@ export function PageView({
           </Button>
         </div>
       )}
-      <div className="page-scroll">
+      <div className="page-scroll" ref={scrollRef}>
         {doc && cover && (
           // same box while the cover code loads: no layout shift
           <Suspense fallback={<div className="page-cover" style={{ background: coverBackground(cover) }} />}>

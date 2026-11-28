@@ -12,6 +12,11 @@ import { useSyncExternalStore } from 'react'
  *
  * A mouse-driven split-screen window (feedback 2-9) stays on the wide layout (sidebar as
  * a drawer) down to 480px instead of switching to the phone UI at 768.
+ *
+ * A touch device whose screen's short side is under 500px is a phone in any orientation
+ * (MB-18, M7-08): turning a phone sideways keeps the phone UI (and its open sheet, caret
+ * and scroll) instead of switching to the tablet layout. The screen, not the window: the
+ * on-screen keyboard must not turn a tablet into a phone.
  */
 export type LayoutKind = 'phone' | 'tablet' | 'desktop'
 export interface Layout {
@@ -24,10 +29,12 @@ export const PHONE_MAX = 767
 export const TABLET_MAX = 1023
 /** Phone layout limit with a mouse (fine pointer). */
 export const MOUSE_PHONE_MAX = 479
+/** Touch screens with a shorter side than this are phones, also in landscape. */
+export const PHONE_SHORT_SIDE = 500
 
-export function computeLayout(width: number, isTouch: boolean): Layout {
+export function computeLayout(width: number, isTouch: boolean, screenShortSide = Infinity): Layout {
   const layout: LayoutKind = isTouch
-    ? width <= PHONE_MAX
+    ? width <= PHONE_MAX || screenShortSide < PHONE_SHORT_SIDE
       ? 'phone'
       : width <= TABLET_MAX
         ? 'tablet'
@@ -57,7 +64,11 @@ const queries = [
 ]
 
 export function getLayout(): Layout {
-  return computeLayout(window.innerWidth, window.matchMedia('(pointer: coarse)').matches)
+  return computeLayout(
+    window.innerWidth,
+    window.matchMedia('(pointer: coarse)').matches,
+    Math.min(screen.width, screen.height),
+  )
 }
 
 function subscribe(cb: () => void) {
