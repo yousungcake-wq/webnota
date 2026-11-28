@@ -144,7 +144,7 @@
 - [x] M5-09 행 페이지 탐색: 데스크탑 가운데 모달(전체 화면 전환), 폰 전체 화면(MB-31), 이전/다음 행, 링크 복사(라우트 `#/w/:ws/v/:id/r/:row`), 복제, 삭제, 뒤로 가기. Grid의 "열기"·Board 카드·Calendar 이벤트가 행 페이지로 (DB-R04, DB-G05, MB-31) — e4397ac
 - [x] M5-10 인라인 DB 블록 `database`(databaseId, viewId, layout): 슬래시 메뉴 새로 만들기(Grid/Board/Calendar)·기존 DB 연결, 높이 제한(기본 400px, 조절), "전체 페이지로 열기", 노드 뷰는 지연 청크 — **schema 증가**(노드 타입) (ED-B20, DB-L, spec/05 §8) — a03700b
 - [x] M5-11 기능 플래그 `database` 제거, 새 뷰 메뉴 Board·Calendar 활성화, 사이드바 아이콘(보드·캘린더), 빈 DB 안내 (WS-11) — 47afbe2
-- [x] M5-12 e2e(데스크탑·폰: 탭 바, Board 드래그 마우스·터치, Calendar 드래그, 행 페이지, 인라인 DB) + 성능 기록(`perf:db` + Board 1,000카드) + 실기기 QA
+- [x] M5-12 e2e(데스크탑·폰: 탭 바, Board 드래그 마우스·터치, Calendar 드래그, 행 페이지, 인라인 DB) + 성능 기록(`perf:db` + Board 1,000카드) + 실기기 QA — ac59d57
 
 ## M6 데이터베이스 III: 관계, 롤업, CSV, 저장소 크기
 > 규칙: M5와 같음 — DB 코드는 지연 청크(`database` 41/120KB, `dbBoard`·`dbCalendar`), 에디터 청크 208.9/210KB·초기 123.3/125KB·부팅 i18n 7.9/8KB는 거의 꽉 참(새 문자열은 `features/database/i18n`). 새 필드 타입·셀 형식은 **schema 증가**(spec/02 §6) + 테스트 먼저. 두 DB에 걸친 쓰기(양방향 관계)는 두 Y.Doc이라 원자적이지 않음 → 동기화 후 정합성 검사·복구. 공유 B안(M9)을 위해 관계 대상은 `databaseId`로만 가리키고, 다른 스페이스(저장소)의 DB를 가리킬 수 있는지 표시(`targetSpaceId` 계산 가능하게).

@@ -4,10 +4,10 @@
 
 ## 현재 위치
 
-- **마일스톤**: M5 데이터베이스 II (M4 완료 — 실기기 확인은 docs/QA.md "M4"(와 M3·M2), 사용자 확인 대기. DB는 설정 → 고급 "데이터베이스 (개발 중)" 플래그 뒤)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12, M4 16/16 완료. M5 12/13. 사용자 피드백 13건(2026-11-27) 처리 중
+- **마일스톤**: M6 데이터베이스 III (M5 완료 — 실기기 확인은 docs/QA.md "M5"(와 M4·M3·M2·2차 피드백), 사용자 확인 대기. DB 플래그 제거됨)
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12, M4 16/16, M5 13/13 완료. M6 0/11 (체크리스트 세부화 완료). 사용자 피드백 13건(2026-11-27) 처리 중
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M5-12
+- **다음 할 일**: M5 실기기 확인(docs/QA.md "M5") 사용자 대기 → M6-00
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -72,6 +72,8 @@
 
 - 공유(M9)는 B안: 공유 스페이스마다 별도 저장소, 한 워크스페이스가 여러 저장소와 동기화(SY-08). M5~M8에서 새 문서·파일 경로를 만들 때 '어느 저장소(스페이스)에 속하는지'로 라우팅할 수 있게 스페이스 단위로 찾을 수 있도록 설계할 것 (spec/02 §2.1)
 
+- CI에서 가끔 실패하는 e2e: `mobile.image.spec.ts`(폰 이미지 손잡이 크기 조절·도구 모음 탭, 부하 시 figure가 포인터를 가로챔 — M5 중 1회, 재실행 통과). 다시 나오면 안정화
+- 성능 측정 시 `vite preview`가 남아 있으면 다른 빌드를 잴 수 있음 → 측정 전 `pkill -f 'vite preview'`
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
 - GitHub 로그인 (2026-11-27 설정 완료, 사용자가 실기기 로그인 확인): Worker `https://webnota-auth.yousungcake.workers.dev`(Actions가 배포, `/token`·`/unfurl` 동작 확인), 저장소 Variables `WEBNOTA_GITHUB_CLIENT_ID`·`WEBNOTA_AUTH_PROXY_URL`, Secrets `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`·`WEBNOTA_GITHUB_CLIENT_SECRET`. 작업 환경의 `gh`로 Actions 변수·비밀은 읽고 쓸 수 없음(403) — `gh workflow run`은 가능. Cloudflare 토큰이 만료되면 worker 작업이 실패해 Pages 배포도 멈춤.
 - 실기기 한글 IME 미검증 (에뮬레이션 CDP 테스트만 통과).
@@ -213,3 +215,4 @@
 | 2026-11-27 | M5-09: 행 페이지 탐색(라우트 /r/<row>, 가운데 창·전체 화면·폰 전체, 이전/다음, 링크·복제·삭제, 모든 보기에서 열기) | e4397ac |
 | 2026-11-27 | M5-10: 인라인 DB 블록(슬래시 새로 만들기·기존 연결·높이 조절·전체 페이지, embedded 뷰, 문서 라우트 행 페이지), schema v23 | a03700b |
 | 2026-11-27 | M5-11: database 플래그 제거, 새 뷰 메뉴 Board·Calendar, 사이드바 아이콘, 빈 DB 안내(폰 FAB는 문서 바로) | 47afbe2 |
+| 2026-11-27 | M5-12: M5 e2e(데스크탑·폰 26개)·성능 기록·QA M5, M5 완료, M6 체크리스트 세부화 | ac59d57 |
