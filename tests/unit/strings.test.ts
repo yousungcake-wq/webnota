@@ -13,6 +13,7 @@ const ALLOW = new Set([
   'features/database/i18n/ko.ts', // lazy feature dictionary (M4-00)
   'features/editor/mediaI18n/ko.ts', // lazy media toolbar dictionary
   'features/io/i18n/ko.ts', // lazy import / export dictionary
+  'features/settings/historyI18n/ko.ts', // lazy repository history dictionary (M6-09)
 ])
 
 function files(dir: string): string[] {

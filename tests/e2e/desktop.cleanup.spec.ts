@@ -116,3 +116,38 @@ test('"clean up storage" also removes the page bodies of deleted rows (M6-00)', 
   await expect.poll(bodies, { timeout: 15000 }).toHaveLength(0)
   check()
 })
+
+test('repository size and "clean up repository history": a new root commit, data kept (SY-03, M6-09)', async ({
+  page,
+}) => {
+  const check = failOnConsoleErrors(page)
+  const gh = new FakeGithub()
+  await gh.install(page)
+  await openApp(page)
+  await connectFake(page)
+  await expect.poll(() => gh.files().length, { timeout: 15000 }).toBeGreaterThan(0)
+  // a second commit, so there is history
+  await page.goto('/')
+  await newPageFromSidebar(page)
+  await waitForNewPage(page)
+  await page.fill('.page-title', '기록 정리 전')
+  await expect.poll(() => gh.commits.get(gh.head)!.parents.length, { timeout: 15000 }).toBe(1)
+  const files = gh.files().sort()
+
+  await page.goto('/#/settings')
+  await expect(page.getByText(/저장소 크기: /)).toBeVisible()
+  await page.getByRole('button', { name: '저장소 기록 정리' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '기록 정리' }).click()
+  await expect(page.getByText('저장소 기록을 정리했습니다')).toBeVisible({ timeout: 15000 })
+  const root = gh.head
+  const head = gh.commits.get(root)!
+  expect(head.parents).toEqual([])
+  expect(head.message).toMatch(/history cleanup/)
+  expect(gh.files().sort()).toEqual(files)
+  // syncing goes on from the new root
+  await page.goto('/')
+  await page.locator('.tree-row', { hasText: '기록 정리 전' }).click()
+  await page.fill('.page-title', '기록 정리 후')
+  await expect.poll(() => gh.commits.get(gh.head)!.parents, { timeout: 15000 }).toEqual([root])
+  check()
+})

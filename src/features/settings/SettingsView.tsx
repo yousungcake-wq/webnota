@@ -1,5 +1,5 @@
 import { LogOut, Monitor, Moon, RefreshCw, Sun, Trash2 } from 'lucide-react'
-import { Fragment, lazy, Suspense, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { Fragment, lazy, Suspense, use, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { oauthAvailable, startLogin } from '@/core/auth/auth'
 import { FLAGS, setFlag, type FlagName } from '@/core/flags'
 import { useFlag } from '@/core/store/flags'
@@ -33,6 +33,7 @@ const useSystemTheme = () => useSyncExternalStore(subscribeScheme, () => (darkQu
 const WorkspaceSettings = lazy(loadWorkspaceSettings)
 const IoSection = lazy(loadIoSection)
 import { SyncLog } from './SyncLog'
+import { ht, loadHistoryMessages } from './historyI18n'
 
 function Github({ size = 18 }: { size?: number }) {
   return (
@@ -341,6 +342,75 @@ function FileStorage({ connected }: { connected: boolean }) {
         {busy ? t('cleanup.running') : t('cleanup.title')}
       </Button>
       <p className="muted small">{connected ? t('cleanup.hint') : t('cleanup.needsGithub')}</p>
+      {connected && (
+        <Suspense fallback={null}>
+          <RepoHistory />
+        </Suspense>
+      )}
+    </div>
+  )
+}
+
+const loadHistory = () => import('@/core/files/history')
+const historyMessages = loadHistoryMessages()
+
+/** Repository size and "clean up repository history" (SY-03, M6-09). */
+function RepoHistory() {
+  use(historyMessages)
+  const [size, setSize] = useState<number | null | undefined>(undefined)
+  const [busy, setBusy] = useState(false)
+  const [warn, setWarn] = useState(0)
+  useEffect(() => {
+    let alive = true
+    void loadHistory()
+      .then((m) => {
+        if (alive) setWarn(m.SIZE_WARN_BYTES)
+        return m.repositorySize()
+      })
+      .then(
+        (n) => alive && setSize(n),
+        () => alive && setSize(null),
+      )
+    return () => {
+      alive = false
+    }
+  }, [busy])
+  const run = async () => {
+    const ok = await confirmDialog({
+      title: ht('history.confirmTitle'),
+      message: ht('history.confirm'),
+      confirmLabel: ht('history.confirmRun'),
+      danger: true,
+    })
+    if (!ok) return
+    setBusy(true)
+    const m = await loadHistory()
+    const files = await loadCleanup()
+    try {
+      const r = await m.cleanHistory()
+      toast(r === 'done' ? ht('history.done') : r === 'moved' ? ht('history.moved') : ht('history.empty'), {
+        tone: r === 'moved' ? 'error' : undefined,
+      })
+    } catch (e) {
+      const reason = e instanceof files.CleanupError ? e.reason : null
+      toast(
+        reason === 'offline' ? t('files.offline') : reason === 'sync-failed' ? t('cleanup.syncFailed') : String(e),
+        { tone: 'error' },
+      )
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="settings-history">
+      <p className="muted small">
+        {size === undefined ? '…' : size === null ? ht('history.sizeUnknown') : ht('history.size', { size: mb(size) })}
+      </p>
+      {!!size && !!warn && size > warn && <p className="small settings-warn">{ht('history.big')}</p>}
+      <Button size="sm" disabled={busy} onClick={() => void run()}>
+        {busy ? ht('history.running') : ht('history.run')}
+      </Button>
+      <p className="muted small">{ht('history.hint')}</p>
     </div>
   )
 }

@@ -187,6 +187,14 @@ export class GitHubGitApi implements GitApi {
     return res.sha
   }
 
+  /** Moves the branch to `commitSha` even if that is not a fast-forward (history cleanup, SY-03). */
+  async forceHead(commitSha: string) {
+    await this.gh.request('PATCH', `${this.base}/refs/heads/${encodeURIComponent(this.branch)}`, {
+      sha: commitSha,
+      force: true,
+    })
+  }
+
   async updateHead(commitSha: string, create: boolean) {
     try {
       if (create) {

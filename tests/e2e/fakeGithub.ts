@@ -100,7 +100,9 @@ export class FakeGithub {
     }
     if (p === `${base}/git/refs/heads/main` && method === 'PATCH') {
       const sha = body().sha as string
-      if (this.commits.get(sha)?.parents[0] !== this.head) return ok({ message: 'Update is not a fast forward' }, 422)
+      const force = body().force === true
+      if (!force && this.commits.get(sha)?.parents[0] !== this.head)
+        return ok({ message: 'Update is not a fast forward' }, 422)
       this.head = sha
       return ok({ object: { sha } })
     }

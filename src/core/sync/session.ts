@@ -158,3 +158,30 @@ export function cleanRepository(
     deviceName: deviceLabel(),
   })
 }
+
+/** Repository size in bytes as GitHub reports it (`size`, KB — refreshed by GitHub with a delay). */
+export async function repoSize(account: Account, token: string): Promise<number | null> {
+  const repo = await new GitHubClient(token).getRepo(account.owner, account.repo)
+  return repo ? repo.size * 1024 : null
+}
+
+/**
+ * "Clean up repository history" (SY-03, M6-09): the current tree becomes a new root commit
+ * and the branch is forced to it, so the old snapshots can be collected. Every device keeps
+ * syncing (the engine compares file contents, not history). The head is read again right
+ * before forcing, so a commit pushed meanwhile is not thrown away: then nothing changes.
+ */
+export async function squashHistory(account: Account, token: string): Promise<'done' | 'moved' | 'empty'> {
+  const api = new GitHubGitApi(new GitHubClient(token), account.owner, account.repo, account.branch)
+  const head = await api.getHead()
+  if (!head) return 'empty'
+  const root = await api.createCommit(
+    `WebNota history cleanup${deviceLabel() ? ` from ${deviceLabel()}` : ''}`,
+    head.treeSha,
+    [],
+  )
+  const again = await api.getHead()
+  if (again?.commitSha !== head.commitSha) return 'moved'
+  await api.forceHead(root)
+  return 'done'
+}
