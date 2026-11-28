@@ -4,6 +4,7 @@ import { ws } from '@/core/docs/workspace'
 import { listViews, moveView, type ViewMeta } from '@/core/model/views'
 import { toggleExpanded } from '@/core/store/prefs'
 import type { TreeRow } from './flatten'
+import { haptic } from '@/platform/haptics'
 
 /**
  * Small eager part of tree drag & drop (WS-03): decides when a press becomes a drag —
@@ -54,7 +55,7 @@ export function onPress(e: ReactPointerEvent<HTMLElement>, start: (x: number, y:
   window.addEventListener('pointercancel', cleanup)
   if (touch)
     timer = setTimeout(() => {
-      navigator.vibrate?.(10)
+      haptic()
       go(x0, y0)
     }, LONG_PRESS)
   return true

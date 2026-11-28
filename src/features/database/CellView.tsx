@@ -1,4 +1,5 @@
 import { Check, Copy, ExternalLink } from 'lucide-react'
+import { haptic } from '@/platform/haptics'
 import {
   asChecklist,
   asDate,
@@ -67,6 +68,7 @@ export function CellView({
           tabIndex={-1}
           onClick={(e) => {
             e.stopPropagation()
+            haptic()
             onToggle()
           }}
         >

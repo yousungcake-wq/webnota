@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { haptic } from '@/platform/haptics'
 import { setTouchDragging } from './boardDrag'
 
 export interface DayDrag {
@@ -45,6 +46,7 @@ export function useDayDrag(onDrop: (rowId: string, from: number | null, to: numb
     const activate = (x: number, y: number) => {
       dragged.current = true
       setTouchDragging(touch)
+      if (touch) haptic()
       set(x, y)
     }
     const onMove = (ev: PointerEvent) => {

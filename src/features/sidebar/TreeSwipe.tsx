@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { t } from '@/core/i18n'
 import { useViews } from '@/core/store/views'
 import { moveToTrash, toggleFavorite } from '@/features/page'
+import { haptic } from '@/platform/haptics'
 
 const ACTION_W = 64
 const WIDTH = ACTION_W * 2
@@ -77,8 +78,10 @@ export default function TreeSwipe({ listRef }: { listRef: React.RefObject<HTMLEl
           return
         }
         swallowClick()
-        if (base + dx < -WIDTH / 2) place(current, -WIDTH, true)
-        else close()
+        if (base + dx < -WIDTH / 2) {
+          if (!wasOpen) haptic()
+          place(current, -WIDTH, true)
+        } else close()
       }
       const stop = () => {
         window.removeEventListener('pointermove', move)

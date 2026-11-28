@@ -215,7 +215,6 @@ function useHeldMenu(listRef: React.RefObject<HTMLElement | null>, viewOf: (id: 
     const view = viewOf(id)
     const el = listRef.current?.querySelector<HTMLElement>(`[data-id="${CSS.escape(id)}"]`)
     if (!view || !el) return
-    navigator.vibrate?.(10)
     setHeld({ view, anchor: el.querySelector<HTMLElement>('.tree-row, .list-item') ?? el })
   }
   return {

@@ -35,7 +35,7 @@ import type { UrlPasteRequest } from './pasteRules'
 import { ColorPicker } from './ColorPicker'
 import { LinkBubble, LinkSheet, promptLink } from './LinkBubble'
 import { openHref } from './link'
-import { useCaretAutoScroll, useLongPressBlock } from './mobileHooks'
+import { useCaretAutoScroll, useCheckboxHaptic, useLongPressBlock } from './mobileHooks'
 import { findBlock } from './blockOps'
 import { blockRangeOf, blockRangePositions, selectedBlockPositions } from './blockSelection'
 import { hasTable, isCellSelection, loadTableKit, TableMenu } from './TableMenu'
@@ -229,6 +229,7 @@ export function Editor({ doc, pageId, focusBlock, onReady, locked = false }: Pro
   // Phones: long press on a block (not while typing) opens its menu (MB-23); keep the caret
   // above the keyboard (MB-24).
   useLongPressBlock(editor, wrapRef, coarse && !readOnly, openBlockMenu)
+  useCheckboxHaptic(wrapRef, coarse)
   useCaretAutoScroll(editor, coarse)
   useBlockGrab(editor, wrapRef)
   const phoneHandle = usePhoneHandle(editor, wrapRef, coarse && !readOnly)

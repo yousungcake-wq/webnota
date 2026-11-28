@@ -1,5 +1,6 @@
 import type { Editor as TEditor } from '@tiptap/react'
 import { useEffect, type RefObject } from 'react'
+import { haptic } from '@/platform/haptics'
 
 /** Space kept between the caret and the keyboard toolbar (px). */
 const CARET_MARGIN = 24
@@ -88,7 +89,7 @@ export function useLongPressBlock(
         const blockPos = $pos.before(1)
         const dom = editor.view.nodeDOM(blockPos)
         fired = true
-        navigator.vibrate?.(10)
+        haptic()
         window.getSelection()?.removeAllRanges()
         open(blockPos, dom instanceof HTMLElement ? dom : wrap)
       }, LONG_PRESS)
@@ -120,4 +121,17 @@ export function useLongPressBlock(
       wrap.removeEventListener('click', onClick, true)
     }
   }, [editor, wrapRef, enabled, open])
+}
+
+/** MB-16: a tick when a task checkbox is toggled by touch. */
+export function useCheckboxHaptic(wrapRef: RefObject<HTMLDivElement | null>, enabled: boolean) {
+  useEffect(() => {
+    const wrap = wrapRef.current
+    if (!wrap || !enabled) return
+    const onChange = (e: Event) => {
+      if ((e.target as HTMLElement).matches('input[type="checkbox"]')) haptic()
+    }
+    wrap.addEventListener('change', onChange)
+    return () => wrap.removeEventListener('change', onChange)
+  }, [wrapRef, enabled])
 }

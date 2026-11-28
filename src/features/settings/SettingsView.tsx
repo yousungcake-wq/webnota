@@ -34,6 +34,7 @@ const WorkspaceSettings = lazy(loadWorkspaceSettings)
 const IoSection = lazy(loadIoSection)
 import { SyncLog } from './SyncLog'
 import { loadSettingsMessages, st, stParts } from './i18n'
+import { canVibrate, haptic, hapticsOn, setHapticsOn } from '@/platform/haptics'
 
 // settings strings are a lazy dictionary (M7-00): loaded with this chunk
 const messages = loadSettingsMessages()
@@ -62,6 +63,7 @@ export function SettingsView() {
   const trashAuto = useStore(trashAutoEmptyStore)
   const imageOriginal = useImageOriginal()
   const [pat, setPat] = useState('')
+  const [haptics, setHaptics] = useState(hapticsOn)
   const [repo, setRepo] = useState('webnota-data')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -227,6 +229,22 @@ export function SettingsView() {
         />
         <FileStorage connected={!!sync.account} />
       </section>
+
+      {canVibrate() && (
+        <section className="card">
+          <h2>{st('settings.device')}</h2>
+          <Switch
+            checked={haptics}
+            onChange={(on) => {
+              setHapticsOn(on)
+              setHaptics(on)
+              if (on) haptic(20)
+            }}
+            label={st('settings.haptics')}
+            description={st('settings.haptics.desc')}
+          />
+        </section>
+      )}
 
       <section className="card">
         <h2>{t('common.trash')}</h2>

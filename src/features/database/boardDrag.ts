@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { haptic } from '@/platform/haptics'
 
 /** Where a dragged card would land: column `key`, before card `beforeId` (null: at the end). */
 export interface CardDrop {
@@ -134,7 +135,7 @@ export function useCardDrag(opts: {
       active = true
       touchDragging = touch
       dragged.current = true
-      if (touch) navigator.vibrate?.(10)
+      if (touch) haptic()
       update()
       frame = requestAnimationFrame(autoScroll)
     }

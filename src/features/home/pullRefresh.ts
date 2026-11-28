@@ -1,5 +1,6 @@
 import { t } from '@/core/i18n'
 import { syncStore, syncNow } from '@/core/sync/controller'
+import { haptic } from '@/platform/haptics'
 import { toast } from '@/ui'
 import './pullRefresh.css'
 
@@ -53,6 +54,7 @@ export function attachPullRefresh(scroller: HTMLElement) {
     b.className = 'pull-refresh is-syncing'
     b.textContent = ''
     b.setAttribute('aria-label', t('sync.syncing'))
+    haptic()
     syncNow()
     let seen = false
     const check = () => {

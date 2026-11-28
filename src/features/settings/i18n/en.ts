@@ -52,6 +52,9 @@ export const en: Record<HistoryKey, string> = {
   'settings.experiments': 'Experimental features',
   'settings.noExperiments': 'No experimental features right now.',
   'settings.about': 'About',
+  'settings.device': 'Phone',
+  'settings.haptics': 'Vibration',
+  'settings.haptics.desc': 'A short buzz on drag start, long press, checkboxes and swipes (Android)',
   'settings.files': 'Files & images',
   'settings.imageOriginal': 'Upload original images',
   'settings.imageOriginal.desc':
