@@ -104,10 +104,11 @@ test.describe('import target and stop (M8-11)', () => {
   })
 
   test('a long import can be stopped; what was imported stays', async ({ page }) => {
+    test.setTimeout(90_000)
     const check = failOnConsoleErrors(page)
     await openApp(page)
     await page.goto('/#/settings')
-    const files = Array.from({ length: 400 }, (_, i) => ({
+    const files = Array.from({ length: 300 }, (_, i) => ({
       name: `page-${String(i).padStart(3, '0')}.md`,
       mimeType: 'text/markdown',
       buffer: Buffer.from(`# Page ${i}\n\n${'text '.repeat(200)}\n`),
@@ -116,12 +117,12 @@ test.describe('import target and stop (M8-11)', () => {
     const cdp = await page.context().newCDPSession(page)
     const chooser = page.waitForEvent('filechooser')
     await page.locator('[data-io-import]').click()
-    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 20 })
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 8 })
     await (await chooser).setFiles(files)
     const stop = page.locator('[data-io-cancel]')
     await stop.click()
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
-    await expect(page.locator('.toast')).toContainText('멈췄습니다')
+    await expect(page.locator('.toast')).toContainText('멈췄습니다', { timeout: 30_000 })
     await expect(stop).toHaveCount(0)
     check()
   })

@@ -29,6 +29,7 @@ test('a pressed handle keeps the block highlighted until a click elsewhere (feed
   await expect(first).toHaveClass(/block-selected/)
   await page.keyboard.press('Escape') // closes the menu; the block stays grabbed
   await expect(page.getByRole('menu')).toHaveCount(0)
+  await expect(page.locator('.popover-backdrop')).toHaveCount(0)
   await expect(first).toHaveClass(/block-selected/)
   await page.mouse.click(10, 400) // outside the editor (sidebar area)
   await expect(first).not.toHaveClass(/block-selected/)

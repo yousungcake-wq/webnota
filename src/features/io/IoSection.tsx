@@ -27,8 +27,9 @@ export function IoSection() {
     }
   }
   const onImport = async (files: File[]) => {
-    setBusy(true)
+    // tracking first: "Stop" shows with `busy`, and must not be lost before it starts
     const untrack = await track()
+    setBusy(true)
     try {
       const { importFiles } = await import('./importer')
       const picked = await Promise.all(
@@ -51,8 +52,9 @@ export function IoSection() {
     }
   }
   const onExport = async () => {
-    setBusy(true)
+    // tracking first: "Stop" shows with `busy`, and must not be lost before it starts
     const untrack = await track()
+    setBusy(true)
     try {
       const { downloadExport } = await import('./exporter')
       const r = await downloadExport()
