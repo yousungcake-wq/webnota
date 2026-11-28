@@ -254,3 +254,8 @@
     min-height: 44px;
   }
 }
+.dbk-calc {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}

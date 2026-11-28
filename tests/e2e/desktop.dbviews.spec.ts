@@ -126,6 +126,11 @@ test.describe('database views (M5)', () => {
     await page.getByRole('dialog', { name: '보드' }).getByLabel('그룹 기준').selectOption({ label: 'Done' })
     await page.keyboard.press('Escape')
     await expect(page.locator('.dbk-col')).toHaveCount(2)
+    // column calculation (M6-08): sum of Amount in each header
+    await page.getByRole('button', { name: '보드', exact: true }).click()
+    await page.getByRole('dialog', { name: '보드' }).getByLabel('열 계산').selectOption({ label: 'Amount' })
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.dbk-calc').first()).toContainText('합계 ₩')
     await expect(page.locator('.dbk-head').nth(0)).toContainText('체크 안 됨')
     await expect(page.locator('.dbk-head').nth(1)).toContainText('체크됨')
 

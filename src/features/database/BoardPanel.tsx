@@ -1,5 +1,7 @@
 import {
+  calcsFor,
   GROUPABLE_TYPES,
+  type CalcType,
   updateDbView,
   updateGroup,
   type DateUnit,
@@ -8,7 +10,7 @@ import {
   type ViewSettings,
 } from '@/core/model/database'
 import { Segmented, Switch } from '@/ui'
-import { dt } from './i18n'
+import { dt, type DbKey } from './i18n'
 
 const UNITS: DateUnit[] = ['day', 'week', 'month', 'year']
 
@@ -22,6 +24,8 @@ export function BoardPanel({ docs, view, fields }: { docs: DbDocs; view: ViewSet
   const media = fields.filter((f) => f.type === 'media')
   const group = view.group
   const field = fields.find((f) => f.id === group?.fieldId)
+  const numeric = fields.filter((f) => f.type === 'number' || f.type === 'time')
+  const calcField = numeric.find((f) => f.id === view.board.calc?.fieldId)
   return (
     <div className="db-board-panel">
       <label className="db-prow">
@@ -53,6 +57,48 @@ export function BoardPanel({ docs, view, fields }: { docs: DbDocs; view: ViewSet
           label={dt('db.board.hideEmpty')}
           onChange={(hideEmpty) => updateGroup(docs, view.id, { hideEmpty })}
         />
+      )}
+      {/* a calculation in every column header (M6-08) */}
+      <label className="db-prow">
+        <span>{dt('db.board.calcField')}</span>
+        <select
+          className="db-input"
+          value={calcField?.id ?? ''}
+          onChange={(e) =>
+            updateDbView(docs, view.id, {
+              board: { ...view.board, calc: e.target.value ? { fieldId: e.target.value, calc: 'sum' } : null },
+            })
+          }
+        >
+          <option value="">{dt('db.board.calcCount')}</option>
+          {numeric.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      {calcField && (
+        <label className="db-prow">
+          <span>{dt('db.calc.label')}</span>
+          <select
+            className="db-input"
+            value={view.board.calc!.calc}
+            onChange={(e) =>
+              updateDbView(docs, view.id, {
+                board: { ...view.board, calc: { fieldId: calcField.id, calc: e.target.value as CalcType } },
+              })
+            }
+          >
+            {calcsFor(calcField)
+              .filter((c) => !c.startsWith('count') && !c.startsWith('percent'))
+              .map((c) => (
+                <option key={c} value={c}>
+                  {dt(`db.calc.${c}` as DbKey)}
+                </option>
+              ))}
+          </select>
+        </label>
       )}
       <label className="db-prow">
         <span>{dt('db.board.cover')}</span>

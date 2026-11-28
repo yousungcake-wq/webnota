@@ -323,4 +323,6 @@ export const en: Record<DbKey, string> = {
   'db.more': 'Database menu',
   'db.csv.exportView': 'This view (filter, sort, visible properties)',
   'db.csv.exportAll': 'The whole database',
+  'db.board.calcField': 'Column calculation',
+  'db.board.calcCount': 'Count only',
 }

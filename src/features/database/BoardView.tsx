@@ -11,6 +11,8 @@ import {
   setGroupHidden,
   movedCellValue,
   isEmptyCell,
+  calculate,
+  type BoardSettings,
   NO_VALUE,
   orderedFields,
   setCell,
@@ -26,7 +28,8 @@ import { addStatusField } from './create'
 import { blockTouchScroll, useCardDrag, type CardDrag } from './boardDrag'
 import { addGroup, columnMenu, HiddenGroups } from './boardColumns'
 import { GroupLabel, groupName } from './GroupLabel'
-import { dt } from './i18n'
+import { dt, type DbKey } from './i18n'
+import { formatCalc } from './CalcRow'
 import type { LayoutProps } from './layoutProps'
 import { useOpenRow } from './rowNav'
 import { measuredLayout } from './rowLayout'
@@ -163,6 +166,8 @@ export default function BoardView({ session, state, title, readOnly }: LayoutPro
           onOpen={openRowPage}
           onEdit={setEditing}
           onAdd={addCard}
+          calcSetting={view.board.calc}
+          calcFields={state.fields}
           onMenu={readOnly ? undefined : (key, anchor) => setColMenu({ key, anchor })}
           onRename={(rowId, text) => {
             if (primary && text !== null) setCell(state.docs, rowId, primary.id, text)
@@ -233,7 +238,11 @@ function BoardColumn({
   onAdd,
   onMenu,
   onRename,
+  calcSetting,
+  calcFields,
 }: {
+  calcSetting: BoardSettings['calc']
+  calcFields: FieldMeta[]
   group: QueryGroup
   headHandle: ReturnType<ReturnType<typeof useReorder>['handle']> | undefined
   headStyle: React.CSSProperties | undefined
@@ -278,6 +287,15 @@ function BoardColumn({
     if (top < el.scrollTop || bottom > el.scrollTop + el.clientHeight)
       el.scrollTop = Math.max(0, bottom - el.clientHeight)
   }, [editIndex, layout])
+  // the column calculation of the board settings (M6-08)
+  const calc = useMemo(() => {
+    if (!calcSetting) return null
+    const f = calcFields.find((x) => x.id === calcSetting.fieldId)
+    if (!f) return null
+    const rows = ids.map((id) => session.row(id)).filter((r): r is RowSnapshot => !!r)
+    return `${dt(`db.calc.${calcSetting.calc}` as DbKey)} ${formatCalc(f, calculate(calcSetting.calc, f, rows))}`
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- rowsVersion invalidates row snapshots
+  }, [calcSetting, calcFields, ids, session, rowsVersion])
   const start = ids.length ? Math.max(0, layout.indexAt(box.top) - 3) : 0
   const end = Math.min(ids.length, layout.indexAt(box.top + box.height) + 4)
   return (
@@ -308,6 +326,7 @@ function BoardColumn({
         >
           <GroupLabel field={field} groupKey={group.key} />
           <span className="dbk-count">{ids.length}</span>
+          {calc && <span className="dbk-calc">{calc}</span>}
         </span>
         {!readOnly && (
           <button

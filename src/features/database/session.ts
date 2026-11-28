@@ -110,7 +110,7 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
   // relations and rollups in filters, sorts or a search (M6-05): their values come from
   // other databases, so they are computed here (plain data, the worker can take it)
   const derivedFields = (fields: FieldMeta[], view: ViewSettings | null) => {
-    const used = new Set<string>(view?.sorts.map((x) => x.fieldId) ?? [])
+    const used = new Set<string>([...(view?.sorts.map((x) => x.fieldId) ?? []), ...Object.keys(view?.calcs ?? {})])
     const walk = (g: FilterGroup | null) => g?.items.forEach((x) => ('items' in x ? walk(x) : used.add(x.fieldId)))
     walk(view?.filter ?? null)
     return fields.filter((f) => (f.type === 'relation' || f.type === 'rollup') && (used.has(f.id) || search))

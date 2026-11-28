@@ -202,6 +202,8 @@ export interface GroupSettings {
 
 /** Board options (DB-K06). Cards show the view's visible properties. */
 export interface BoardSettings {
+  /** A calculation shown in every column header (M6-08), e.g. the sum of a number field. */
+  calc?: { fieldId: string; calc: CalcType } | null
   /** Media field whose first image is the card cover (null: none). */
   coverFieldId?: string | null
 }

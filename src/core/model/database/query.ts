@@ -410,10 +410,23 @@ export function calcsFor(field: FieldMeta): CalcType[] {
   if (field.type === 'number' || field.type === 'time') return [...base, ...NUMERIC_CALCS]
   if (field.type === 'date' || field.type === 'createdTime' || field.type === 'updatedTime')
     return [...base, 'min', 'max', 'range']
+  // a rollup: numeric calculations work on calculated rollups (M6-08)
+  if (field.type === 'rollup') return [...base, ...NUMERIC_CALCS]
   return base
 }
 
-export function calculate(calc: CalcType, field: FieldMeta, rows: RowSnapshot[]): CalcResult {
+export function calculate(
+  calc: CalcType,
+  field: FieldMeta,
+  rows: RowSnapshot[],
+  /** A rollup's values by row (`QueryInput.derived`, M6-08). */
+  derived?: Record<string, string | number>,
+): CalcResult {
+  if (field.type === 'rollup')
+    return calculateDerived(
+      calc,
+      rows.map((r) => derived?.[r.id]),
+    )
   const values = rows.map((r) => cellOf(field, r))
   const n = values.length
   const pct = (k: number) => (n ? (k / n) * 100 : null)
@@ -460,6 +473,45 @@ export function calculate(calc: CalcType, field: FieldMeta, rows: RowSnapshot[])
   return result(null)
 }
 
+/** Calculations over computed values (rollups): empty = missing or ''; numbers for the numeric ones. */
+function calculateDerived(calc: CalcType, values: (string | number | undefined)[]): CalcResult {
+  const n = values.length
+  const empty = values.filter((v) => v === undefined || v === '').length
+  const nums = values.filter((v): v is number => typeof v === 'number').sort((a, b) => a - b)
+  const result = (value: number | null): CalcResult => ({ calc, value })
+  const pct = (k: number) => (n ? (k / n) * 100 : null)
+  switch (calc) {
+    case 'count':
+      return result(n)
+    case 'countEmpty':
+      return result(empty)
+    case 'countNotEmpty':
+      return result(n - empty)
+    case 'percentEmpty':
+      return result(pct(empty))
+    case 'percentNotEmpty':
+      return result(pct(n - empty))
+  }
+  if (!nums.length) return result(calc === 'sum' ? 0 : null)
+  switch (calc) {
+    case 'sum':
+      return result(nums.reduce((a, b) => a + b, 0))
+    case 'average':
+      return result(nums.reduce((a, b) => a + b, 0) / nums.length)
+    case 'median': {
+      const m = nums.length >> 1
+      return result(nums.length % 2 ? nums[m]! : (nums[m - 1]! + nums[m]!) / 2)
+    }
+    case 'min':
+      return result(nums[0]!)
+    case 'max':
+      return result(nums.at(-1)!)
+    case 'range':
+      return result(nums.at(-1)! - nums[0]!)
+  }
+  return result(null)
+}
+
 export function runQuery(input: QueryInput): QueryResult {
   const q = compileQuery(input)
   const visible = input.rows.filter(q.matches).sort(q.compare)
@@ -467,7 +519,7 @@ export function runQuery(input: QueryInput): QueryResult {
   const fields = new Map(input.fields.map((f) => [f.id, f]))
   for (const [fieldId, calc] of Object.entries(input.view.calcs ?? {})) {
     const field = fields.get(fieldId)
-    if (field) calcs[fieldId] = calculate(calc, field, visible)
+    if (field) calcs[fieldId] = calculate(calc, field, visible, input.derived?.[fieldId])
   }
   return { rowIds: visible.map((r) => r.id), calcs, ...groupsOf(input, visible) }
 }

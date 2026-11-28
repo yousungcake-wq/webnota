@@ -566,4 +566,20 @@ describe('relations and rollups in queries (M6-05)', () => {
     expect(run({ filter: null, sorts: [{ id: 's', fieldId: 'rel', dir: 'asc' }] })).toEqual(['a', 'b', 'c'])
     expect(run({ filter: null, sorts: [] }, 'cid')).toEqual(['b'])
   })
+
+  it('calculates over rollup values in the calculation row (M6-08)', () => {
+    const calc = (c: string) =>
+      runQuery({
+        fields: [rel, roll],
+        rows,
+        view: { filter: null, sorts: [], calcs: { roll: c as never } },
+        now: 0,
+        derived,
+      }).calcs.roll?.value
+    expect(calc('sum')).toBe(17)
+    expect(calc('average')).toBe(8.5)
+    expect(calc('countEmpty')).toBe(1)
+    expect(calc('max')).toBe(12)
+    expect(calcsFor(roll)).toContain('sum')
+  })
 })

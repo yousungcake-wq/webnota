@@ -77,7 +77,7 @@ export function createLiveQuery(input: QueryInput): LiveQuery {
       const fields = new Map(query.fields.map((f) => [f.id, f]))
       for (const [fieldId, calc] of Object.entries(query.view.calcs ?? {})) {
         const field = fields.get(fieldId)
-        if (field) calcs[fieldId] = calculate(calc, field, visible)
+        if (field) calcs[fieldId] = calculate(calc, field, visible, query.derived?.[fieldId])
       }
       cached = { rowIds: visible.map((r) => r.id), calcs, ...groupsOf(query, visible) }
       return cached

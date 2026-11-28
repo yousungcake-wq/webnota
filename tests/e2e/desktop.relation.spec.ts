@@ -159,6 +159,12 @@ test.describe('relations (M6)', () => {
     await page.keyboard.press('Escape')
     const roll2 = await gridCell(page, 0, '롤업')
     await expect(roll2).toHaveText('1')
+    // the calculation row sums rollups (M6-08): count of linked rows over all rows = 1
+    await page.locator('.dbg-calc[data-field-id]').filter({ hasText: /계산/ }).last().scrollIntoViewIfNeeded()
+    const calcCell = page.locator(`.dbg-calc[data-field-id="${await roll2.getAttribute('data-field-id')}"]`)
+    await calcCell.click()
+    await page.getByRole('menuitemcheckbox', { name: '합계' }).click()
+    await expect(calcCell).toContainText('1')
     // read-only: typing does not edit it
     await roll2.click()
     await page.keyboard.type('9')

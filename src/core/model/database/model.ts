@@ -292,6 +292,9 @@ function readBoard(v: unknown): BoardSettings {
   if (!isObj(v)) return {}
   const out: BoardSettings = {}
   if (typeof v.coverFieldId === 'string' || v.coverFieldId === null) out.coverFieldId = v.coverFieldId
+  const c = v.calc as { fieldId?: unknown; calc?: unknown } | null | undefined
+  if (c && typeof c.fieldId === 'string' && typeof c.calc === 'string')
+    out.calc = { fieldId: c.fieldId, calc: c.calc as CalcType }
   return out
 }
 

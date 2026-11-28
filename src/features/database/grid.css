@@ -438,3 +438,10 @@ textarea.dbc-editor {
 .dbg-cell.is-editing {
   contain: none;
 }
+
+/* phones: the calculation row is tappable (M6-08) */
+@media (pointer: coarse) {
+  .dbg-calc {
+    min-height: 44px;
+  }
+}

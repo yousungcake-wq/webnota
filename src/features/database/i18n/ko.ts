@@ -322,6 +322,8 @@ export const ko = {
   'db.more': '데이터베이스 메뉴',
   'db.csv.exportView': '현재 보기 (필터·정렬·보이는 속성)',
   'db.csv.exportAll': '전체 데이터베이스',
+  'db.board.calcField': '열 계산',
+  'db.board.calcCount': '개수만',
 }
 
 export type DbKey = keyof typeof ko

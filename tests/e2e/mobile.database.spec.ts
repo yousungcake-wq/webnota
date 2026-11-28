@@ -256,4 +256,16 @@ test.describe('database on phones (M4-13)', () => {
     await expect(page.getByRole('grid')).toHaveAttribute('aria-rowcount', '53')
     noErrors()
   })
+
+  test('calculation row on phones: 44px, menu sheet (M6-08)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    const calc = page.locator('.dbg-calc').first()
+    await calc.scrollIntoViewIfNeeded()
+    expect((await calc.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+    await calc.tap()
+    await page.locator('.sheet').getByRole('menuitemcheckbox', { name: '개수' }).tap()
+    await expect(calc).toContainText('50')
+    noErrors()
+  })
 })
