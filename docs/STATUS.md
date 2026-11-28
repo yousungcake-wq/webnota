@@ -5,9 +5,9 @@
 ## 현재 위치
 
 - **마일스톤**: M8 가져오기·내보내기·템플릿 (M7 완료 — 실기기 확인은 docs/QA.md "M7"·"M6"·"M5"(와 이전 항목), 사용자 확인 대기)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12, M4 16/16, M5 13/13, M6 11/11, M7 14/14 완료. M8 0/13 (체크리스트 세부화 완료). 사용자 피드백 1·2차 반영 완료
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12, M4 16/16, M5 13/13, M6 11/11, M7 14/14 완료. M8 1/13 (체크리스트 세부화 완료). 사용자 피드백 1·2차 반영 완료
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M8-00 (M5~M7 실기기 확인은 사용자 대기)
+- **다음 할 일**: M8-01
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -20,7 +20,7 @@
 ## 알려진 문제·주의
 
 - **M7 (모바일)**: 시트는 `ui/overlay/Sheet.tsx`(단계 auto/full, 제스처는 지연 `sheetGestures.ts`), Sheet·Popover 자체도 지연(`overlay/lazy.tsx`, 유휴 시 `preloadOverlays`). 터치 영역 규칙·자동 감사는 spec/12(`tests/e2e/touchAudit.ts`, 새 폰 화면은 `mobile.touch.spec.ts`에 추가). 진동은 `platform/haptics.ts`의 `haptic()`만. 폰 판정은 화면 짧은 변 < 500도 폰(가로 폰). 하단 탭 전환은 `App.tsx`의 `switchTab`(탭→탭 replace, 탭→홈 뒤로), 시작 화면 아래 홈은 `ensureHomeBelow`. 서비스 워커는 `registerType: 'prompt'` + `platform/sw.ts` 직접 등록(첫 화면 뒤 유휴+3초) — DECISIONS 023. **에디터 청크를 부팅 직후(i18n 준비 전) import하면 데스크탑 e2e 다수가 깨짐**(원인: 에디터 모듈이 import 때 문자열 등을 읽음) — 미리 받기는 유휴 시간에만. Chrome은 스와이프 직후 탭의 click을 보내지 않으므로 스와이프 버튼은 pointerup에서 동작.
-- **시작 번들 124.5/125KB(100%)** → M8-00에서 자리 만들기부터.
+- 시작 번들 118.4/125KB (M8-00): 데스크탑 셸은 `desktopShell` 청크.
 - 구조 (M0-07): 다른 최상위 모듈은 `@/` 경로로 import (lint 강제). feature 공개 API는 `index.ts`만. 에디터는 `@/features/editor`의 `loadEditor()`/`loadSeed()`로만 접근 (정적 import 금지 — 초기 번들에 섞임). 라우터는 `core/store/router.ts`, 테마·펼침 상태는 `core/store/prefs.ts` (DECISIONS 012).
 - 문서 수명 (M0-19): `openDoc`으로 연 문서는 LRU로 언로드될 수 있음 (최대 30개, 최근 10초 사용분은 보호). **비동기 작업 동안 문서를 붙잡고 있어야 하면 `retainDoc(name)`을 호출하고 끝나면 release** (PageView·동기화·복제가 그렇게 함). 언로드된 문서 객체에 쓰면 IndexedDB에 저장되지 않음.
 - 에디터 (M0-20): `editorExtensions(doc, { onInvalidContent })` — Collaboration의 `ySyncOptions.onInvalidContent`를 **절대 빼지 말 것** (빼면 y-tiptap이 모르는 노드를 Y에서 삭제). 모르는 내용이 있으면 그 페이지만 읽기 전용 + 안내.
@@ -245,3 +245,4 @@
 | 2026-11-28 | M7-11: Web Share Target → 새 페이지(지연 처리) | 32d02b4 |
 | 2026-11-28 | M7-12: 4G LCP·힙 측정, SW 등록 지연, 오프라인 e2e | 4e75e19 |
 | 2026-11-28 | M7-13: M7 성능 기록(4G LCP·힙 추가), QA M7 매트릭스, M8 세부화 | 3bae23e |
+| 2026-11-28 | M8-00: 데스크탑 셸 지연 청크, 시작 118.4KB, settings·desktopShell 예산 | 0decf17 |
