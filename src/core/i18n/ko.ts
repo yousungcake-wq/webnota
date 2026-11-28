@@ -375,6 +375,7 @@ export const ko = {
   'newView.grid': '표 (Grid)',
   'newView.board': '보드',
   'newView.calendar': '캘린더',
+  'newView.csv': 'CSV 가져오기',
   'trash.deletedAt': '{date} 삭제',
   'trash.restore': '복원',
   'trash.deleteForever': '영구 삭제',

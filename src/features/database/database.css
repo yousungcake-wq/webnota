@@ -804,3 +804,50 @@
     min-height: 44px;
   }
 }
+
+/* CSV import preview (M6-06) */
+.dialog.db-csv-dialog {
+  width: min(640px, 92vw);
+}
+.db-csv {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.db-csv-count {
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+.db-csv-cols {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.db-csv-col {
+  display: grid;
+  grid-template-columns: minmax(80px, 1fr) minmax(110px, 1fr) minmax(90px, 0.8fr);
+  gap: 6px;
+  align-items: center;
+  font-size: var(--fs-sm);
+}
+.db-csv-col.is-skipped .db-csv-name {
+  color: var(--text-3);
+  text-decoration: line-through;
+}
+.db-csv-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.db-csv-sample {
+  grid-column: 1 / -1;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

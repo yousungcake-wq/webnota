@@ -368,6 +368,7 @@ export const en: Record<MessageKey, string> = {
   'newView.grid': 'Grid',
   'newView.board': 'Board',
   'newView.calendar': 'Calendar',
+  'newView.csv': 'Import CSV',
   'trash.deletedAt': 'Deleted {date}',
   'trash.restore': 'Restore',
   'trash.deleteForever': 'Delete forever',

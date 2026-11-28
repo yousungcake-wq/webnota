@@ -22,3 +22,7 @@ export const createInlineDatabase = async (opts: {
   parentId: string
   layout: DbLayout
 }) => (await import('./create')).createInlineDatabase(opts)
+
+/** "Import CSV" (M6-06): a new database from a CSV file, opened with the import preview. */
+export const importCsvAsDatabase = async (opts: { file: File; parentId: string | null; spaceId?: string }) =>
+  (await import('./csvEntry')).importCsvAsDatabase(opts)

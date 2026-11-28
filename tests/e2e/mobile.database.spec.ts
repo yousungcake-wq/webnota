@@ -240,4 +240,20 @@ test.describe('database on phones (M4-13)', () => {
     await expect(modal.locator('.db-rel-chip', { hasText: 'Item 2' }).first()).toBeVisible()
     noErrors()
   })
+
+  test('CSV import on phones: database menu sheet, preview sheet (M6-06)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.getByRole('button', { name: '데이터베이스 메뉴' }).tap()
+    const chooser = page.waitForEvent('filechooser')
+    await page.locator('.sheet').getByRole('menuitem', { name: 'CSV 가져오기' }).tap()
+    await (
+      await chooser
+    ).setFiles({ name: 'm.csv', mimeType: 'text/csv', buffer: Buffer.from('Name,Note\nP1,hi\nP2,yo\n') })
+    const sheet = page.locator('.sheet')
+    await expect(sheet.getByText('2행 · 2열')).toBeVisible()
+    await sheet.getByRole('button', { name: '2행 가져오기' }).tap()
+    await expect(page.getByRole('grid')).toHaveAttribute('aria-rowcount', '53')
+    noErrors()
+  })
 })

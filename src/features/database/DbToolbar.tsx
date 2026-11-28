@@ -5,14 +5,16 @@ import {
   KanbanSquare,
   LayoutList,
   ListChecks,
+  MoreHorizontal,
+  Upload,
   Search,
   Table2,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FilterGroup } from '@/core/model/database'
 import { useLayout } from '@/platform/layout'
-import { Overlay } from '@/ui'
+import { Menu, Overlay } from '@/ui'
 import { BoardPanel } from './BoardPanel'
 import { CalendarPanel } from './CalendarPanel'
 import { FilterPanel } from './FilterPanel'
@@ -31,6 +33,7 @@ export function DbToolbar({
   readOnly,
   cards,
   onToggleCards,
+  onImportCsv,
 }: {
   session: DbSession
   state: DbState
@@ -38,6 +41,8 @@ export function DbToolbar({
   /** Phones: card list on/off (MB-30); undefined hides the switch. */
   cards?: boolean
   onToggleCards?: () => void
+  /** "Import CSV" in the database menu (M6-06). */
+  onImportCsv?: (file: File) => void
 }) {
   const phone = useLayout().layout === 'phone'
   const [open, setOpen] = useState<{
@@ -45,6 +50,8 @@ export function DbToolbar({
     anchor: HTMLElement
   } | null>(null)
   const [searching, setSearching] = useState(state.search !== '')
+  const [more, setMore] = useState<HTMLElement | null>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
   const view = state.view
   if (!view) return null
   const filters = countFilters(view.filter)
@@ -125,6 +132,39 @@ export function DbToolbar({
         >
           {cards ? <Table2 size={16} aria-hidden /> : <LayoutList size={16} aria-hidden />}
         </button>
+      )}
+      {onImportCsv && !readOnly && (
+        <>
+          <input
+            ref={fileInput}
+            type="file"
+            accept=".csv,text/csv,.tsv,text/tab-separated-values"
+            hidden
+            onChange={(e) => {
+              const f = e.currentTarget.files?.[0]
+              e.currentTarget.value = ''
+              if (f) onImportCsv(f)
+            }}
+          />
+          <button
+            type="button"
+            className="db-barbtn"
+            aria-label={dt('db.more')}
+            title={dt('db.more')}
+            aria-haspopup="menu"
+            onClick={(e) => setMore(e.currentTarget)}
+          >
+            <MoreHorizontal size={16} aria-hidden />
+          </button>
+        </>
+      )}
+      {more && (
+        <Menu
+          anchor={more}
+          title={dt('db.more')}
+          onClose={() => setMore(null)}
+          items={[{ label: dt('db.csv.importRows'), icon: Upload, onSelect: () => fileInput.current?.click() }]}
+        />
       )}
       {open && (
         <Overlay anchor={open.anchor} title={titles[open.panel]} sheet={phone} onClose={() => setOpen(null)}>

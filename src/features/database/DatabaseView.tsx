@@ -2,8 +2,8 @@ import { lazy, Suspense, use, useContext, useState } from 'react'
 import { wsKey } from '@/core/docs/slots'
 import { useLayout } from '@/platform/layout'
 import { ws } from '@/core/docs/workspace'
-import { databaseIdOf, listViews, type ViewMeta } from '@/core/model/views'
-import { navigate, useRoute } from '@/core/store/router'
+import { databaseIdOf, listViews, trashView, type ViewMeta } from '@/core/model/views'
+import { goBack, navigate, useRoute } from '@/core/store/router'
 import { EmptyState, ErrorBoundary, Skeleton } from '@/ui'
 import { DbTabs } from './DbTabs'
 import { DbToolbar } from './DbToolbar'
@@ -12,6 +12,7 @@ import { CardList } from './CardList'
 import { dt, loadDbMessages } from './i18n'
 import type { LayoutProps } from './layoutProps'
 import { RowModal } from './RowModal'
+import { takePendingCsv } from './csvPending'
 import { RowRouteContext } from './rowNav'
 import { RelationContext, type RelationAccess } from './relationContext'
 import { getRow } from '@/core/model/database'
@@ -22,6 +23,9 @@ import './database.css'
 const messages = loadDbMessages()
 
 /** Board and Calendar are separate chunks, loaded when a view of that layout opens (M5-00). */
+// the CSV import preview loads when a file is picked (M6-06)
+const CsvImportDialog = lazy(() => import('./CsvImportDialog').then((m) => ({ default: m.CsvImportDialog })))
+
 const LAYOUTS = {
   board: lazy(() => import('./BoardView')),
   calendar: lazy(() => import('./CalendarView')),
@@ -39,6 +43,11 @@ export function DatabaseView({ view, readOnly }: { view: ViewMeta; readOnly: boo
   // an inline database shows only rows of its own database (a page may hold several)
   const openRowId = routeRow && state?.docs && getRow(state.docs, routeRow) ? routeRow : undefined
   const [cards, setCards] = useState(() => readCards())
+  // a CSV picked for a database created just for it (M6-06)
+  const [csv, setCsv] = useState<{ file: File; fresh: boolean } | null>(() => {
+    const file = takePendingCsv(view.id)
+    return file ? { file, fresh: true } : null
+  })
   const toggleCards = () => {
     setCards(!cards)
     try {
@@ -80,6 +89,7 @@ export function DatabaseView({ view, readOnly }: { view: ViewMeta; readOnly: boo
             readOnly={props.readOnly}
             cards={phone && layout === 'grid' ? cards : undefined}
             onToggleCards={toggleCards}
+            onImportCsv={(file) => setCsv({ file, fresh: false })}
           />
         </div>
         {Layout ? (
@@ -90,6 +100,21 @@ export function DatabaseView({ view, readOnly }: { view: ViewMeta; readOnly: boo
           </ErrorBoundary>
         ) : (
           <GridLayout {...props} cards={phone && cards} />
+        )}
+        {csv && !state.preview && (
+          <CsvImportDialog
+            file={csv.file}
+            state={state}
+            fresh={csv.fresh}
+            onClose={(imported) => {
+              setCsv(null)
+              // a database made only for this file goes away when the import is cancelled
+              if (csv.fresh && !imported && !state.result.rowIds.length) {
+                trashView(ws(), view.id)
+                goBack()
+              }
+            }}
+          />
         )}
         {openRowId && !state.preview && (
           <RowModal session={session} state={state} routeId={routeId} rowId={openRowId} readOnly={props.readOnly} />

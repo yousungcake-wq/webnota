@@ -303,6 +303,23 @@ export const ko = {
   'db.rollup.showOriginal': '원래 값 보기',
   'db.rollup.unique': '고유 값 보기',
   'db.rollup.noRelation': '먼저 관계 필드를 만드세요',
+  'db.csv.title': 'CSV 가져오기: {name}',
+  'db.csv.reading': '파일을 읽는 중…',
+  'db.csv.error': 'CSV 파일을 읽지 못했습니다',
+  'db.csv.header': '첫 행이 머리글',
+  'db.csv.count': '{rows}행 · {cols}열',
+  'db.csv.column': '열',
+  'db.csv.into': '{name} 열 넣을 곳',
+  'db.csv.type': '{name} 열 유형',
+  'db.csv.asTitle': '제목',
+  'db.csv.asNew': '새 필드',
+  'db.csv.skip': '건너뛰기',
+  'db.csv.cancel': '취소',
+  'db.csv.import': '{count}행 가져오기',
+  'db.csv.done': '{count}행을 가져왔습니다',
+  'db.csv.importRows': 'CSV 가져오기',
+  'db.csv.export': 'CSV 내보내기',
+  'db.more': '데이터베이스 메뉴',
 }
 
 export type DbKey = keyof typeof ko

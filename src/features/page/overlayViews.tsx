@@ -5,6 +5,7 @@ import { getView } from '@/core/model/views'
 import { ws } from '@/core/docs/workspace'
 import { Button, Dialog, Menu } from '@/ui'
 import { addPage } from './actions'
+import { importCsvAsDatabase } from '@/features/database'
 import { VIEW_LAYOUTS } from './newView'
 import { IconPicker } from './IconPicker'
 import { MoveDialog } from './MoveDialog'
@@ -15,6 +16,17 @@ export type Open =
   | { kind: 'move'; viewId: string }
   | { kind: 'newView'; viewId: string; anchor: HTMLElement | null; parentId: string | null; spaceId?: string }
 
+function pickCsv(parentId: string | null, spaceId?: string) {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.csv,text/csv,.tsv,text/tab-separated-values'
+  input.onchange = () => {
+    const file = input.files?.[0]
+    if (file) void importCsvAsDatabase({ file, parentId, spaceId })
+  }
+  input.click()
+}
+
 export default function OverlayViews({ open, close }: { open: Open; close: () => void }) {
   if (open.kind === 'newView')
     return (
@@ -22,11 +34,16 @@ export default function OverlayViews({ open, close }: { open: Open; close: () =>
         anchor={open.anchor}
         title={t('common.newPage')}
         onClose={close}
-        items={VIEW_LAYOUTS.map((l) => ({
-          label: t(l.label),
-          disabled: !l.available(),
-          onSelect: () => addPage(open.parentId, open.spaceId, l.layout),
-        }))}
+        items={[
+          ...VIEW_LAYOUTS.map((l) => ({
+            label: t(l.label),
+            disabled: !l.available(),
+            onSelect: () => addPage(open.parentId, open.spaceId, l.layout),
+          })),
+          'separator',
+          // M6-06: the file picker opens inside the click (browsers need the gesture)
+          { label: t('newView.csv'), onSelect: () => pickCsv(open.parentId, open.spaceId) },
+        ]}
       />
     )
   const view = getView(ws(), open.viewId)
