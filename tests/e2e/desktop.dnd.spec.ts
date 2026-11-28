@@ -65,3 +65,13 @@ test.describe('tree drag & drop (WS-03)', () => {
     await expect(titles(page)).toHaveText(['WebNota 시작하기', 'Yank', 'Xray'])
   })
 })
+
+test('right click on a sidebar row opens its page menu (MB-12, M7-03)', async ({ page }) => {
+  const noErrors = failOnConsoleErrors(page)
+  await openApp(page)
+  await row(page, 'WebNota 시작하기').click({ button: 'right' })
+  await expect(page.getByRole('menuitem', { name: '즐겨찾기에 추가' })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('menuitem', { name: '즐겨찾기에 추가' })).toHaveCount(0)
+  noErrors()
+})

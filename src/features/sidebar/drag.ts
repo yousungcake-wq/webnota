@@ -20,6 +20,20 @@ export interface DragContext {
   y: number
   /** Touch drags must stop the page from scrolling. */
   touch: boolean
+  /** Touch: released without moving after the long press (MB-12) — not a drop. */
+  onHold?: () => void
+}
+
+/** A long press that ends where it began is a "hold" (opens the item's menu), not a drag. */
+const HOLD_SLOP = 8
+function holdTracker(ctx: { x: number; y: number; touch: boolean; onHold?: () => void }) {
+  let moved = false
+  return {
+    move: (x: number, y: number) => {
+      if (Math.hypot(x - ctx.x, y - ctx.y) > HOLD_SLOP) moved = true
+    },
+    held: () => ctx.touch && !moved && !!ctx.onHold,
+  }
 }
 
 const EXPAND_DELAY = 600
@@ -50,6 +64,7 @@ export function startDrag(ctx: DragContext) {
   let expandTimer: ReturnType<typeof setTimeout> | undefined
   let lastY = ctx.y
   let raf = 0
+  const hold = holdTracker(ctx)
 
   const place = (x: number, y: number) => {
     lastY = y
@@ -92,7 +107,10 @@ export function startDrag(ctx: DragContext) {
   }
   raf = requestAnimationFrame(tick)
 
-  const onMove = (e: PointerEvent) => place(e.clientX, e.clientY)
+  const onMove = (e: PointerEvent) => {
+    hold.move(e.clientX, e.clientY)
+    place(e.clientX, e.clientY)
+  }
   const onTouchMove = (e: TouchEvent) => e.preventDefault()
   const finish = (commit: boolean) => {
     cancelAnimationFrame(raf)
@@ -116,7 +134,11 @@ export function startDrag(ctx: DragContext) {
       if (target.parentId) toggleExpanded(target.parentId, true)
     }
   }
-  const onUp = () => finish(true)
+  const onUp = () => {
+    const held = hold.held()
+    finish(!held)
+    if (held) ctx.onHold!()
+  }
   const onCancel = () => finish(false)
   const onKey = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -142,7 +164,9 @@ export function startListDrag(ctx: {
   onDrop: (id: string, index: number) => void
   /** Item attribute holding the id (`data-<attr>`), default `id`. */
   attr?: string
+  onHold?: () => void
 }) {
+  const hold = holdTracker(ctx)
   const attr = `data-${ctx.attr ?? 'id'}`
   const items = () => [...ctx.list.querySelectorAll<HTMLElement>(`[${attr}]`)]
   const source = items().find((el) => el.getAttribute(attr) === ctx.id)
@@ -171,7 +195,10 @@ export function startListDrag(ctx: {
     line.style.left = `${r.left + 8}px`
     line.style.width = `${r.width - 16}px`
   }
-  const onMove = (e: PointerEvent) => place(e.clientX, e.clientY)
+  const onMove = (e: PointerEvent) => {
+    hold.move(e.clientX, e.clientY)
+    place(e.clientX, e.clientY)
+  }
   const onTouchMove = (e: TouchEvent) => e.preventDefault()
   const finish = (commit: boolean) => {
     window.removeEventListener('pointermove', onMove)
@@ -187,7 +214,11 @@ export function startListDrag(ctx: {
     setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 100)
     if (commit && index >= 0) ctx.onDrop(ctx.id, index)
   }
-  const onUp = () => finish(true)
+  const onUp = () => {
+    const held = hold.held()
+    finish(!held)
+    if (held) ctx.onHold!()
+  }
   const onCancel = () => finish(false)
   window.addEventListener('pointermove', onMove)
   window.addEventListener('pointerup', onUp)

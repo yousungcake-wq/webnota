@@ -7,12 +7,13 @@ import type { TreeRow } from './flatten'
 
 /**
  * Small eager part of tree drag & drop (WS-03): decides when a press becomes a drag —
- * mouse after moving 5px, touch after a 400ms long press without moving — then loads
- * the drag controller (`drag.ts`).
+ * mouse after moving 5px, touch after a 500ms long press without moving — then loads
+ * the drag controller (`drag.ts`). A long press released where it began opens the item's
+ * menu instead (MB-12, M7-03): the row lifts, and moving the finger turns it into a drag.
  */
 const MOUSE_SLOP = 5
 const TOUCH_SLOP = 8
-const LONG_PRESS = 400
+const LONG_PRESS = 500
 
 type DragModule = typeof DragNs
 let loaded: DragModule | null = null
@@ -23,7 +24,7 @@ export const preloadDrag = () =>
   })
 
 /**
- * Turns a press into a drag: mouse after moving 5px, touch after a 400ms long press
+ * Turns a press into a drag: mouse after moving 5px, touch after a 500ms long press
  * without moving (a moving finger is scrolling). Calls `start` with the pointer position.
  */
 export function onPress(e: ReactPointerEvent<HTMLElement>, start: (x: number, y: number, touch: boolean) => void) {
@@ -86,13 +87,16 @@ export function beginDrag(
   spaceId: string,
   rows: () => TreeRow[],
   views: () => ViewMeta[],
+  onHold?: (id: string) => void,
 ) {
   const id = pressedId(e)
   if (!list || !id) return
+  const hold = onHold && (() => onHold(id))
   if (
     onPress(
       e,
-      (x, y, touch) => void preloadDrag().then((m) => m.startDrag({ list, id, rows, views, spaceId, x, y, touch })),
+      (x, y, touch) =>
+        void preloadDrag().then((m) => m.startDrag({ list, id, rows, views, spaceId, x, y, touch, onHold: hold })),
     )
   )
     void preloadDrag()
@@ -104,10 +108,16 @@ export function beginListDrag(
   list: HTMLElement | null,
   onDrop: (id: string, index: number) => void,
   attr = 'id',
+  onHold?: (id: string) => void,
 ) {
   const id = pressedId(e, attr)
   if (!list || !id) return
-  if (onPress(e, (x, y, touch) => whenLoaded((m) => m.startListDrag({ list, id, x, y, touch, onDrop, attr }))))
+  const hold = onHold && (() => onHold(id))
+  if (
+    onPress(e, (x, y, touch) =>
+      whenLoaded((m) => m.startListDrag({ list, id, x, y, touch, onDrop, attr, onHold: hold })),
+    )
+  )
     void preloadDrag()
 }
 

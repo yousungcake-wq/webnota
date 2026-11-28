@@ -155,14 +155,18 @@ export function PageTree({ spaceId, currentId }: { spaceId: string; currentId?: 
   useEffect(() => {
     latest.current = { rows, views }
   })
-  const onPointerDown = (e: React.PointerEvent<HTMLUListElement>) =>
+  const held = useHeldMenu(listRef, (id) => latest.current.views.find((v) => v.id === id))
+  const onPointerDown = (e: React.PointerEvent<HTMLUListElement>) => {
+    held.pointer(e)
     beginDrag(
       e,
       listRef.current,
       spaceId,
       () => latest.current.rows,
       () => latest.current.views,
+      held.open,
     )
+  }
   if (!rows.length) return <p className="tree-empty">{t('tree.empty')}</p>
   return (
     <ul
@@ -171,6 +175,7 @@ export function PageTree({ spaceId, currentId }: { spaceId: string; currentId?: 
       role="tree"
       onPointerEnter={(e) => e.pointerType === 'mouse' && void preloadDrag()}
       onPointerDown={onPointerDown}
+      onContextMenu={held.contextMenu}
       style={{ paddingTop: start * rowHeight, paddingBottom: (rows.length - end) * rowHeight }}
     >
       {rows.slice(start, end).map((r, i) => (
@@ -185,8 +190,38 @@ export function PageTree({ spaceId, currentId }: { spaceId: string; currentId?: 
           maxDepth={maxDepth}
         />
       ))}
+      {held.menu}
     </ul>
   )
+}
+
+/**
+ * The menu of a held item (MB-12, M7-03): a touch long press released without moving, or a
+ * right click with the mouse. The browser's own long-press menu (link preview) is blocked.
+ */
+function useHeldMenu(listRef: React.RefObject<HTMLElement | null>, viewOf: (id: string) => ViewMeta | undefined) {
+  const [held, setHeld] = useState<{ view: ViewMeta; anchor: HTMLElement } | null>(null)
+  const lastPointer = useRef('mouse')
+  const open = (id: string) => {
+    const view = viewOf(id)
+    const el = listRef.current?.querySelector<HTMLElement>(`[data-id="${CSS.escape(id)}"]`)
+    if (!view || !el) return
+    navigator.vibrate?.(10)
+    setHeld({ view, anchor: el.querySelector<HTMLElement>('.tree-row, .list-item') ?? el })
+  }
+  return {
+    open,
+    pointer: (e: React.PointerEvent) => {
+      lastPointer.current = e.pointerType
+    },
+    contextMenu: (e: React.MouseEvent) => {
+      const id = (e.target as HTMLElement).closest<HTMLElement>('[data-id]')?.dataset.id
+      if (!id || (e.target as HTMLElement).closest('input, textarea')) return
+      e.preventDefault()
+      if (lastPointer.current === 'mouse') open(id)
+    },
+    menu: held && <PageMenu page={held.view} anchor={held.anchor} onClose={() => setHeld(null)} />,
+  }
 }
 
 /** How deep rows may indent in a list this wide: room is kept for toggle, icon, ~70px of title and the actions. */
@@ -234,26 +269,35 @@ export function FavoritesList({
   const aliveIds = useMemo(() => new Set(alive.map((v) => v.id)), [alive])
   const favs = ids.filter((id) => aliveIds.has(id)).map((id) => byId.get(id)!)
   const listRef = useRef<HTMLDivElement>(null)
+  const held = useHeldMenu(listRef, (id) => byId.get(id))
   if (!favs.length) return <>{empty}</>
   const list = (
     <div
       ref={listRef}
       className="fav-list"
       onPointerEnter={(e) => e.pointerType === 'mouse' && void preloadDrag()}
-      onPointerDown={(e) =>
-        beginListDrag(e, listRef.current, (id, index) =>
-          moveFavorite(
-            ws(),
-            id,
-            favs.map((f) => f.id),
-            index,
-          ),
+      onContextMenu={held.contextMenu}
+      onPointerDown={(e) => {
+        held.pointer(e)
+        beginListDrag(
+          e,
+          listRef.current,
+          (id, index) =>
+            moveFavorite(
+              ws(),
+              id,
+              favs.map((f) => f.id),
+              index,
+            ),
+          'id',
+          held.open,
         )
-      }
+      }}
     >
       {favs.map((p) => (
         <PageListItem key={p.id} page={p} subtitle={withPath ? pathOf(p, byId) || undefined : undefined} />
       ))}
+      {held.menu}
     </div>
   )
   return header ? (
