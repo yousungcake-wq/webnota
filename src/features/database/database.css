@@ -851,7 +851,15 @@
 /* touch targets (MB-11, M7-02) */
 @media (pointer: coarse) {
   .db-option-create,
-  .db-prop-btn {
+  .db-prop-btn,
+  .db-input,
+  .db-option,
+  .db-option-main {
     min-height: 44px;
+  }
+  .db-option .db-icon-btn,
+  .db-chip-x .db-chip-remove {
+    min-width: 44px;
+    height: 44px;
   }
 }

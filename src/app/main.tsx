@@ -14,7 +14,7 @@ import { connect, initUser, pendingTarget, startAutoSync, syncStore } from '@/co
 import { loadSeed, preloadEditor } from '@/features/editor'
 import { addPage, autoEmptyTrash } from '@/features/page'
 import { startSearchIndexing } from '@/features/search'
-import { configureUi, ErrorBoundary, OverlayHost, toast } from '@/ui'
+import { configureUi, ErrorBoundary, OverlayHost, preloadOverlays, toast } from '@/ui'
 import { App } from './App'
 import { installGlobalErrorToasts } from './errors'
 
@@ -90,6 +90,7 @@ async function boot() {
   const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1500))
   idle(() => {
     preloadEditor()
+    preloadOverlays()
     startSearchIndexing() // WS-07: build/refresh the full-text index in the background
   })
 

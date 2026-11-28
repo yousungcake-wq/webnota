@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
-import { Popover, type Placement } from './Popover'
-import { Sheet, type SheetSize } from './Sheet'
+import { Popover, Sheet } from './lazy'
+import type { Placement } from './Popover'
+import type { SheetSize } from './Sheet'
 
 /** A popover on desktop and a bottom sheet on phones — the same content either way. */
 export function Overlay({
