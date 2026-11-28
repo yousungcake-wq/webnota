@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import * as Y from 'yjs'
 import { addField, addRow, createDatabase, setCell, SHARD_COUNT, updateRow, type DbDocs } from '../model/database'
-import { fileRefsInDoc, fileRefsInRows, fileRefsInWorkspace, orphanFiles, rowsWithBody } from './refs'
+import { fileRefsInDoc, fileRefsInRows, fileRefsInWorkspace, orphanFiles, orphanRowBodies, rowsWithBody } from './refs'
 
 const id = (c: string, ext = 'png') => `${c.repeat(64)}.${ext}`
 
@@ -60,5 +60,16 @@ describe('file references (SY-04 cleanup, M3-10)', () => {
   it('orphans: unreferenced WebNota files only (data and foreign names are kept)', () => {
     const repo = ['data/workspace.yjs', `files/${id('a')}`, `files/${id('9')}`, 'files/readme.txt', 'files/x/y.png']
     expect(orphanFiles(repo, new Set([id('a')]))).toEqual([`files/${id('9')}`])
+  })
+
+  it('orphan row bodies: rows gone from a known database only (M6-00)', () => {
+    const repo = [
+      'data/dbs/d1/rows/r1.yjs',
+      'data/dbs/d1/rows/gone.yjs',
+      'data/dbs/d1/rows-0.yjs',
+      'data/dbs/other/rows/x.yjs',
+      'files/a.png',
+    ]
+    expect(orphanRowBodies(repo, new Map([['d1', new Set(['r1'])]]))).toEqual(['data/dbs/d1/rows/gone.yjs'])
   })
 })

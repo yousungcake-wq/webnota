@@ -1,5 +1,6 @@
 import { getToken } from '../auth/auth'
-import { openDoc, pageDocName, retainDoc } from '../docs/registry'
+import { destroyDoc, openDoc, pageDocName, retainDoc } from '../docs/registry'
+import { docForPath } from '../sync/engine'
 import { syncStore } from '../sync/controller'
 import { cacheMeta, deleteFiles } from './db'
 import { databaseDocNames } from '../model/database/shard'
@@ -39,13 +40,17 @@ export async function cleanupRepository(): Promise<{ removed: number; kept: numb
     }
   }
   // databases (M4-07): media cells and row icons/covers in every shard (trashed views included)
+  const rowsByDb = new Map<string, Set<string>>()
   for (const dbId of referencedDatabaseIds(ws)) {
+    const rows = new Set<string>()
+    rowsByDb.set(dbId, rows)
     for (const name of databaseDocNames(dbId).slice(1)) {
       const release = retainDoc(name)
       let bodies: string[]
       try {
         const shard = await openDoc(name)
         fileRefsInRows(shard, refs)
+        if (shard.share.has('rows')) shard.getMap('rows').forEach((_r, id) => rows.add(id))
         bodies = rowsWithBody(shard).map((rowId) => rowDocName(dbId, rowId))
       } finally {
         release()
@@ -64,9 +69,14 @@ export async function cleanupRepository(): Promise<{ removed: number; kept: numb
   // never remove what is still waiting to be uploaded
   for (const f of await pendingFiles()) refs.add(f.id)
 
-  const res = await net.cleanRepository(account, token, refs)
-  const removedIds = res.removed.map((p) => p.slice('files/'.length))
+  const res = await net.cleanRepository(account, token, refs, rowsByDb)
+  const removedIds = res.removed.filter((p) => p.startsWith('files/')).map((p) => p.slice('files/'.length))
   await deleteFiles('cache', removedIds).catch(() => {})
+  // removed row page bodies: drop the local copies too
+  for (const p of res.removed) {
+    const doc = docForPath(p)
+    if (doc?.startsWith('row/')) await destroyDoc(doc).catch(() => {})
+  }
   return { removed: res.removed.length, kept: res.kept }
 }
 

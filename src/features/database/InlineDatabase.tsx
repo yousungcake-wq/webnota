@@ -3,7 +3,7 @@ import { lazy, Suspense, use, useMemo, useState } from 'react'
 import { openDatabase } from '@/core/docs/database'
 import { ws } from '@/core/docs/workspace'
 import { duplicateDbView, readViewSettings } from '@/core/model/database'
-import { createView, getView, type ViewMeta } from '@/core/model/views'
+import { createView, getView, restoreView, type ViewMeta } from '@/core/model/views'
 import { navigate } from '@/core/store/router'
 import { useAliveViews } from '@/core/store/views'
 import { useY } from '@/core/store/useY'
@@ -54,6 +54,18 @@ export default function InlineDatabase({
   const h = dragH ?? height ?? DEFAULT_HEIGHT
   if (!viewId) return <Linker pageId={pageId} readOnly={readOnly} onLinked={onChange} />
   if (!view) return <div className="db-inline is-loading" style={{ height: h }} />
+  // the block came back (undo) while its view is in the trash
+  if (view.deletedAt)
+    return (
+      <div className="db-inline db-linker">
+        <p className="db-empty">{dt('db.inline.trashed')}</p>
+        {!readOnly && (
+          <button type="button" className="db-option-create" onClick={() => restoreView(ws(), view.id)}>
+            {dt('db.inline.restore')}
+          </button>
+        )}
+      </div>
+    )
   const startResize = (e: React.PointerEvent<HTMLElement>) => {
     if (readOnly) return
     e.preventDefault()

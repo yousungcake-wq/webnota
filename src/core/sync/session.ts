@@ -11,7 +11,7 @@ import { ConflictRetryError, syncOnce, type LocalStore, type SyncState } from '.
 import { GitHubClient, GitHubError, GitHubGitApi } from './github'
 import { recordSync } from './log'
 import { removeFiles } from './cleanup'
-import { orphanFiles } from '../files/refs'
+import { orphanFiles, orphanRowBodies } from '../files/refs'
 import type { SyncOutcome } from './schedule'
 
 function stateKey(a: Account) {
@@ -143,8 +143,18 @@ export function downloadRepoFile(account: Account, token: string, id: string): P
   return new GitHubClient(token).getRaw(account.owner, account.repo, `files/${id}`, account.branch)
 }
 
-/** Removes repository files no document references (SY-04 cleanup, M3-10). */
-export function cleanRepository(account: Account, token: string, referenced: Set<string>) {
+/**
+ * Removes repository files no document references (SY-04 cleanup, M3-10) and row page
+ * bodies of deleted rows (M6-00), in one commit.
+ */
+export function cleanRepository(
+  account: Account,
+  token: string,
+  referenced: Set<string>,
+  rowsByDb: Map<string, Set<string>> = new Map(),
+) {
   const api = new GitHubGitApi(new GitHubClient(token), account.owner, account.repo, account.branch)
-  return removeFiles(api, (paths) => orphanFiles(paths, referenced), { deviceName: deviceLabel() })
+  return removeFiles(api, (paths) => [...orphanFiles(paths, referenced), ...orphanRowBodies(paths, rowsByDb)], {
+    deviceName: deviceLabel(),
+  })
 }

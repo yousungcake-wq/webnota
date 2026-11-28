@@ -284,6 +284,8 @@ export const ko = {
   'db.inline.none': '데이터베이스가 없습니다',
   'db.empty.rows': "아직 행이 없습니다. 아래 '새 행'으로 추가하세요.",
   'db.empty.filtered': '필터나 검색에 맞는 행이 없습니다.',
+  'db.inline.trashed': '이 데이터베이스 보기는 휴지통에 있습니다',
+  'db.inline.restore': '복원',
 }
 
 export type DbKey = keyof typeof ko

@@ -84,6 +84,19 @@ export function rowsWithBody(shard: Y.Doc): string[] {
   return out
 }
 
+/**
+ * Row page bodies (`data/dbs/<db>/rows/<row>.yjs`) whose row is gone (M6-00): rows are
+ * deleted at once with an undo toast, so their body stays until the next storage cleanup.
+ * Only databases in `rowsByDb` are judged — others are removed whole by the sync engine.
+ */
+export function orphanRowBodies(repoPaths: string[], rowsByDb: Map<string, Set<string>>): string[] {
+  return repoPaths.filter((p) => {
+    const m = /^data\/dbs\/([A-Za-z0-9_-]+)\/rows\/([A-Za-z0-9_-]+)\.yjs$/.exec(p)
+    const rows = m ? rowsByDb.get(m[1]!) : undefined
+    return !!rows && !rows.has(m![2]!)
+  })
+}
+
 /** Repository paths under `files/` that no document references. */
 export function orphanFiles(repoPaths: string[], referenced: Set<string>): string[] {
   return repoPaths.filter((p) => {

@@ -285,4 +285,6 @@ export const en: Record<DbKey, string> = {
   'db.inline.none': 'No databases',
   'db.empty.rows': "No rows yet. Add one with 'New row' below.",
   'db.empty.filtered': 'No rows match the filter or search.',
+  'db.inline.trashed': 'This database view is in the trash',
+  'db.inline.restore': 'Restore',
 }

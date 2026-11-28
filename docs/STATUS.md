@@ -64,7 +64,7 @@
 
 - **초기 번들 (피드백 7)**: 페이지 화면(`loadPageView`, 앱 시작 시 바로 받음)과 폰 홈(`loadHome`)은 지연 청크 — 122.4/125KB. 에디터 예산은 `after: 'pageView'`. 사이드바는 `SpaceSections`(스페이스마다 `PageTree`), 목록 끌기는 `beginListDrag(e, list, onDrop, 'space-id')`.
 
-- **DB 탭·행 페이지·인라인 (M5-01~10)**: 탭 = 첫 뷰의 하위 뷰(같은 databaseId, `databaseTabs`). 행 페이지는 라우트 `…/v/<page>/r/<row>`(`openRow`/`useOpenRow`, 인라인은 `RowRouteContext`로 문서 id), 본문 `row/<db>/<row>`는 내용이 생길 때 `hasDoc`. 인라인 DB 블록의 뷰는 `embedded: true`(사이드바·`listViews`에 없음, `getView`로는 나옴). 데스크탑 `MainContent`는 행 라우트가 바뀌어도 다시 마운트하지 않음(App.tsx key). 에디터 청크 208.9/210KB — 다음 노드는 정말 작게.
+- **DB 탭·행 페이지·인라인 (M5-01~10)**: 탭 = 첫 뷰의 하위 뷰(같은 databaseId, `databaseTabs`). 행 페이지는 라우트 `…/v/<page>/r/<row>`(`openRow`/`useOpenRow`, 인라인은 `RowRouteContext`로 문서 id), 본문 `row/<db>/<row>`는 내용이 생길 때 `hasDoc`. 인라인 DB 블록의 뷰는 `embedded: true`(사이드바·`listViews`에 없음, `getView`로는 나옴). 데스크탑 `MainContent`는 행 라우트가 바뀌어도 다시 마운트하지 않음(App.tsx key). **에디터 청크 209.0/210KB(100%)** — 다음 에디터 기능은 먼저 기존 코드를 지연 청크로 빼서 자리를 만들 것.
 
 - **DB 첫 화면 캐시 (M5-00)**: 뷰를 열면 `wn:<wsId>:$dbscreen`의 캐시로 먼저 읽기 전용 미리보기(`state.preview`, `.db-view[data-preview]`, docs는 빈 자리 표시)를 그림. 레이아웃 컴포넌트는 `LayoutProps.readOnly`를 따르면 됨(미리보기 포함). **e2e에서 새로 고침 뒤 DB 값을 확인·편집할 때는 `dbLive(page)`** 먼저(캐시만 보고 통과하지 않게). Board·Calendar는 `BoardView.tsx`·`CalendarView.tsx`(별도 청크 `dbBoard`·`dbCalendar`), 카드 내용은 `CardBody`.
 

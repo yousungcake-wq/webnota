@@ -186,6 +186,8 @@ AppFlowy 팔레트 10색(Purple, Pink, Light Pink, Orange, Yellow, Lime, Green, 
 
 구현 (M5-10, schema v23): 블록 노드 `database`(databaseId, viewId, layout, height), 노드 정의만 에디터 청크(`nodes/database.ts`), UI는 `@/features/database`의 `InlineDatabase`(지연, DB 화면은 또 지연). 슬래시 메뉴 "표/보드/캘린더 데이터베이스": 블록이 id를 먼저 정해 넣고 곧바로 DB 문서와 **embedded 뷰**(`embedded: true`, 그 페이지의 하위 뷰 — 사이드바·목록에 안 나옴, 페이지를 지우면 같이 휴지통/영구 삭제)를 만듭니다. "기존 데이터베이스 연결": 빈 블록이 DB 목록(검색)을 보여 주고, 고르면 그 DB의 새 embedded 뷰(원래 뷰 설정 복사). 상자 높이 기본 400px, 아래 가장자리를 끌어 200~1600px(블록 `height`). "전체 페이지로 열기"는 embedded 뷰를 페이지로 엶(`getView`가 embedded도 반환, 탭 바는 없음). 행 페이지는 **문서의 라우트**로 엶(`#/w/:ws/v/:page/r/:row`, `RowRouteContext`) — 한 페이지에 DB가 여럿이면 그 행이 있는 DB만 모달을 띄움. 노드 뷰는 키·클릭을 ProseMirror에 넘기지 않음(`stopEvent`, 블록 끌기 제외). 셀에서 한글 IME를 시작하면(`Process` 키) 그 keydown 안에서 편집기를 열어 조합이 셀 입력으로 들어감(인라인에서 페이지 본문으로 새지 않게; 일반 Grid에도 적용).
 
+정리 (M6-00): 문서에서 인라인 DB 블록을 지우면(로컬 편집) 그 embedded 뷰를 휴지통으로, 블록이 다시 생기면(잘라 붙이기) 복원합니다 — 하위 페이지 블록과 같은 규칙. 원격 변경·Yjs 실행 취소로 블록만 돌아오면 블록이 "복원" 버튼을 보여 줍니다. embedded 뷰는 사이드바 휴지통 목록에는 나오지 않습니다(페이지를 영구 삭제하면 하위로서 함께 지워짐). **인라인 DB에는 탭 바를 두지 않습니다**: 인라인 블록 하나 = 보기 하나(AppFlowy 인라인 DB도 한 보기), 다른 보기는 블록을 하나 더 넣거나 원래 DB 페이지에서 탭으로. 지운 행의 본문 파일(`rows/<row>.yjs`)은 실행 취소를 위해 남겨 두고 설정의 "저장소 정리" 때 지웁니다(`orphanRowBodies`, 로컬 사본도). Board 끌기 중 다시 그리기는 M5-12에서 놓을 자리가 바뀔 때만으로 줄임(고스트는 DOM 직접 이동).
+
 ## 9. 가져오기·내보내기 (`DB-IO`, M6)
 
 - CSV 가져오기: 첫 행 = 헤더, 타입 자동 추론(숫자, 날짜, 체크박스, 선택 — 고유 값 20개 이하), 미리보기 후 확인. 워커에서 파싱합니다.

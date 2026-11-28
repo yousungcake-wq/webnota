@@ -540,4 +540,36 @@ test.describe('database views (M5)', () => {
     await expect(page.locator('.db-view .dbg-row').first()).toContainText('Inline row')
     noErrors()
   })
+
+  test('deleting an inline database block trashes its view; undo shows restore (M6-00)', async ({ page }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await newPageFromSidebar(page)
+    await waitForNewPage(page)
+    const ed = page.locator('.wn-editor').first()
+    await ed.click()
+    await page.keyboard.type('/데이터베이스')
+    await page.locator('.slash-item', { hasText: '표 데이터베이스' }).click()
+    const inline = page.locator('.db-inline').first()
+    await expect(inline.locator('.dbg-row')).toHaveCount(3)
+    const viewId = await inline.getAttribute('data-view-id')
+    // select the block (click its edge in the editor's node selection) and delete it
+    await page.evaluate(() => {
+      const ed = (document.querySelector('.wn-editor') as HTMLElement & { editor?: unknown }).editor as {
+        state: { doc: { descendants: (f: (n: { type: { name: string } }, p: number) => boolean | void) => void } }
+        commands: { setNodeSelection: (p: number) => void; deleteSelection: () => void }
+      }
+      let pos = -1
+      ed.state.doc.descendants((n, p) => {
+        if (n.type.name === 'database' && pos < 0) pos = p
+      })
+      ed.commands.setNodeSelection(pos)
+      ed.commands.deleteSelection()
+    })
+    await expect(page.locator('.db-inline')).toHaveCount(0)
+    const url = page.url().replace(/v\/[^/]+$/, `v/${viewId}`)
+    await page.goto(url)
+    await expect(page.locator('.trash-banner')).toBeVisible()
+    noErrors()
+  })
 })
