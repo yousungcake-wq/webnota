@@ -119,6 +119,8 @@
   --side-w: 264px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
+  /* bottom sheet step height; Sheet sets it per sheet in px (M7-01) */
+  --sheet-max: 85vh;
 }
 
 /* dark: keep these two blocks identical */

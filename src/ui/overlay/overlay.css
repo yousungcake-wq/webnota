@@ -23,8 +23,10 @@
 }
 .sheet {
   width: 100%;
-  max-height: 85vh;
+  /* the step height (set by Sheet), but never taller than what is visible above the keyboard */
+  max-height: min(var(--sheet-max), calc(100dvh - 16px - var(--safe-t)));
   overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--bg-elev);
   border-radius: 16px 16px 0 0;
   padding: 6px 12px calc(12px + var(--safe-b));
@@ -36,11 +38,20 @@
   outline: none;
 }
 .sheet {
-  transition: transform var(--dur) var(--ease);
+  transition:
+    transform var(--dur) var(--ease),
+    height var(--dur) var(--ease),
+    max-height var(--dur) var(--ease);
 }
 .sheet-handle {
   touch-action: none;
   cursor: grab;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: -6px -12px 0;
+  padding: 6px 12px 0;
+  background: var(--bg-elev);
 }
 .sheet-grabber {
   width: 36px;

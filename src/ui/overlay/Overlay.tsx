@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Popover, type Placement } from './Popover'
-import { Sheet } from './Sheet'
+import { Sheet, type SheetSize } from './Sheet'
 
 /** A popover on desktop and a bottom sheet on phones — the same content either way. */
 export function Overlay({
@@ -8,6 +8,7 @@ export function Overlay({
   title,
   sheet,
   placement,
+  sheetSize,
   onClose,
   children,
 }: {
@@ -15,11 +16,13 @@ export function Overlay({
   title?: string
   sheet: boolean
   placement?: Placement
+  /** Starting height of the phone sheet. */
+  sheetSize?: SheetSize
   onClose: () => void
   children: ReactNode
 }) {
   return sheet ? (
-    <Sheet title={title} onClose={onClose}>
+    <Sheet title={title} size={sheetSize} onClose={onClose}>
       {children}
     </Sheet>
   ) : (

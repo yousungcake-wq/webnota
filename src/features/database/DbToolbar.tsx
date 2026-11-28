@@ -185,7 +185,13 @@ export function DbToolbar({
         />
       )}
       {open && (
-        <Overlay anchor={open.anchor} title={titles[open.panel]} sheet={phone} onClose={() => setOpen(null)}>
+        <Overlay
+          anchor={open.anchor}
+          title={titles[open.panel]}
+          sheet={phone}
+          sheetSize="full"
+          onClose={() => setOpen(null)}
+        >
           <div className="db-pop db-panel">
             {open.panel === 'filter' ? (
               <FilterPanel docs={state.docs} view={view} fields={state.fields} />

@@ -682,9 +682,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.sheet:has(.db-panel) {
-  min-height: 85dvh;
-}
 .db-sheet-editor .dbc-editor {
   position: static;
   min-height: 44px;
