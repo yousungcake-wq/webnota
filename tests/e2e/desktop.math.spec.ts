@@ -52,6 +52,8 @@ test('$$ + space makes a math block; $…$ makes inline math, prices stay text (
   await input.fill('\\sum_{i=1}^n i')
   await input.press('ControlOrMeta+Enter')
   await expect(page.locator('.wn-editor .math-block .katex')).toBeVisible()
+  // the editor gets the focus back once the (lazy) popover has closed
+  await expect(page.locator('.wn-editor')).toBeFocused()
 
   await page.keyboard.press('ControlOrMeta+End')
   await page.keyboard.type('원의 넓이는 $\\pi r^2$ 이고 값은 $5 와 $10 입니다')

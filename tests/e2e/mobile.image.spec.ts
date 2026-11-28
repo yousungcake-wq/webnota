@@ -30,7 +30,7 @@ test('phone: image from the block panel, photo picker, drag to resize, caption (
   await expect(bar).toBeVisible()
   const handle = page.locator('.wn-editor .media-handle.is-right')
   await expect(handle).toBeVisible()
-  const hb = (await handle.boundingBox())!
+  let hb = (await handle.boundingBox())!
   // a finger drag (touch pointer events)
   const cdp = await page.context().newCDPSession(page)
   const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', x: number) =>
@@ -38,8 +38,10 @@ test('phone: image from the block panel, photo picker, drag to resize, caption (
       type,
       touchPoints: type === 'touchEnd' ? [] : [{ x, y: hb.y + hb.height / 2 }],
     })
-  // a busy CI can drop the first touches before the handle listens: drag again until it takes
+  // a busy CI can drop the first touches before the handle listens, or the layout can still
+  // move (lazy toolbar): measure again and drag again until it takes
   await expect(async () => {
+    hb = (await handle.boundingBox())!
     await touch('touchStart', hb.x + hb.width / 2)
     await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(null))))
     for (let i = 1; i <= 6; i++) await touch('touchMove', hb.x + hb.width / 2 - i * 15)

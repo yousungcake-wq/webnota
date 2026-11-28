@@ -33,7 +33,7 @@
 | 10,000행 Grid | [05-database.md](05-database.md) §11 |
 | 메모리 (문서 10개 열람 후) | < 150MB |
 
-M7-12 점검: `npm run perf`에 저속 4G(RTT 150ms, 1.6Mbps — Lighthouse 모바일 기준) 첫 실행 LCP(`firstRun4gLcpMs`)와 사용 후 JS 힙(`heapAfterUseMb`)을 더했습니다. 작업 환경 값은 LCP 약 3.8~4.0s(CPU 4배 감속 동시 적용, `vite preview`는 HTTP/1.1이라 작은 청크 수십 개가 연결 6개에 줄 섬 — GitHub Pages는 HTTP/2), 힙 약 30MB. 목표(2.0s)는 실기기 4G에서 확인합니다(docs/QA.md M7). 개선: 서비스 워커 등록을 첫 화면 뒤 유휴 + 3초로 미뤄, 오프라인용 전체 다운로드(요청 약 190개)가 첫 화면과 대역폭을 다투지 않게 함. 오프라인 실행·편집·재연결 동기화는 e2e(`mobile.offline.spec.ts`).
+M7-12 점검: `npm run perf`에 저속 4G(RTT 150ms, 1.6Mbps — Lighthouse 모바일 기준) 첫 실행 LCP(`firstRun4gLcpMs`)와 사용 후 JS 힙(`heapAfterUseMb`)을 더했습니다. 작업 환경 값은 LCP 약 3.8~4.0s(CPU 4배 감속 동시 적용, `vite preview`는 HTTP/1.1이라 작은 청크 수십 개가 연결 6개에 줄 섬 — GitHub Pages는 HTTP/2), 힙 약 30MB. 목표(2.0s)는 실기기 4G에서 확인합니다(docs/QA.md M7). 서비스 워커 등록을 첫 화면 뒤(유휴 + 3초)로 미루는 것도 시도했지만 4G LCP 차이가 측정 흔들림 안이었고, 대신 사용 중에 오프라인용 전체 다운로드(요청 약 190개)가 시작돼 KaTeX 같은 지연 청크가 그 뒤에 줄 서는 문제가 생겨 되돌림(등록은 `load` 직후). 오프라인 실행·편집·재연결 동기화는 e2e(`mobile.offline.spec.ts`).
 
 ## 2. 기법 (필수 적용)
 
