@@ -93,16 +93,23 @@ async function boot() {
     toast(e instanceof Error ? e.message : String(e), { tone: 'error' })
   }
   startAutoSync()
-  // MB-41: a new version waits until the next launch; offer it now without forcing a reload
-  registerServiceWorker(() =>
-    toast(t('update.ready'), {
-      action: { label: t('update.reload'), onClick: () => void applyUpdate() },
-      duration: 60000,
-    }),
-  )
-
   // Warm the editor chunk once the shell is idle.
   const idle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1500))
+  // MB-41: a new version waits until the next launch; offer it now without forcing a reload.
+  // Registered a little after the first screen (M7-12): installing the worker downloads the
+  // whole app for offline use, which on a slow line competed with the first screen.
+  idle(() =>
+    setTimeout(
+      () =>
+        registerServiceWorker(() =>
+          toast(t('update.ready'), {
+            action: { label: t('update.reload'), onClick: () => void applyUpdate() },
+            duration: 60000,
+          }),
+        ),
+      3000,
+    ),
+  )
   idle(() => {
     preloadEditor()
     preloadOverlays()

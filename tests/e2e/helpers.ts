@@ -22,10 +22,11 @@ export async function composeKorean(page: Page, steps: string[], commit: string)
 }
 
 /** Fails the test on uncaught page errors / console errors. */
-export function failOnConsoleErrors(page: Page) {
+export function failOnConsoleErrors(page: Page, ignore: RegExp[] = []) {
   const errors: string[] = []
-  page.on('pageerror', (e) => errors.push(e.message))
-  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
+  const keep = (msg: string) => !ignore.some((r) => r.test(msg)) && errors.push(msg)
+  page.on('pageerror', (e) => keep(e.message))
+  page.on('console', (m) => m.type() === 'error' && keep(m.text()))
   return () => expect(errors, 'console errors').toEqual([])
 }
 

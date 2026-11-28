@@ -41,6 +41,39 @@ for (let i = 0; i < RUNS; i++)
   )
 results.firstRunEditorMs = median(first)
 
+// 1b. M7-12: first run over a slow 4G line (Lighthouse's mobile preset: 150ms RTT,
+// 1.6 Mbps down, 750 Kbps up) — largest contentful paint and the editor showing.
+const lcp4g = []
+const editor4g = []
+for (let i = 0; i < 3; i++) {
+  const [l, e] = await withPage(async (page, ctx) => {
+    const cdp = await ctx.newCDPSession(page)
+    await cdp.send('Network.enable')
+    await cdp.send('Network.emulateNetworkConditions', {
+      offline: false,
+      latency: 150,
+      downloadThroughput: (1.6 * 1024 * 1024) / 8,
+      uploadThroughput: (750 * 1024) / 8,
+    })
+    await page.addInitScript(() => {
+      window.__lcp = 0
+      new PerformanceObserver((list) => {
+        for (const e of list.getEntries()) window.__lcp = e.startTime
+      }).observe({ type: 'largest-contentful-paint', buffered: true })
+    })
+    const t0 = Date.now()
+    await page.goto(BASE)
+    await page.locator('.wn-editor').waitFor()
+    const editorMs = Date.now() - t0
+    await page.waitForTimeout(300)
+    return [Math.round(await page.evaluate(() => window.__lcp)), editorMs]
+  })
+  lcp4g.push(l)
+  editor4g.push(e)
+}
+results.firstRun4gLcpMs = median(lcp4g)
+results.firstRun4gEditorMs = median(editor4g)
+
 // 2. Revisit: sidebar/home visible, then editor visible (same context = IndexedDB + HTTP cache).
 const revisitShell = []
 const revisitEditor = []
@@ -84,6 +117,10 @@ await withPage(async (page) => {
     )
     typingMs.push(ms)
   }
+  // M7-12: JS heap after the visits above (Chromium only)
+  results.heapAfterUseMb = await page.evaluate(() =>
+    Math.round((performance.memory?.usedJSHeapSize ?? 0) / 1024 / 1024),
+  )
 })
 results.revisitShellMs = median(revisitShell)
 results.openPageFromHomeMs = median(revisitEditor)
