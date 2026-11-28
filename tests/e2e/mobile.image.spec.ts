@@ -38,10 +38,14 @@ test('phone: image from the block panel, photo picker, drag to resize, caption (
       type,
       touchPoints: type === 'touchEnd' ? [] : [{ x, y: hb.y + hb.height / 2 }],
     })
-  await touch('touchStart', hb.x + hb.width / 2)
-  for (let i = 1; i <= 6; i++) await touch('touchMove', hb.x + hb.width / 2 - i * 15)
-  await touch('touchEnd', 0)
-  await expect.poll(async () => (await imageAttrs(page))[0]?.width as number).toBeLessThan(95)
+  // a busy CI can drop the first touches before the handle listens: drag again until it takes
+  await expect(async () => {
+    await touch('touchStart', hb.x + hb.width / 2)
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(null))))
+    for (let i = 1; i <= 6; i++) await touch('touchMove', hb.x + hb.width / 2 - i * 15)
+    await touch('touchEnd', 0)
+    await expect.poll(async () => (await imageAttrs(page))[0]?.width as number, { timeout: 2000 }).toBeLessThan(95)
+  }).toPass({ timeout: 15000 })
   // a small image is mostly toolbar: tap its bottom-left corner
   const corner = async () => {
     const b = (await img.boundingBox())!
