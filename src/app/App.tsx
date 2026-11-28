@@ -3,7 +3,7 @@ import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from
 import { useViews } from '@/core/store/views'
 import { pushRecent } from '@/core/store/prefs'
 import { wsKey } from '@/core/docs/slots'
-import { href, navigate, useRoute, type Route } from '@/core/store/router'
+import { ensureHomeBelow, goBack, href, navigate, useRoute, type Route } from '@/core/store/router'
 import { loadHome } from '@/features/home'
 import { loadPageView, PageOverlays } from '@/features/page'
 import { loadSearchView, PaletteHost } from '@/features/search'
@@ -45,6 +45,10 @@ export function App() {
     const target = pages.find((p) => p.id === last && !p.deletedAt) ?? pages.find((p) => !p.deletedAt && !p.parentId)
     if (target) navigate({ name: 'page', id: target.id }, { replace: true })
   }, [route.name, phone, pages])
+
+  useEffect(() => {
+    if (phone) ensureHomeBelow()
+  }, [phone, route])
 
   if (phone)
     return (
@@ -194,6 +198,11 @@ function PhoneShell({ route }: { route: Route }) {
               href={href(t.route)}
               className={`tab${active ? ' is-active' : ''}`}
               aria-current={active ? 'page' : undefined}
+              onClick={(e) => {
+                if (e.metaKey || e.ctrlKey || e.shiftKey) return
+                e.preventDefault()
+                switchTab(route, t.route)
+              }}
             >
               <Icon size={22} />
               <span>{t.label}</span>
@@ -203,4 +212,16 @@ function PhoneShell({ route }: { route: Route }) {
       </nav>
     </div>
   )
+}
+
+/**
+ * Tab switches keep the back button simple (MB-14, M7-05): home → a tab is one step, tab →
+ * tab replaces it, and a tab → home goes back, so the hardware back button from any tab
+ * returns home and from home leaves the app.
+ */
+function switchTab(from: Route, to: Route) {
+  if (from.name === to.name) return
+  const onTab = from.name === 'favorites' || from.name === 'search' || from.name === 'settings' || from.name === 'trash'
+  if (to.name === 'home') return onTab ? goBack() : navigate(to)
+  navigate(to, { replace: onTab })
 }

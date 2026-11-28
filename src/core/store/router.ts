@@ -134,6 +134,22 @@ function recordTrail(replace: boolean) {
 recordTrail(false)
 window.addEventListener('hashchange', () => recordTrail(false))
 
+/**
+ * Phones (MB-14, M7-05): a screen opened first — the welcome page, a link, the last page —
+ * gets home underneath it, so the hardware back button goes home before leaving the app.
+ */
+export function ensureHomeBelow() {
+  const st = history.state as { wnDepth?: number; wnOverlay?: number } | null
+  if (depth !== 0 || st?.wnOverlay || parse(location.hash).name === 'home') return
+  const here = location.hash
+  const seq = ++seqCounter
+  history.replaceState({ wnDepth: 0, wnSeq: seq }, '', '#/')
+  trail = [{ seq, href: '#/' }]
+  history.pushState({ wnDepth: 1 }, '', here)
+  depth = 1
+  recordTrail(false)
+}
+
 /** Back within the app: the previous screen of this tab, or home when there is none. */
 export function goBack() {
   if (historyBusy()) {
