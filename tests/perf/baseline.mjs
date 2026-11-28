@@ -95,6 +95,7 @@ await withPage(
     await page.goto(BASE)
     await page.locator('.wn-editor').waitFor()
     await page.click('.sidebar [data-new-page] >> nth=0')
+    await page.getByRole('menuitem', { name: '문서' }).click() // M5-11: "+" offers every layout
     await page.waitForFunction(() => document.querySelector('.page-title')?.value === '')
     await page.fill('.page-title', 'B')
     await page.locator('.wn-editor').click()

@@ -89,6 +89,7 @@ export function useCardDrag(opts: {
     }
     const update = () => {
       const r = card.getBoundingClientRect()
+      const prev = current
       current = {
         rowId,
         from,
@@ -99,7 +100,16 @@ export function useCardDrag(opts: {
         dy: current?.dy ?? y0 - r.top,
         width: current?.width ?? r.width,
       }
-      setDrag(current)
+      // the ghost follows the pointer without React; the board re-renders only when the
+      // drop target changes (M5-12: 10k cards stay smooth)
+      const ghost = document.querySelector<HTMLElement>('.dbk-ghost')
+      if (ghost) {
+        ghost.style.left = `${current.x - current.dx}px`
+        ghost.style.top = `${current.y - current.dy}px`
+      }
+      const same =
+        prev && ghost && prev.drop?.key === current.drop?.key && prev.drop?.beforeId === current.drop?.beforeId
+      if (!same) setDrag(current)
     }
     const autoScroll = () => {
       frame = requestAnimationFrame(autoScroll)
