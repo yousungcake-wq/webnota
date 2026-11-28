@@ -10,6 +10,7 @@ import { Callout } from './nodes/callout'
 import { HighlightColor, TextColor } from './nodes/textColor'
 import { Mention } from './mention/mention'
 import { SubPage } from './nodes/subPage'
+import { DatabaseNode } from './nodes/database'
 import { TABLE_NODES } from './nodes/table'
 import { Column, Columns } from './nodes/columns'
 import { Outline } from './nodes/outline'
@@ -53,6 +54,7 @@ export function schemaExtensions(): Extensions {
     Superscript,
     Subscript,
     SubPage,
+    DatabaseNode,
     ...TABLE_NODES,
     Columns,
     Column,

@@ -1,0 +1,103 @@
+/* Inline database block (M5-10) */
+.db-inline {
+  position: relative;
+  margin: 8px 0;
+}
+.db-inline.is-loading {
+  border-radius: var(--r);
+  background: var(--bg-side);
+}
+.db-inline-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+.db-inline-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.db-inline-body {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.db-inline-body .dbg,
+.db-inline-body .db-cards {
+  max-height: none;
+}
+.db-inline-body .dbk-col {
+  max-height: calc(100% - 8px);
+}
+.db-inline-resize {
+  height: 10px;
+  margin-top: -5px;
+  cursor: ns-resize;
+  touch-action: none;
+  position: relative;
+}
+.db-inline-resize::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 40px;
+  height: 3px;
+  margin-left: -20px;
+  border-radius: 2px;
+  background: var(--border-strong);
+  opacity: 0;
+}
+.db-inline:hover .db-inline-resize::after,
+.db-inline-resize:active::after {
+  opacity: 1;
+}
+.db-linker {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+}
+.db-linker-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.db-linker-search {
+  display: flex;
+  margin-bottom: 8px;
+}
+.db-linker-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.db-linker-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.db-linker-item:hover {
+  background: var(--bg-hover);
+}
+@media (pointer: coarse) {
+  .db-linker-item {
+    min-height: 44px;
+  }
+  .db-inline-resize {
+    height: 24px;
+    margin-top: -12px;
+  }
+}

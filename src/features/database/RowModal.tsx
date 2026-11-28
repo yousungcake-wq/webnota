@@ -42,13 +42,14 @@ const readFull = () => {
 export function RowModal({
   session,
   state,
-  viewId,
+  routeId,
   rowId,
   readOnly,
 }: {
   session: DbSession
   state: DbState
-  viewId: string
+  /** The page the row route belongs to: the view, or the document of an inline database. */
+  routeId: string
   rowId: string
   readOnly: boolean
 }) {
@@ -57,14 +58,14 @@ export function RowModal({
   const full = phone || fullPref
   const [menu, setMenu] = useState<HTMLElement | null>(null)
   const ref = useRef<HTMLDivElement>(null)
-  const close = () => closeTo({ name: 'page', id: viewId })
+  const close = () => closeTo({ name: 'page', id: routeId })
   useLayer(close, { modal: true })
   useFocusTrap(ref)
   const ids = state.result.rowIds
   const index = ids.indexOf(rowId)
   const go = (delta: number) => {
     const next = ids[index + delta]
-    if (next) navigate({ name: 'page', id: viewId, row: next }, { replace: true })
+    if (next) navigate({ name: 'page', id: routeId, row: next }, { replace: true })
   }
   const toggleFull = () => {
     setFullPref(!fullPref)
@@ -75,7 +76,7 @@ export function RowModal({
     }
   }
   const copyLink = () => {
-    const url = location.origin + location.pathname + href({ name: 'page', id: viewId, row: rowId })
+    const url = location.origin + location.pathname + href({ name: 'page', id: routeId, row: rowId })
     navigator.clipboard.writeText(url).then(
       () => toast(t('page.linkCopied')),
       () => toast(t('page.linkCopyFailed'), { tone: 'error' }),
@@ -86,7 +87,7 @@ export function RowModal({
     if (!id) return
     if (session.row(rowId)?.hasDoc) await copyBody(state.dbId, rowId, id)
     if (session.row(rowId)?.hasDoc) updateRow(state.docs, id, { hasDoc: true })
-    navigate({ name: 'page', id: viewId, row: id }, { replace: true })
+    navigate({ name: 'page', id: routeId, row: id }, { replace: true })
   }
   const items: MenuEntry[] = [
     { label: t('page.copyLink'), icon: LinkIcon, onSelect: copyLink },

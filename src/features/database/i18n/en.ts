@@ -278,4 +278,9 @@ export const en: Record<DbKey, string> = {
   'db.rowpage.full': 'Full screen',
   'db.rowpage.center': 'Centered',
   'db.rowpage.more': 'More',
+  'db.inline.openFull': 'Open as full page',
+  'db.inline.resize': 'Resize',
+  'db.inline.linkTitle': 'Choose a database to link',
+  'db.inline.search': 'Search databases',
+  'db.inline.none': 'No databases',
 }

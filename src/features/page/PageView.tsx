@@ -3,7 +3,8 @@ import { ChevronLeft, ImagePlus, Lock, MoreHorizontal, PanelLeft, SmilePlus, Sta
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { openDoc, pageDocName, retainDoc } from '@/core/docs/registry'
 import { ws } from '@/core/docs/workspace'
-import { ancestorsOf, updateView, type ViewMeta } from '@/core/model/views'
+import { ancestorsOf, getView, updateView, type ViewMeta } from '@/core/model/views'
+import { useY } from '@/core/store/useY'
 import { displayTitle } from './titles'
 import { openIconPicker } from './overlays'
 import { renameStore } from './rename'
@@ -26,6 +27,8 @@ import { PageMenu } from './LazyPageMenu'
 import './page.css'
 import { t } from '@/core/i18n'
 
+const sameMeta = (a: ViewMeta | null, b: ViewMeta | null) => JSON.stringify(a) === JSON.stringify(b)
+
 // The editor (Tiptap + ProseMirror) is the biggest chunk; load it only when a page opens.
 const Editor = lazy(() => loadEditor().then((m) => ({ default: m.Editor })))
 // Database views (spec/05) are their own lazy chunk.
@@ -45,7 +48,9 @@ export function PageView({
   onToggleSidebar?: () => void
 }) {
   const pages = useViews()
-  const page = pages.find((p) => p.id === id)
+  // an inline database's view (M5-10) is not in the sidebar list but opens as a page too
+  const embedded = useY(ws(), (doc) => getView(doc, id), sameMeta)
+  const page = pages.find((p) => p.id === id) ?? (embedded?.embedded ? embedded : undefined)
   const route = useRoute()
   const block = route.name === 'page' && route.id === id ? route.block : undefined
   const phone = useLayout().layout === 'phone'

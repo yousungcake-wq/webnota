@@ -22,6 +22,8 @@ export interface ViewMeta {
   layout: ViewLayout
   /** kind=database: the database the view shows (M5-01: several views may share one). */
   databaseId: string | null
+  /** An inline database view inside a document (M5-10): not in the sidebar. */
+  embedded: boolean
   title: string
   icon: IconValue | null
   /** Parent view, or null when the view sits directly in a space. */
@@ -210,6 +212,7 @@ function toMeta(doc: Y.Doc, id: string, m: YMap, spaceIds: Map<string, string>, 
     kind: m.get('kind') === 'database' ? 'database' : 'document',
     layout: (str('layout') || 'document') as ViewLayout,
     databaseId: str('databaseId') || null,
+    embedded: m.get('embedded') === true,
     title: str('title'),
     icon: readIcon(m.get('icon')),
     parentId: typeof parent === 'string' && viewsOf(doc).has(parent) ? parent : null,
@@ -237,9 +240,11 @@ export function listViews(doc: Y.Doc): ViewMeta[] {
   return out.sort(bySiblingOrder)
 }
 
+/** A view by id — inline (embedded) database views included, so they open as pages too. */
 export function getView(doc: Y.Doc, id: string): ViewMeta | null {
   const m = viewsOf(doc).get(id)
-  return m && isListed(m) ? toMeta(doc, id, m, resolveSpaces(doc), favoritesOf(doc, false)) : null
+  const known = m && (m.get('kind') === 'document' || m.get('kind') === 'database')
+  return known ? toMeta(doc, id, m, resolveSpaces(doc), favoritesOf(doc, false)) : null
 }
 
 // ---------- spaces ----------
@@ -374,6 +379,8 @@ export interface CreateViewOptions {
   kind?: ViewKind
   layout?: ViewLayout
   databaseId?: string | null
+  /** Inline database view (M5-10): hidden from the sidebar. */
+  embedded?: boolean
   /** Insert right after this sibling instead of at the end. */
   after?: string
   id?: string
@@ -393,7 +400,7 @@ export function createView(doc: Y.Doc, opts: CreateViewOptions = {}): string {
     m.set('order', keyAfter(doc, parent, opts.after))
     m.set('title', opts.title ?? '')
     m.set('icon', opts.icon ?? null)
-    m.set('embedded', false)
+    m.set('embedded', opts.embedded === true)
     m.set('locked', false)
     m.set('createdAt', now)
     m.set('createdBy', currentUser)

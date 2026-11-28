@@ -277,6 +277,11 @@ export const ko = {
   'db.rowpage.full': '전체 화면으로',
   'db.rowpage.center': '가운데 창으로',
   'db.rowpage.more': '더보기',
+  'db.inline.openFull': '전체 페이지로 열기',
+  'db.inline.resize': '높이 조절',
+  'db.inline.linkTitle': '연결할 데이터베이스 선택',
+  'db.inline.search': '데이터베이스 검색',
+  'db.inline.none': '데이터베이스가 없습니다',
 }
 
 export type DbKey = keyof typeof ko

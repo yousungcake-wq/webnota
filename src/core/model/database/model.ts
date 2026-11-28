@@ -70,6 +70,8 @@ export interface CreateDatabaseOptions {
   primaryName: string
   /** Empty rows to start with (AppFlowy starts a grid with a few). */
   rows?: number
+  /** An inline database's view (M5-10): hidden from the sidebar. */
+  embedded?: boolean
 }
 
 /**
@@ -101,6 +103,7 @@ export function createDatabase(ws: Y.Doc, db: DbDocs, opts: CreateDatabaseOption
     kind: 'database',
     layout,
     databaseId: opts.dbId,
+    embedded: opts.embedded,
   })
   return { viewId, dbId: opts.dbId }
 }

@@ -39,3 +39,31 @@ export function addStatusField(docs: Parameters<typeof addField>[0]) {
     },
   })
 }
+
+/**
+ * A new inline database (M5-10): its view is embedded (not in the sidebar), a child of the
+ * page; ids are chosen by the editor block so both agree.
+ */
+export async function createInlineDatabase(opts: {
+  viewId: string
+  databaseId: string
+  parentId: string
+  layout: DbLayout
+}) {
+  await loadDbMessages()
+  const { docs, release } = await openDatabase(opts.databaseId)
+  try {
+    createDatabase(ws(), docs, {
+      dbId: opts.databaseId,
+      viewId: opts.viewId,
+      parentId: opts.parentId,
+      layout: opts.layout,
+      primaryName: dt('db.field.name'),
+      rows: 3,
+      embedded: true,
+    })
+    if (opts.layout === 'board') updateGroup(docs, opts.viewId, { fieldId: addStatusField(docs) })
+  } finally {
+    release()
+  }
+}

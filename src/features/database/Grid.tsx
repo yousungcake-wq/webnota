@@ -17,10 +17,11 @@ import { editText, parseEdit, TEXT_EDITED } from './cellEdit'
 import { columnsOf, GUTTER, HEADER_HEIGHT, ROW_HEIGHT, TOUCH_ROW_HEIGHT } from './gridColumns'
 import { useLayout } from '@/platform/layout'
 import { Sheet } from '@/ui'
+import { flushSync } from 'react-dom'
 import { CellEditor } from './CellEditor'
 import { deleteRowsWithUndo, newRow } from './rowActions'
 import { clearRect, copyRect, pasteTSV, rectOf } from './gridClipboard'
-import { openRow } from './rowNav'
+import { useOpenRow } from './rowNav'
 import { CalcRow } from './CalcRow'
 import { GridHeader } from './GridHeader'
 import { GridRow, type GridPos as Pos, type GridRowActions } from './GridRow'
@@ -73,6 +74,7 @@ export function Grid({
   const [popover, setPopover] = useState<Pos | null>(null)
   const totalWidth = GUTTER + columns.reduce((n, c) => n + c.width, 0)
   const docs = state.docs
+  const openRowPage = useOpenRow(state.view?.id)
   const primaryId = state.meta.primaryFieldId || readDbMeta(docs).primaryFieldId
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
   const [rowMenu, setRowMenu] = useState<{ rowId: string; anchor: HTMLElement } | null>(null)
@@ -190,6 +192,10 @@ export function Grid({
     } else if (active && e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
       // typing on a cell replaces its content (spreadsheet behaviour)
       if (startEdit(active, e.key)) e.preventDefault()
+    } else if (active && e.key === 'Process') {
+      // an IME (Korean) starts composing: open the editor now, inside this keydown, so the
+      // composition lands in its input — not in the page around an inline database (M5-10)
+      flushSync(() => startEdit(active, ''))
     }
   }
 
@@ -365,7 +371,7 @@ export function Grid({
     e: React.PointerEvent | React.MouseEvent,
   ) => {
     if (action === 'insert') addRowAt({ afterId: rowId })
-    else if (action === 'open' && state.view) openRow(state.view.id, rowId)
+    else if (action === 'open') openRowPage(rowId)
     else startHandle(rowId, e as React.PointerEvent)
   }
 
@@ -500,7 +506,7 @@ export function Grid({
               {
                 label: dt('db.row.open'),
                 icon: Maximize2,
-                onSelect: () => state.view && openRow(state.view.id, rowMenu.rowId),
+                onSelect: () => openRowPage(rowMenu.rowId),
               },
               ...(readOnly
                 ? []

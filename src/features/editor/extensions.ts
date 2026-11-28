@@ -8,6 +8,7 @@ import { schemaExtensions } from './schema'
 import { MentionSuggest, MentionWithView } from './mentionSuggest'
 import { EmojiSuggest } from './emojiSuggest'
 import { SubPageWithView } from './SubPageBlock'
+import { DatabaseWithView } from './DatabaseBlock'
 import { OutlineWithView } from './OutlineBlock'
 import { ImageWithView } from './ImageBlock'
 import { FileWithView } from './FileBlock'
@@ -95,6 +96,7 @@ export function editorExtensions(doc: Y.Doc, opts: EditorOptions = {}): Extensio
   const withViews: Record<string, Extensions[number]> = {
     mention: MentionWithView,
     subPage: SubPageWithView.configure({ pageId: opts.pageId ?? null }),
+    database: DatabaseWithView.configure({ pageId: opts.pageId ?? null }),
     outline: OutlineWithView,
     image: ImageWithView,
     file: FileWithView,

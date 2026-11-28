@@ -1,4 +1,4 @@
-import { lazy, Suspense, use, useState } from 'react'
+import { lazy, Suspense, use, useContext, useState } from 'react'
 import { wsKey } from '@/core/docs/slots'
 import { useLayout } from '@/platform/layout'
 import { ws } from '@/core/docs/workspace'
@@ -12,6 +12,8 @@ import { CardList } from './CardList'
 import { dt, loadDbMessages } from './i18n'
 import type { LayoutProps } from './layoutProps'
 import { RowModal } from './RowModal'
+import { RowRouteContext } from './rowNav'
+import { getRow } from '@/core/model/database'
 import { useDbSession } from './useDbSession'
 import './database.css'
 
@@ -31,7 +33,10 @@ export function DatabaseView({ view, readOnly }: { view: ViewMeta; readOnly: boo
   const { session, state } = useDbSession(dbId, view.id)
   const phone = useLayout().layout === 'phone'
   const route = useRoute()
-  const openRowId = route.name === 'page' && route.id === view.id ? route.row : undefined
+  const routeId = useContext(RowRouteContext) ?? view.id
+  const routeRow = route.name === 'page' && route.id === routeId ? route.row : undefined
+  // an inline database shows only rows of its own database (a page may hold several)
+  const openRowId = routeRow && state?.docs && getRow(state.docs, routeRow) ? routeRow : undefined
   const [cards, setCards] = useState(() => readCards())
   const toggleCards = () => {
     setCards(!cards)
@@ -73,7 +78,7 @@ export function DatabaseView({ view, readOnly }: { view: ViewMeta; readOnly: boo
         <GridLayout {...props} cards={phone && cards} />
       )}
       {openRowId && !state.preview && (
-        <RowModal session={session} state={state} viewId={view.id} rowId={openRowId} readOnly={props.readOnly} />
+        <RowModal session={session} state={state} routeId={routeId} rowId={openRowId} readOnly={props.readOnly} />
       )}
     </div>
   )

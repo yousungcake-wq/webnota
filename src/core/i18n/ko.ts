@@ -343,6 +343,11 @@ export const ko = {
   'block.page': '페이지',
   'block.page.hint': '이 페이지 안에 하위 페이지 만들기',
   'block.page.kw': '페이지 하위 문서',
+  'block.dbGrid': '표 데이터베이스',
+  'block.dbBoard': '보드 데이터베이스',
+  'block.dbCalendar': '캘린더 데이터베이스',
+  'block.db.hint': '페이지 안에 새 데이터베이스',
+  'block.dbLink': '기존 데이터베이스 연결',
 
   // views
   'home.title': 'WebNota',

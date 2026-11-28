@@ -337,6 +337,11 @@ export const en: Record<MessageKey, string> = {
   'block.page': 'Page',
   'block.page.hint': 'Create a sub-page inside this page',
   'block.page.kw': 'document',
+  'block.dbGrid': 'Table database',
+  'block.dbBoard': 'Board database',
+  'block.dbCalendar': 'Calendar database',
+  'block.db.hint': 'A new database inside the page',
+  'block.dbLink': 'Link to a database',
 
   'home.title': 'WebNota',
   'favorites.empty': 'Tap ☆ on a page to add it to favorites.',

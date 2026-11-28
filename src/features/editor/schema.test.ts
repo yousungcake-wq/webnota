@@ -85,6 +85,9 @@ MARKS_AT_VERSION[21] = MARKS_AT_VERSION[20]
 // v22 (M5-08): row page bodies — no editor change.
 NODES_AT_VERSION[22] = NODES_AT_VERSION[21]
 MARKS_AT_VERSION[22] = MARKS_AT_VERSION[21]
+// v23 (M5-10): inline database block.
+NODES_AT_VERSION[23] = [...NODES_AT_VERSION[22]!, 'database'].sort()
+MARKS_AT_VERSION[23] = MARKS_AT_VERSION[22]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

@@ -20,6 +20,7 @@ import { v19Database } from './019-database'
 import { v20MediaLayout } from './020-media-layout'
 import { v21DbViews } from './021-db-views'
 import { v22RowPages } from './022-row-pages'
+import { v23InlineDatabase } from './023-inline-database'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -57,4 +58,5 @@ export const MIGRATIONS: Migration[] = [
   v20MediaLayout, // feedback: image captionAlign, video align/caption/captionAlign (version stamp only)
   v21DbViews, // M5-01: database view tabs, board / calendar layouts (version stamp only)
   v22RowPages, // M5-08: row page bodies row/<db>/<row> (version stamp only)
+  v23InlineDatabase, // M5-10: inline database block node type (version stamp only)
 ]

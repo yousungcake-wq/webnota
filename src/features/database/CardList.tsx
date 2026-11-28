@@ -3,7 +3,7 @@ import { readDbMeta } from '@/core/model/database'
 import { CardBody } from './CardBody'
 import { columnsOf } from './gridColumns'
 import { dt } from './i18n'
-import { openRow } from './rowNav'
+import { useOpenRow } from './rowNav'
 import { fixedLayout } from './rowLayout'
 import type { DbSession, DbState } from './session'
 import { useScrollBox } from './useScrollBox'
@@ -26,6 +26,7 @@ export function CardList({
   readOnly?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  const openRowPage = useOpenRow(state.view?.id)
   const box = useScrollBox(ref)
   const rowIds = state.result.rowIds
   const primary = state.meta.primaryFieldId || readDbMeta(state.docs).primaryFieldId
@@ -54,7 +55,7 @@ export function CardList({
               role="listitem"
               className="db-card"
               style={{ top: layout.top(start + k), height: CARD_HEIGHT - 8 }}
-              onClick={() => state.view && openRow(state.view.id, id)}
+              onClick={() => openRowPage(id)}
             >
               <CardBody row={row} primary={primaryField} fields={fields} labels />
             </button>

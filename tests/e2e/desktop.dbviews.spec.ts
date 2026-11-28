@@ -1,5 +1,5 @@
 import { expect, test, type Locator } from '@playwright/test'
-import { dbLive, failOnConsoleErrors, openQaDatabase, reload } from './helpers'
+import { dbLive, failOnConsoleErrors, openQaDatabase, reload, waitForNewPage } from './helpers'
 
 test.describe('database views (M5)', () => {
   test('tab bar: add, switch, independent settings, rename, duplicate, reorder, delete (M5-01)', async ({ page }) => {
@@ -480,6 +480,65 @@ test.describe('database views (M5)', () => {
     await modal.getByRole('button', { name: '닫기' }).click()
     await expect(modal).toHaveCount(0)
     await expect(page.locator('.dbk-col').first()).toBeVisible()
+    noErrors()
+  })
+
+  test('inline database: slash menu, grid in the page, row page over the page, resize, full page, link existing (M5-10)', async ({
+    page,
+  }) => {
+    const noErrors = failOnConsoleErrors(page)
+    await openQaDatabase(page)
+    await page.click('.sidebar [data-new-page] >> nth=0')
+    await page.getByRole('menuitem', { name: '문서' }).click() // the flag offers layouts
+    await waitForNewPage(page)
+    const pageUrl = page.url()
+    const ed = page.locator('.wn-editor').first()
+    await ed.click()
+    await page.keyboard.type('/데이터베이스')
+    await page.locator('.slash-item', { hasText: '표 데이터베이스' }).click()
+    const inline = page.locator('.db-inline').first()
+    await expect(inline.locator('.dbg-row')).toHaveCount(3)
+    // edit a cell
+    const cell = inline.locator('.dbg-row').first().locator('[aria-colindex="1"]')
+    await cell.click()
+    // ASCII: Playwright inserts other text without key events (an IME sends 'Process', handled)
+    await page.keyboard.type('Inline row')
+    await page.keyboard.press('Enter')
+    await expect(cell).toHaveText(/Inline row/)
+    // open the row: over this page (route keeps the page)
+    await inline.locator('.dbg-row').first().hover()
+    await inline.locator('.dbg-row').first().locator('.dbg-open').click()
+    const modal = page.getByRole('dialog', { name: '행 페이지' })
+    await expect(modal.locator('.db-rowpage-title')).toHaveValue('Inline row')
+    expect(page.url().startsWith(pageUrl + '/r/')).toBe(true)
+    await modal.getByRole('button', { name: '닫기' }).click()
+    await expect(modal).toHaveCount(0)
+    expect(page.url()).toBe(pageUrl)
+    // resize the box
+    const body = inline.locator('.db-inline-body')
+    const h0 = (await body.boundingBox())!.height
+    const handle = (await inline.locator('.db-inline-resize').boundingBox())!
+    await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(handle.x + handle.width / 2, handle.y + 120, { steps: 6 })
+    await page.mouse.up()
+    await expect.poll(async () => (await body.boundingBox())!.height).toBeGreaterThan(h0 + 80)
+
+    // a second block linking the QA database
+    await ed.locator('> p').last().click()
+    await page.keyboard.type('/연결')
+    await page.locator('.slash-item', { hasText: '기존 데이터베이스 연결' }).click()
+    const linker = page.locator('.db-linker')
+    await linker.getByRole('listitem').filter({ hasText: 'QA database' }).click()
+    await expect(page.locator('.db-inline').nth(1).locator('.dbg-row').first()).toBeVisible()
+    await expect(page.locator('.db-inline').nth(1)).toContainText('QA database')
+
+    await reload(page)
+    await expect(page.locator('.db-inline')).toHaveCount(2)
+    await expect(page.locator('.db-inline').first().locator('.dbg-row').first()).toContainText('Inline row')
+    // open the first as a full page
+    await page.locator('.db-inline').first().getByRole('button', { name: '전체 페이지로 열기' }).click()
+    await expect(page.locator('.db-view .dbg-row').first()).toContainText('Inline row')
     noErrors()
   })
 })

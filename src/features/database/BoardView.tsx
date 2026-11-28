@@ -28,7 +28,7 @@ import { addGroup, columnMenu, HiddenGroups } from './boardColumns'
 import { GroupLabel, groupName } from './GroupLabel'
 import { dt } from './i18n'
 import type { LayoutProps } from './layoutProps'
-import { openRow } from './rowNav'
+import { useOpenRow } from './rowNav'
 import { measuredLayout } from './rowLayout'
 import { newRow } from './rowActions'
 import type { DbSession } from './session'
@@ -63,6 +63,7 @@ export default function BoardView({ session, state, title, readOnly }: LayoutPro
   )
   const coverField = state.fields.find((f) => f.id === view?.board.coverFieldId && f.type === 'media') ?? null
   const [editing, setEditing] = useState<string | null>(null)
+  const openRowPage = useOpenRow(view?.id)
   const [colMenu, setColMenu] = useState<{ key: string; anchor: HTMLElement } | null>(null)
   const boardRef = useRef<HTMLDivElement>(null)
   const attachBoard = useCallback((el: HTMLDivElement | null) => {
@@ -159,7 +160,7 @@ export default function BoardView({ session, state, title, readOnly }: LayoutPro
           coverField={coverField}
           readOnly={readOnly}
           editing={editing}
-          onOpen={(id) => view && openRow(view.id, id)}
+          onOpen={openRowPage}
           onEdit={setEditing}
           onAdd={addCard}
           onMenu={readOnly ? undefined : (key, anchor) => setColMenu({ key, anchor })}

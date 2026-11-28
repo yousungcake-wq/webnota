@@ -29,8 +29,12 @@ import {
   Quote,
   Table2,
   Type,
+  KanbanSquare,
+  CalendarDays,
+  Database,
   type LucideIcon,
 } from 'lucide-react'
+import { isEnabled } from '@/core/flags'
 import { t, type MessageKey } from '@/core/i18n'
 import { rankBlocks, recentBlocks, type BlockCategory, type Rankable } from './rank'
 
@@ -367,6 +371,8 @@ export const BLOCKS: BlockItem[] = [
     icon: FileText,
     run: (c) => c.insertSubPage(),
   },
+  // inline databases (M5-10, ED-B20) — behind the `database` flag until M5-11
+  ...(isEnabled('database') ? databaseBlocks() : []),
   {
     id: 'divider',
     category: 'advanced',
@@ -389,4 +395,32 @@ export const CATEGORY_LABEL: Record<BlockCategory, MessageKey> = {
   list: 'block.cat.list',
   media: 'block.cat.media',
   advanced: 'block.cat.advanced',
+}
+
+function databaseBlocks(): BlockItem[] {
+  const db = (id: 'grid' | 'board' | 'calendar', title: MessageKey, icon: LucideIcon, extra: string[]): BlockItem => ({
+    id: `database-${id}`,
+    category: 'advanced',
+    turnInto: false,
+    title: t(title),
+    hint: t('block.db.hint'),
+    keywords: ['database', 'db', 'inline', ...extra],
+    icon,
+    run: (c) => c.insertDatabase(id),
+  })
+  return [
+    db('grid', 'block.dbGrid', Table2, ['table', 'grid']),
+    db('board', 'block.dbBoard', KanbanSquare, ['board', 'kanban']),
+    db('calendar', 'block.dbCalendar', CalendarDays, ['calendar']),
+    {
+      id: 'database-link',
+      category: 'advanced',
+      turnInto: false,
+      title: t('block.dbLink'),
+      hint: t('block.db.hint'),
+      keywords: ['database', 'link', 'linked'],
+      icon: Database,
+      run: (c) => c.insertLinkedDatabase(),
+    },
+  ]
 }
