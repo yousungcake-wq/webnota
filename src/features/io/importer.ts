@@ -23,6 +23,7 @@ import { loadDocIO, loadMarkdown } from '@/features/editor'
 import type { WebnotaExport } from './exporter'
 import { EXPORT_FORMAT } from './format'
 import { it } from './i18n'
+import { report } from './progress'
 import {
   attachmentsOf,
   FILE_PAGES,
@@ -219,6 +220,8 @@ async function importWebnota(data: WebnotaExport, zip: Map<string, Uint8Array>, 
   }
   for (const v of data.views) ids.set(v.id, newId())
   const dbIds = new Map(Object.keys(data.databases).map((id) => [id, newId()]))
+  // database ids appear in relation options and inline database blocks too (M8-08)
+  for (const [from, to] of dbIds) ids.set(from, to)
   const remap = <T>(value: T): T => {
     let s = JSON.stringify(value)
     for (const [from, to] of ids) s = s.split(from).join(to)
@@ -245,7 +248,10 @@ async function importWebnota(data: WebnotaExport, zip: Map<string, Uint8Array>, 
       databaseId: v.databaseId ? (dbIds.get(v.databaseId) ?? null) : null,
     })
 
+  const total = Object.keys(data.pages).length + Object.keys(data.databases).length
+  let done = 0
   for (const [viewId, page] of Object.entries(data.pages)) {
+    report(done++, total)
     const id = ids.get(viewId)
     if (!id) continue
     await withDoc(pageDocName(id), (doc) => {
@@ -257,6 +263,7 @@ async function importWebnota(data: WebnotaExport, zip: Map<string, Uint8Array>, 
     })
   }
   for (const [oldDb, snap] of Object.entries(data.databases)) {
+    report(done++, total)
     const dbId = dbIds.get(oldDb)!
     const { docs, release } = await openDatabase(dbId)
     try {
@@ -424,7 +431,9 @@ async function importTree(
 
   // page bodies
   const fileIds = new Map<string, string | null>()
+  let done = 0
   for (const item of plan) {
+    report(done++, plan.length)
     if (item.kind !== 'page') continue
     const rowDb = item.parent ? dbs.get(item.parent) : undefined
     const rowId = rowDb && !viewOf.has(item.path) ? rowDb.rowOf.get(item.title) : undefined

@@ -10,10 +10,20 @@ export function IoSection() {
   const input = useRef<HTMLInputElement>(null)
   const folder = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
+  const [progress, setProgress] = useState<[number, number] | null>(null)
   const phone = useLayout().layout === 'phone'
 
+  const track = async () => {
+    const { onProgress } = await import('./progress')
+    onProgress((done, total) => setProgress(total > 1 ? [done, total] : null))
+    return () => {
+      onProgress(null)
+      setProgress(null)
+    }
+  }
   const onImport = async (files: File[]) => {
     setBusy(true)
+    const untrack = await track()
     try {
       const { importFiles } = await import('./importer')
       const picked = await Promise.all(
@@ -30,11 +40,13 @@ export function IoSection() {
     } catch (e) {
       toast(it('io.failed', { error: (e as Error).message }), { tone: 'error' })
     } finally {
+      untrack()
       setBusy(false)
     }
   }
   const onExport = async () => {
     setBusy(true)
+    const untrack = await track()
     try {
       const { downloadExport } = await import('./exporter')
       const r = await downloadExport()
@@ -42,6 +54,7 @@ export function IoSection() {
     } catch (e) {
       toast(it('io.exportFailed', { error: (e as Error).message }), { tone: 'error' })
     } finally {
+      untrack()
       setBusy(false)
     }
   }
@@ -52,7 +65,7 @@ export function IoSection() {
       <p className="muted small">{it('io.desc')}</p>
       <div className="settings-row-buttons">
         <Button icon={Upload} disabled={busy} onClick={() => input.current?.click()} data-io-import>
-          {busy ? it('io.working') : it('io.import')}
+          {busy ? (progress ? `${it('io.working')} ${progress[0]}/${progress[1]}` : it('io.working')) : it('io.import')}
         </Button>
         {!phone && (
           <Button icon={FolderInput} disabled={busy} onClick={() => folder.current?.click()} data-io-folder>

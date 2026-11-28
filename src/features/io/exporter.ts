@@ -1,4 +1,5 @@
 import { strToU8, zipSync, type Zippable } from 'fflate'
+import * as Y from 'yjs'
 import { openDatabase, rowDocName } from '@/core/docs/database'
 import { openDoc, pageDocName, retainDoc } from '@/core/docs/registry'
 import { ws } from '@/core/docs/workspace'
@@ -22,6 +23,7 @@ import { databaseIdOf, listSpaces, listViews, type SpaceMeta, type ViewMeta } fr
 import { SCHEMA_VERSION } from '@/core/schema'
 import { loadDocIO } from '@/features/editor'
 import { EXPORT_FORMAT, EXPORT_VERSION } from './format'
+import { report } from './progress'
 import { pageToMarkdown, type PMNode } from './toMarkdown'
 
 export { EXPORT_FORMAT, EXPORT_VERSION }
@@ -143,7 +145,16 @@ export async function buildExport(rootIds?: string[]): Promise<{ zip: Uint8Array
   }
   let pages = 0
   let databases = 0
+  // a full backup also keeps every document's own Yjs state (SY-07): an archive for
+  // recovery tools; restoring uses the JSON (new ids, new space)
+  const raw = !rootIds
+  const yjs = (path: string, doc: Y.Doc) => {
+    if (raw) files[`_yjs/${path}.yjs`] = Y.encodeStateAsUpdate(doc)
+  }
+  yjs('workspace', ws())
+  let done = 0
   for (const v of order) {
+    report(done++, order.length)
     const { dir, base } = pathOf.get(v.id)!
     const at = (name: string) => (dir ? `${dir}/${name}` : name)
     const link = (target: string, fromDir: string) => {
@@ -161,11 +172,14 @@ export async function buildExport(rootIds?: string[]): Promise<{ zip: Uint8Array
       try {
         if (!data.databases[dbId]) {
           data.databases[dbId] = snapshotDatabase(docs)
+          yjs(`db/${dbId}/schema`, docs.schema)
+          docs.shards.forEach((shard, i) => yjs(`db/${dbId}/rows-${i}`, shard))
           for (const shard of docs.shards) fileRefsInRows(shard, refs)
           const bodies: Record<string, Record<string, unknown>> = {}
           for (const r of data.databases[dbId].rows.filter((x) => x.hasDoc))
             bodies[r.id] = await withDoc(rowDocName(dbId, r.id), (d) => {
               fileRefsInDoc(d, refs)
+              yjs(`db/${dbId}/rows/${r.id}`, d)
               return io.docToJSON(d)
             })
           data.rowDocs[dbId] = bodies
@@ -185,6 +199,7 @@ export async function buildExport(rootIds?: string[]): Promise<{ zip: Uint8Array
     const releaseDoc = retainDoc(name)
     try {
       const doc = await openDoc(name)
+      yjs(`page/${v.id}`, doc)
       const json = io.docToJSON(doc)
       fileRefsInDoc(doc, refs)
       data.pages[v.id] = { doc: json, page: doc.getMap('page').toJSON() as Record<string, unknown> }
@@ -230,6 +245,7 @@ export async function buildExport(rootIds?: string[]): Promise<{ zip: Uint8Array
     data.files[id] = `_files/${id}`
     files[`_files/${id}`] = f.bytes
   }
+  report(order.length, order.length)
   files['webnota.json'] = strToU8(JSON.stringify(data))
   return { zip: zipSync(files, { level: 6 }), pages, databases }
 }

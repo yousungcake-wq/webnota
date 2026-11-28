@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate'
 import { readFileSync } from 'node:fs'
-import { enableDatabase, failOnConsoleErrors, gridCell, openApp, openQaDatabase } from './helpers'
+import { dbLive, enableDatabase, failOnConsoleErrors, gridCell, openApp, openQaDatabase } from './helpers'
 
 // a 1×1 PNG
 const PNG = Buffer.from(
@@ -149,5 +149,46 @@ test('Notion: relation columns become relations, row bodies become row pages, da
   await expect(rowPage.locator('.db-rowpage-title')).toHaveValue('Write')
   await expect(rowPage).toContainText('Row page body here')
   await expect(rowPage).not.toContainText('Owner: Kim')
+  check()
+})
+
+test('backup round trip keeps relations pointing at the restored copy, with the raw Yjs archive (M8-08)', async ({
+  page,
+}) => {
+  await openApp(page)
+  const check = failOnConsoleErrors(page)
+  const P = '4c0a2b3c4d5e6f708192a3b4c5d6e7f8'
+  const R = '5d0a2b3c4d5e6f708192a3b4c5d6e7f8'
+  await importZip(
+    page,
+    zipSync({
+      [`Tasks ${H3}_all.csv`]: strToU8(`Name,Owner\nWrite,Kim (People%20${P}/Kim%20${R}.md)\n`),
+      [`People ${P}_all.csv`]: strToU8('Name\nKim\n'),
+    }),
+  )
+  const openDb = async (title: string, nth: 'first' | 'last') => {
+    const row = page.locator('.sidebar .tree-row', { hasText: title })
+    await row[nth]().locator('.tree-link').click()
+    await expect(page.locator('.dbg-hcell').first()).toBeVisible({ timeout: 15000 })
+    await dbLive(page)
+    return page.url().match(/\/v\/([^/]+)/)![1]!
+  }
+  const peopleOriginal = await openDb('People', 'first')
+
+  await page.goto('/#/settings')
+  const download = page.waitForEvent('download')
+  await page.locator('[data-io-export]').click()
+  const zip = new Uint8Array(readFileSync(await (await download).path()))
+  const names = Object.keys(unzipSync(zip))
+  expect(names).toContain('_yjs/workspace.yjs')
+  expect(names.some((n) => /^_yjs\/db\/[^/]+\/schema\.yjs$/.test(n))).toBe(true)
+
+  await importZip(page, zip)
+  await expect(page.locator('.sidebar .tree-row', { hasText: 'Tasks' })).toHaveCount(2)
+  await openDb('Tasks', 'last')
+  await (await gridCell(page, 0, 'Owner')).locator('.db-rel-chip').click()
+  await expect(page.getByRole('dialog', { name: '행 페이지' }).locator('.db-rowpage-title')).toHaveValue('Kim')
+  const target = page.url().match(/\/v\/([^/]+)/)![1]!
+  expect(target).not.toBe(peopleOriginal)
   check()
 })
