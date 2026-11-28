@@ -4,10 +4,10 @@
 
 ## 현재 위치
 
-- **마일스톤**: M6 데이터베이스 III (M5 완료 — 실기기 확인은 docs/QA.md "M5"(와 M4·M3·M2·2차 피드백), 사용자 확인 대기. DB 플래그 제거됨)
-- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12, M4 16/16, M5 13/13 완료. M6 10/11 (체크리스트 세부화 완료). 사용자 피드백 1·2차 반영 완료
+- **마일스톤**: M7 모바일 완성 패스 (M6 완료 — 실기기 확인은 docs/QA.md "M6"·"M5"(와 M4·M3·M2·2차 피드백), 사용자 확인 대기)
+- **진행 상황**: M0 26/26, M1 21/21, M2 21/21, M3 12/12, M4 16/16, M5 13/13, M6 11/11 완료. M7 0/14 (체크리스트 세부화 완료). 사용자 피드백 1·2차 반영 완료
 - **진행 중 항목**: (없음)
-- **다음 할 일**: M6-10 (M5 실기기 확인은 사용자 대기)
+- **다음 할 일**: M5·M6 실기기 확인(docs/QA.md) 사용자 대기 → M7-00
 - **CI**: https://github.com/yousungcake-wq/webnota/actions (main 푸시 시 verify + e2e + 배포)
 - **배포 주소**: https://yousungcake-wq.github.io/webnota/
 - **저장소**: https://github.com/yousungcake-wq/webnota
@@ -66,13 +66,15 @@
 
 - **DB 탭·행 페이지·인라인 (M5-01~10)**: 탭 = 첫 뷰의 하위 뷰(같은 databaseId, `databaseTabs`). 행 페이지는 라우트 `…/v/<page>/r/<row>`(`openRow`/`useOpenRow`, 인라인은 `RowRouteContext`로 문서 id), 본문 `row/<db>/<row>`는 내용이 생길 때 `hasDoc`. 인라인 DB 블록의 뷰는 `embedded: true`(사이드바·`listViews`에 없음, `getView`로는 나옴). 데스크탑 `MainContent`는 행 라우트가 바뀌어도 다시 마운트하지 않음(App.tsx key). **에디터 청크 209.0/210KB(100%)** — 다음 에디터 기능은 먼저 기존 코드를 지연 청크로 빼서 자리를 만들 것.
 
+- **관계·롤업 (M6)**: 관계 쓰기는 반드시 `setLinks`(양방향이면 상대도), 셀 직접 `setCell` 금지(붙여넣기·범위 지우기는 관계 열 건너뜀) — 세션이 합집합 복구(`repairTwoWay`)를 하므로 한쪽만 지우면 되살아남. 대상 DB 문서는 세션이 열어 둠(`session.target`), 셀은 `RelationContext`. 필터·정렬·계산에 쓰이는 관계·롤업 값은 `QueryInput.derived`(세션이 계산). CSV는 `csvImport.ts`/`csvExport.ts`. 설정 지연 사전 `features/settings/historyI18n`.
+
 - **DB 첫 화면 캐시 (M5-00)**: 뷰를 열면 `wn:<wsId>:$dbscreen`의 캐시로 먼저 읽기 전용 미리보기(`state.preview`, `.db-view[data-preview]`, docs는 빈 자리 표시)를 그림. 레이아웃 컴포넌트는 `LayoutProps.readOnly`를 따르면 됨(미리보기 포함). **e2e에서 새로 고침 뒤 DB 값을 확인·편집할 때는 `dbLive(page)`** 먼저(캐시만 보고 통과하지 않게). Board·Calendar는 `BoardView.tsx`·`CalendarView.tsx`(별도 청크 `dbBoard`·`dbCalendar`), 카드 내용은 `CardBody`.
 
 - 기본 i18n 사전 7.9/8KB(99%): 새 문자열은 기능별 지연 사전(addMessages)에 넣을 것
 
 - 공유(M9)는 B안: 공유 스페이스마다 별도 저장소, 한 워크스페이스가 여러 저장소와 동기화(SY-08). M5~M8에서 새 문서·파일 경로를 만들 때 '어느 저장소(스페이스)에 속하는지'로 라우팅할 수 있게 스페이스 단위로 찾을 수 있도록 설계할 것 (spec/02 §2.1)
 
-- CI에서 가끔 실패하는 e2e: `mobile.image.spec.ts`(폰 이미지 손잡이 크기 조절·도구 모음 탭, 부하 시 figure가 포인터를 가로챔 — M5 중 1회, 재실행 통과). 다시 나오면 안정화
+- CI에서 가끔 실패하던 e2e `mobile.image.spec.ts`(폰 이미지 손잡이 끌기): M6-10에서 끌기 재시도(`toPass`)로 안정화
 - 성능 측정 시 `vite preview`가 남아 있으면 다른 빌드를 잴 수 있음 → 측정 전 `pkill -f 'vite preview'`
 - 실제 GitHub API로 동기화를 검증하지 못함 (작업 환경 프록시 제한). 사용자 확인 필요.
 - GitHub 로그인 (2026-11-27 설정 완료, 사용자가 실기기 로그인 확인): Worker `https://webnota-auth.yousungcake.workers.dev`(Actions가 배포, `/token`·`/unfurl` 동작 확인), 저장소 Variables `WEBNOTA_GITHUB_CLIENT_ID`·`WEBNOTA_AUTH_PROXY_URL`, Secrets `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`·`WEBNOTA_GITHUB_CLIENT_SECRET`. 작업 환경의 `gh`로 Actions 변수·비밀은 읽고 쓸 수 없음(403) — `gh workflow run`은 가능. Cloudflare 토큰이 만료되면 worker 작업이 실패해 Pages 배포도 멈춤.
@@ -226,3 +228,4 @@
 | 2026-11-28 | M6-07: CSV 내보내기(현재 보기/전체, 표시 값, 공유 시트/내려받기) | da9cab2 |
 | 2026-11-28 | M6-08: 계산 보강(롤업 계산 행, Board 열 머리 계산, 폰 계산 행) | ba9b921 |
 | 2026-11-28 | M6-09: 저장소 크기·500MB 경고·기록 정리(새 루트 커밋, head 재확인 후 강제 갱신), 메모리 GitHub e2e | a3fbb5c |
+| 2026-11-28 | M6-10: M6 e2e(관계·양방향·롤업·CSV·기록 정리, 폰)·성능 기록·QA M6, M6 완료, M7 체크리스트 세부화 | d99973e |
