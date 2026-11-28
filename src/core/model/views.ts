@@ -52,6 +52,11 @@ export interface SpaceMeta {
   visibility: 'shared' | 'private'
   ownerLogin: string | null
   createdAt: number
+  /**
+   * Shared space (M9, spec/02 §2.1): its repository "owner/name" — its views live in that
+   * repository's `space` document, not here. null: a space of the home repository.
+   */
+  repo: string | null
 }
 
 type YMap = Y.Map<unknown>
@@ -261,6 +266,7 @@ export function listSpaces(doc: Y.Doc): SpaceMeta[] {
       visibility: m.get('visibility') === 'private' ? 'private' : 'shared',
       ownerLogin: typeof m.get('ownerLogin') === 'string' ? (m.get('ownerLogin') as string) : null,
       createdAt: typeof m.get('createdAt') === 'number' ? (m.get('createdAt') as number) : 0,
+      repo: typeof m.get('repo') === 'string' && m.get('repo') ? (m.get('repo') as string) : null,
     }),
   )
   return out.sort(bySiblingOrder)
@@ -277,7 +283,15 @@ export function rootSpaceId(doc: Y.Doc): string {
 
 export function createSpace(
   doc: Y.Doc,
-  opts: { name: string; icon?: IconValue | null; color?: string; visibility?: 'shared' | 'private'; id?: string },
+  opts: {
+    name: string
+    icon?: IconValue | null
+    color?: string
+    visibility?: 'shared' | 'private'
+    id?: string
+    /** A shared space's repository (M9). */
+    repo?: string | null
+  },
 ): string {
   assertWritable()
   const id = opts.id ?? newId()
@@ -291,6 +305,7 @@ export function createSpace(
     m.set('visibility', opts.visibility ?? 'shared')
     m.set('ownerLogin', opts.visibility === 'private' ? currentUser : null)
     m.set('createdAt', Date.now())
+    if (opts.repo) m.set('repo', opts.repo)
     spacesOf(doc).set(id, m)
   })
   return id
@@ -308,6 +323,15 @@ export function updateSpace(
     for (const [k, v] of Object.entries(patch)) if (m.get(k) !== v) m.set(k, v)
     if (patch.visibility) m.set('ownerLogin', patch.visibility === 'private' ? currentUser : null)
   })
+}
+
+/** Links a space to its own repository (shared space, M9) or back to the home one (null). */
+export function setSpaceRepo(doc: Y.Doc, id: string, repo: string | null) {
+  assertWritable()
+  const m = spacesOf(doc).get(id)
+  if (!m) return
+  if (repo) m.set('repo', repo)
+  else m.delete('repo')
 }
 
 export function moveSpace(doc: Y.Doc, id: string, index: number) {

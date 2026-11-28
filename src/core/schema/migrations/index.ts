@@ -23,6 +23,7 @@ import { v22RowPages } from './022-row-pages'
 import { v23InlineDatabase } from './023-inline-database'
 import { v24Relation } from './024-relation'
 import { v25Rollup } from './025-rollup'
+import { v26SharedSpaces } from './026-shared-spaces'
 
 /**
  * Migration registry: exactly one entry per version from 2 up to SCHEMA_VERSION,
@@ -63,4 +64,5 @@ export const MIGRATIONS: Migration[] = [
   v23InlineDatabase, // M5-10: inline database block node type (version stamp only)
   v24Relation, // M6-01: relation field type (version stamp only)
   v25Rollup, // M6-04: rollup field type (version stamp only)
+  v26SharedSpaces, // M9-00: shared spaces — spaces[id].repo + space documents (version stamp only)
 ]

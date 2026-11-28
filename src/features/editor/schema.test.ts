@@ -94,6 +94,9 @@ MARKS_AT_VERSION[24] = MARKS_AT_VERSION[23]
 // v25 (M6-04): rollup field — no editor change.
 NODES_AT_VERSION[25] = NODES_AT_VERSION[24]
 MARKS_AT_VERSION[25] = MARKS_AT_VERSION[24]
+// v26 (M9-00): shared spaces — no editor change.
+NODES_AT_VERSION[26] = NODES_AT_VERSION[25]
+MARKS_AT_VERSION[26] = MARKS_AT_VERSION[25]
 
 describe('editor schema vs schemaVersion', () => {
   const schema = docSchema()

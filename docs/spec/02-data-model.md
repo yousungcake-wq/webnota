@@ -29,7 +29,7 @@ workspace (Y.Doc)
 ├─ spaces: Y.Map<spaceId, Y.Map>
 │   name, icon: IconValue, color: string, order: FracKey,
 │   visibility: 'shared' | 'private', ownerLogin: string | null, createdAt
-│   repo?: string | null            // (M9 계획, §2.1) 공유 스페이스의 저장소 "owner/name". 없으면 홈 저장소
+│   repo?: string | null            // (M9, schema v26, §2.1) 공유 스페이스의 저장소 "owner/name". 없으면 홈 저장소
 ├─ views: Y.Map<viewId, Y.Map>
 │   kind: 'document' | 'database'
 │   layout: 'document' | 'grid' | 'board' | 'calendar'
@@ -64,7 +64,7 @@ type FracKey = string // fractional-indexing 키 ("a0", "a0V" …)
 - **휴지통**: `deletedAt` 설정. 하위 뷰는 조상이 삭제되면 숨겨집니다. **영구 삭제**는 뷰 항목을 제거하고 동기화 엔진이 고아 파일을 정리합니다.
 - **즐겨찾기**를 사용자별로 두는 이유: 공유 워크스페이스에서 남의 즐겨찾기가 섞이면 안 됩니다. "최근 항목"은 기기별(localStorage)입니다.
 
-### 2.1 공유 스페이스의 `space` 문서 (M9 계획 — spec/07 SH-00, DECISIONS 021)
+### 2.1 공유 스페이스의 `space` 문서 (M9 — spec/07 SH-00, DECISIONS 021)
 
 공유 스페이스 저장소는 자기 완결적이어야 하므로 그 스페이스의 뷰 트리를 홈 `workspace` 문서가 아니라 저장소 안 `data/space.yjs`에 둡니다.
 
@@ -79,6 +79,7 @@ space (Y.Doc)  // 공유 스페이스 저장소의 data/space.yjs
 - 홈 `workspace.spaces[id].repo`가 있으면 그 스페이스의 뷰는 `space` 문서에서 읽고, 홈 `workspace.views`에는 두지 않습니다. 사이드바·검색·라우터는 두 출처를 합쳐 봅니다(`core/model/views`가 출처를 숨기는 읽기 계층 제공).
 - 문서·DB·파일 경로는 그 저장소 안에서 지금과 같습니다(`data/docs/…`, `data/dbs/…`, `files/…`).
 - 이 변경은 **schemaVersion 증가 + 마이그레이션 없음(기존 스페이스는 repo 없음 = 홈)** 으로 시작하고, 구버전 앱은 읽기 전용이 됩니다. `space` 문서도 자체 `meta.schemaVersion`을 가지며 같은 게이트 규칙을 따릅니다.
+- 구현(M9-00, schema v26): `SpaceMeta.repo`(`createSpace({ repo })`, `setSpaceRepo`), `core/model/space.ts`(`initSpaceDoc`·`readSpaceDocMeta`·`updateSpaceDocMeta`·`spaceViews` — 뷰 함수는 그대로 `space` 문서에 씀). 로컬 문서 이름은 `sp:<spaceId>:<이름>`(`core/docs/spaceDocs.ts`: `spaceDocName`·`parseSpaceDoc`, 스페이스 뷰 트리는 `sp:<id>:space`) → IndexedDB `wn:<ws>:sp:<id>:<이름>`, 저장소 안 경로는 `<이름>` 그대로(SY-08 라우팅, M9-01). 두 출처를 합쳐 읽는 계층은 M9-03(공유 스페이스 만들기)과 함께.
 
 ## 3. `doc/<viewId>` 문서
 
@@ -234,6 +235,7 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 | 23 | 블록 노드 타입 `database`(databaseId, viewId, layout, height) — 페이지 안 인라인 DB, 그 뷰는 `embedded: true`·페이지의 하위 뷰 (버전만) | M5-10 |
 | 24 | DB 필드 타입 `relation`: 셀 `rowId[]`(중복 없음, 순서 유지), 옵션 `targetDatabaseId`(같은 DB 가능)·`twoWay`·`pairedFieldId` (버전만) | M6-01 |
 | 25 | DB 필드 타입 `rollup`(계산 필드, 셀 저장 없음): 옵션 `relationFieldId`·`targetFieldId`·`fn`(showOriginal·unique·계산 14종 중 대상 타입에 맞는 것) (버전만) | M6-04 |
+| 26 | 공유 스페이스: `spaces[id].repo`(공유 스페이스 저장소 "owner/name") + 그 저장소의 `space` 문서(§2.1). 기존 스페이스는 repo 없음 = 홈 저장소라 옮기는 데이터 없음 (버전만) | M9-00 |
 
 v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다 (M0-17).
 

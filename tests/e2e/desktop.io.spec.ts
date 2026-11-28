@@ -166,6 +166,8 @@ test('backup round trip keeps relations pointing at the restored copy, with the 
       [`People ${P}_all.csv`]: strToU8('Name\nKim\n'),
     }),
   )
+  // the import navigates to its first page when done: wait, or the clicks below race it
+  await expect(page.locator('.toast', { hasText: '가져왔습니다' })).toBeVisible({ timeout: 15000 })
   const openDb = async (title: string, nth: 'first' | 'last') => {
     const row = page.locator('.sidebar .tree-row', { hasText: title })
     await row[nth]().locator('.tree-link').click()
@@ -184,6 +186,7 @@ test('backup round trip keeps relations pointing at the restored copy, with the 
   expect(names.some((n) => /^_yjs\/db\/[^/]+\/schema\.yjs$/.test(n))).toBe(true)
 
   await importZip(page, zip)
+  await expect(page.locator('.toast', { hasText: '가져왔습니다' }).last()).toBeVisible({ timeout: 15000 })
   await expect(page.locator('.sidebar .tree-row', { hasText: 'Tasks' })).toHaveCount(2)
   await openDb('Tasks', 'last')
   await (await gridCell(page, 0, 'Owner')).locator('.db-rel-chip').click()
