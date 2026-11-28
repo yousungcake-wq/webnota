@@ -150,6 +150,11 @@ export function ensureHomeBelow() {
   recordTrail(false)
 }
 
+/** The previous screen of this tab is `route` (so going back reaches it). */
+export function previousIs(route: Route) {
+  return trail.at(-2)?.href === href(route)
+}
+
 /** Back within the app: the previous screen of this tab, or home when there is none. */
 export function goBack() {
   if (historyBusy()) {

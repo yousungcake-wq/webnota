@@ -1,5 +1,5 @@
 import { Plus, Settings } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { t } from '@/core/i18n'
 import { visibleSpaces } from '@/core/model/views'
 import { setCurrentSpace, useRecent } from '@/core/store/prefs'
@@ -20,8 +20,10 @@ import './home.css'
 export function HomeView() {
   const spaceId = useCurrentSpace()
   const spaces = visibleSpaces(useSpaces())
+  const ref = useRef<HTMLDivElement>(null)
+  usePullRefresh(ref)
   return (
-    <div className="view home">
+    <div className="view home" ref={ref}>
       <header className="home-top">
         <WorkspaceSwitcher />
         <div className="home-top-actions">
@@ -99,4 +101,21 @@ function RecentStrip() {
       </div>
     </section>
   )
+}
+
+/** Pull to refresh on the phone's scrolling content (MB-15); the gesture is its own chunk. */
+function usePullRefresh(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const scroller = ref.current?.closest<HTMLElement>('.phone-content')
+    if (!scroller) return
+    let off: (() => void) | undefined
+    let alive = true
+    void import('./pullRefresh').then((m) => {
+      if (alive) off = m.attachPullRefresh(scroller)
+    })
+    return () => {
+      alive = false
+      off?.()
+    }
+  }, [ref])
 }

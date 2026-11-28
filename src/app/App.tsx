@@ -3,7 +3,7 @@ import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from
 import { useViews } from '@/core/store/views'
 import { pushRecent } from '@/core/store/prefs'
 import { wsKey } from '@/core/docs/slots'
-import { ensureHomeBelow, goBack, href, navigate, useRoute, type Route } from '@/core/store/router'
+import { ensureHomeBelow, goBack, href, navigate, previousIs, useRoute, type Route } from '@/core/store/router'
 import { loadHome } from '@/features/home'
 import { loadPageView, PageOverlays } from '@/features/page'
 import { loadSearchView, PaletteHost } from '@/features/search'
@@ -222,6 +222,6 @@ function PhoneShell({ route }: { route: Route }) {
 function switchTab(from: Route, to: Route) {
   if (from.name === to.name) return
   const onTab = from.name === 'favorites' || from.name === 'search' || from.name === 'settings' || from.name === 'trash'
-  if (to.name === 'home') return onTab ? goBack() : navigate(to)
+  if (to.name === 'home') return onTab && previousIs(to) ? goBack() : navigate(to, { replace: onTab })
   navigate(to, { replace: onTab })
 }
