@@ -5,6 +5,10 @@ import {
   CURRENCIES,
   DATE_FORMATS,
   deleteField,
+  disableTwoWay,
+  enableTwoWay,
+  pairedField,
+  relationOptions,
   duplicateField,
   renameField,
   setFieldOptions,
@@ -82,6 +86,7 @@ export function FieldMenu({
   onClose: () => void
 }) {
   const phone = useLayout().layout === 'phone'
+  const rel = useRelations()
   const [name, setName] = useState(field.name)
   const [typesOpen, setTypesOpen] = useState(false)
   const primary = field.id === primaryId
@@ -198,7 +203,9 @@ export function FieldMenu({
                     message: dt('db.field.deleteMessage', { name: field.name }),
                     confirmLabel: dt('db.field.delete'),
                     danger: true,
-                  }).then((ok) => ok && deleteField(docs, field.id))
+                  }).then(
+                    (ok) => ok && deleteRelationAware(docs, field, rel ? rel.target(targetOf(field, rel.dbId)) : null),
+                  )
                 }}
               />
             )}
@@ -316,24 +323,50 @@ function RelationTarget({ docs, field }: { docs: DbDocs; field: FieldMeta }) {
   const rel = useRelations()
   const { alive } = useAliveViews()
   if (!rel) return null
+  const targetId = targetOf(field, rel.dbId)
+  const target = rel.target(targetId)
+  const opts = relationOptions(field)
+  const paired = target ? pairedField(field, target) : null
   const seen = new Set<string>([rel.dbId])
   const others = alive.filter((v) => {
     if (v.kind !== 'database' || !v.databaseId || seen.has(v.databaseId)) return false
     seen.add(v.databaseId)
     return true
   })
-  const current = targetOf(field, rel.dbId)
+  const current = targetId
   return (
-    <label className="db-date-select db-typeopts">
-      {dt('db.rel.target')}
-      <select value={current} onChange={(e) => setFieldOptions(docs, field.id, { targetDatabaseId: e.target.value })}>
-        <option value={rel.dbId}>{dt('db.rel.self')}</option>
-        {others.map((v) => (
-          <option key={v.databaseId!} value={v.databaseId!}>
-            {v.title || dt('db.row.untitled')}
-          </option>
-        ))}
-      </select>
-    </label>
+    <>
+      <label className="db-date-select db-typeopts">
+        {dt('db.rel.target')}
+        <select value={current} onChange={(e) => setFieldOptions(docs, field.id, { targetDatabaseId: e.target.value })}>
+          <option value={rel.dbId}>{dt('db.rel.self')}</option>
+          {others.map((v) => (
+            <option key={v.databaseId!} value={v.databaseId!}>
+              {v.title || dt('db.row.untitled')}
+            </option>
+          ))}
+        </select>
+      </label>
+      {/* two-way (M6-03): a paired field in the target shows the links back */}
+      <Switch
+        checked={opts.twoWay && !!paired}
+        disabled={!target}
+        label={dt('db.rel.twoWay')}
+        description={paired ? dt('db.rel.pairedAs', { name: paired.name }) : dt('db.rel.twoWayHint')}
+        onChange={(on) => {
+          if (!target) return
+          if (on) {
+            const selfName = alive.find((v) => v.databaseId === rel.dbId)?.title || dt('db.rel.self')
+            enableTwoWay(docs, target, field.id, { selfId: rel.dbId, targetId, pairedName: selfName })
+          } else disableTwoWay(docs, target, field.id)
+        }}
+      />
+    </>
   )
+}
+
+/** Deleting one side of a two-way relation leaves the other side as a one-way relation. */
+function deleteRelationAware(docs: DbDocs, field: FieldMeta, target: DbDocs | null) {
+  if (field.type === 'relation' && target) disableTwoWay(docs, target, field.id)
+  deleteField(docs, field.id)
 }

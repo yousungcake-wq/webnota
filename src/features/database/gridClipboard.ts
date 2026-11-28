@@ -50,7 +50,8 @@ export function copyRect(docs: DbDocs, rect: CellRect, rowIds: string[], fields:
   return toTSV(out)
 }
 
-const SKIP = new Set(['createdTime', 'updatedTime', 'rollup'])
+// relations are edited in their picker only: a two-way pair must change on both sides (M6-03)
+const SKIP = new Set(['createdTime', 'updatedTime', 'rollup', 'relation'])
 
 /** Clears every editable cell of the rectangle. */
 export function clearRect(docs: DbDocs, rect: CellRect, rowIds: string[], fields: FieldMeta[]) {

@@ -294,6 +294,9 @@ export const ko = {
   'db.rel.more': '{count}개 더 — 검색으로 좁히세요',
   'db.rel.target': '연결할 데이터베이스',
   'db.rel.self': '이 데이터베이스',
+  'db.rel.twoWay': '양방향',
+  'db.rel.twoWayHint': '연결한 데이터베이스에도 이 관계를 보여 주는 필드를 만듭니다',
+  'db.rel.pairedAs': '상대 필드: {name}',
 }
 
 export type DbKey = keyof typeof ko

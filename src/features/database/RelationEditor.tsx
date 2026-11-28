@@ -1,12 +1,11 @@
 import { Check, Search } from 'lucide-react'
 import { useState } from 'react'
 import {
-  linkRow,
   listRows,
   readDbMeta,
   relationIds,
   relationTitles,
-  unlinkRow,
+  setLinks,
   type DbDocs,
   type FieldMeta,
 } from '@/core/model/database'
@@ -46,8 +45,9 @@ export function RelationEditor({
     .map((r) => ({ id: r.id, title: typeof r.cells[primary] === 'string' ? (r.cells[primary] as string) : '' }))
     .filter((r) => !query || r.title.toLowerCase().includes(query))
   const shown = candidates.slice(0, LIMIT)
-  const toggle = (id: string) =>
-    linked.has(id) ? unlinkRow(docs, rowId, field.id, id) : linkRow(docs, rowId, field.id, id)
+  // through setLinks: a two-way relation updates the other side too (M6-03)
+  const set = (next: string[]) => setLinks(docs, target, field.id, rowId, next)
+  const toggle = (id: string) => set(linked.has(id) ? ids.filter((x) => x !== id) : [...ids, id])
   return (
     <div className="db-rel-editor">
       {ids.length > 0 && (
@@ -60,7 +60,7 @@ export function RelationEditor({
                   type="button"
                   className="db-chip-x"
                   aria-label={dt('db.rel.unlink', { name: r.title || dt('db.row.untitled') })}
-                  onClick={() => unlinkRow(docs, rowId, field.id, r.id)}
+                  onClick={() => set(ids.filter((x) => x !== r.id))}
                 >
                   ×
                 </button>

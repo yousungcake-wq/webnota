@@ -295,4 +295,7 @@ export const en: Record<DbKey, string> = {
   'db.rel.more': '{count} more — narrow with search',
   'db.rel.target': 'Linked database',
   'db.rel.self': 'This database',
+  'db.rel.twoWay': 'Two-way',
+  'db.rel.twoWayHint': 'Adds a field showing these links in the linked database',
+  'db.rel.pairedAs': 'Paired field: {name}',
 }

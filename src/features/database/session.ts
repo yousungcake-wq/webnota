@@ -8,6 +8,7 @@ import {
   readDbMeta,
   readViewSettings,
   relationOptions,
+  repairTwoWay,
   type DbDocs,
   type DbMeta,
   type FieldMeta,
@@ -103,6 +104,24 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
   // relation targets (M6-02): other databases this one links to, open while the view is
   const targets = new Map<string, { docs: DbDocs | null; release: () => void; off: () => void }>()
   const bumpTargets = () => store.set((s) => (s && !s.preview ? { ...s, targetsVersion: s.targetsVersion + 1 } : s))
+  // two-way relations (M6-03): after merges both sides must agree — heal shortly after changes
+  let repairTimer: ReturnType<typeof setTimeout> | undefined
+  const scheduleRepair = () => {
+    clearTimeout(repairTimer)
+    repairTimer = setTimeout(() => {
+      if (!docs || closed) return
+      for (const f of listFields(docs)) {
+        const o = relationOptions(f)
+        if (f.type !== 'relation' || !o.twoWay) continue
+        const target = (o.targetDatabaseId ?? dbId) === dbId ? docs : targets.get(o.targetDatabaseId!)?.docs
+        try {
+          if (target) repairTwoWay(docs, target, f.id)
+        } catch {
+          /* read-only (newer schema): nothing to write */
+        }
+      }
+    }, 1500)
+  }
   const syncTargets = (fields: FieldMeta[]) => {
     const want = new Set(
       fields
@@ -124,8 +143,12 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
         if (closed || targets.get(id) !== entry) return rel()
         entry.docs = t
         entry.release = rel
-        entry.off = observeRows(t, bumpTargets)
+        entry.off = observeRows(t, () => {
+          bumpTargets()
+          scheduleRepair()
+        })
         bumpTargets()
+        scheduleRepair()
       })
     }
   }
@@ -205,6 +228,7 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
           if (r) upserts.push(r)
           else deletes.push(id)
         }
+        scheduleRepair()
         // repaint the changed cells now; order and filter follow when the query answers (worker)
         store.set((s) => (s && !s.preview ? { ...s, rowsVersion: s.rowsVersion + 1 } : s))
         runner!.apply({ upserts, deletes })
@@ -212,7 +236,9 @@ export function openDbSession(dbId: string, viewId: string): DbSession {
       const offSchema = observeSchema(d, refreshSchema)
       const r = runner
       syncTargets(listFields(d))
+      scheduleRepair()
       cleanup = () => {
+        clearTimeout(repairTimer)
         for (const t of targets.values()) {
           t.off()
           t.release()

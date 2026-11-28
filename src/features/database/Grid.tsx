@@ -3,6 +3,7 @@ import { Copy, Maximize2, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react'
 import {
   cellOf,
   duplicateRow,
+  setLinks,
   moveRow,
   prefillFromFilter,
   readDbMeta,
@@ -22,6 +23,7 @@ import { CellEditor } from './CellEditor'
 import { deleteRowsWithUndo, newRow } from './rowActions'
 import { clearRect, copyRect, pasteTSV, rectOf } from './gridClipboard'
 import { useOpenRow } from './rowNav'
+import { targetOf } from './relationContext'
 import { CalcRow } from './CalcRow'
 import { GridHeader } from './GridHeader'
 import { GridRow, type GridPos as Pos, type GridRowActions } from './GridRow'
@@ -202,7 +204,12 @@ export function Grid({
   const clearSelection = () => {
     if (readOnly || !rect) return
     if (multi) clearRect(docs, rect, rowIds, visibleFields)
-    else if (active && canEdit(fieldById(active.fieldId))) setCell(docs, active.rowId, active.fieldId, null)
+    else if (active && canEdit(fieldById(active.fieldId))) {
+      const f = fieldById(active.fieldId)!
+      // a relation clears through setLinks, so a two-way pair loses the link too (M6-03)
+      if (f.type === 'relation') setLinks(docs, session.target(targetOf(f, state.dbId)), f.id, active.rowId, [])
+      else setCell(docs, active.rowId, active.fieldId, null)
+    }
   }
   const onCopy = (e: React.ClipboardEvent, cut = false) => {
     if (editing || popover || !rect || e.target !== e.currentTarget) return

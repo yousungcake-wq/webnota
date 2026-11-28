@@ -1,7 +1,17 @@
 import type * as Y from 'yjs'
 import { getView, listViews } from '../views'
 import { asStrings, cellOf } from './cells'
-import { addField, getRow, readDbMeta, setCell, type DbDocs } from './model'
+import {
+  addField,
+  getField,
+  getRow,
+  listFields,
+  listRows,
+  readDbMeta,
+  setCell,
+  setFieldOptions,
+  type DbDocs,
+} from './model'
 import type { CellValue, FieldMeta, RowSnapshot } from './types'
 
 /**
@@ -95,3 +105,98 @@ export function databaseSpaceId(ws: Y.Doc, dbId: string): string {
   })
   return space
 }
+
+// ---------- two-way relations (M6-03, spec/05 §10) ----------
+
+/** The paired field of a two-way relation in the target docs, if both sides still agree. */
+export function pairedField(field: FieldMeta, target: DbDocs): FieldMeta | null {
+  const o = relationOptions(field)
+  if (!o.twoWay || !o.pairedFieldId) return null
+  const p = getField(target, o.pairedFieldId)
+  return p && p.type === 'relation' ? p : null
+}
+
+/**
+ * Turns a relation two-way: a paired relation field in the target database (`pairedName`)
+ * pointing back, both marked `twoWay` and naming each other; existing links are mirrored.
+ * `selfId` / `targetId` are the two database ids (equal for a relation inside one database).
+ */
+export function enableTwoWay(
+  self: DbDocs,
+  target: DbDocs,
+  fieldId: string,
+  opts: { selfId: string; targetId: string; pairedName: string },
+): string {
+  const field = getField(self, fieldId)
+  if (!field || field.type !== 'relation') throw new Error('not a relation field')
+  const existing = pairedField(field, target)
+  if (existing) return existing.id
+  const pairedId = addField(target, {
+    name: opts.pairedName,
+    type: 'relation',
+    options: { targetDatabaseId: opts.selfId, twoWay: true, pairedFieldId: fieldId },
+  })
+  setFieldOptions(self, fieldId, { targetDatabaseId: opts.targetId, twoWay: true, pairedFieldId: pairedId })
+  repairTwoWay(self, target, fieldId)
+  return pairedId
+}
+
+/** Back to one-way on both sides; every link stays. */
+export function disableTwoWay(self: DbDocs, target: DbDocs, fieldId: string) {
+  const field = getField(self, fieldId)
+  if (!field) return
+  const paired = pairedField(field, target)
+  setFieldOptions(self, fieldId, { twoWay: false, pairedFieldId: null })
+  if (paired) setFieldOptions(target, paired.id, { twoWay: false, pairedFieldId: null })
+}
+
+/**
+ * Sets a row's links; on a two-way relation the other side follows (added links get the
+ * row back, removed ones lose it). Two docs, so not atomic — `repairTwoWay` heals the rest.
+ */
+export function setLinks(self: DbDocs, target: DbDocs | null, fieldId: string, rowId: string, ids: string[]) {
+  const field = getField(self, fieldId)
+  if (!field) return
+  const before = relationIds(getRow(self, rowId)?.cells[fieldId])
+  setRelation(self, rowId, fieldId, ids)
+  const paired = target ? pairedField(field, target) : null
+  if (!target || !paired) return
+  const after = new Set(ids)
+  for (const id of ids) if (!before.includes(id) && getRow(target, id)) linkRow(target, id, paired.id, rowId)
+  for (const id of before) if (!after.has(id) && getRow(target, id)) unlinkRow(target, id, paired.id, rowId)
+}
+
+/**
+ * Makes both sides of a two-way relation agree after merges (concurrent edits on two
+ * devices, or a write that reached only one doc). A link present on either side is kept
+ * (union): it never loses an intended link, and both sides are written by every edit, so an
+ * unlink only comes back if it raced a link of the same pair. Returns the fixes made.
+ */
+export function repairTwoWay(self: DbDocs, target: DbDocs, fieldId: string): number {
+  const field = getField(self, fieldId)
+  const paired = field ? pairedField(field, target) : null
+  if (!field || !paired) return 0
+  let fixes = 0
+  const mirror = (from: DbDocs, f: FieldMeta, to: DbDocs, p: FieldMeta) => {
+    for (const row of listRows(from))
+      for (const id of relationIds(row.cells[f.id])) {
+        const other = getRow(to, id)
+        if (other && !relationIds(other.cells[p.id]).includes(row.id)) {
+          linkRow(to, id, p.id, row.id)
+          fixes++
+        }
+      }
+  }
+  mirror(self, field, target, paired)
+  mirror(target, paired, self, field)
+  return fixes
+}
+
+/** Two-way relation fields of a database whose pair lives in `target` (for repair runs). */
+export const twoWayFieldsTo = (self: DbDocs, targetId: string, selfId: string) =>
+  listFields(self).filter(
+    (f) =>
+      f.type === 'relation' &&
+      relationOptions(f).twoWay &&
+      (relationOptions(f).targetDatabaseId ?? selfId) === targetId,
+  )
