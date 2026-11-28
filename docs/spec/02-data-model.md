@@ -232,6 +232,7 @@ type Filter = { id: string; fieldId: string; cond: FilterCond; value?: unknown }
 | 21 | DB 뷰 탭: 같은 DB의 추가 뷰는 첫 뷰의 하위 뷰(`kind: 'database'`, 같은 `databaseId`), `board`·`calendar` 레이아웃과 뷰 설정 `group`·`board`·`calendar` (버전만) | M5-01 |
 | 22 | 행 페이지 본문 문서 `row/<db>/<row>`(`data/dbs/<db>/rows/<row>.yjs`, 첫 입력 때 행에 `hasDoc: true`) (버전만) | M5-08 |
 | 23 | 블록 노드 타입 `database`(databaseId, viewId, layout, height) — 페이지 안 인라인 DB, 그 뷰는 `embedded: true`·페이지의 하위 뷰 (버전만) | M5-10 |
+| 24 | DB 필드 타입 `relation`: 셀 `rowId[]`(중복 없음, 순서 유지), 옵션 `targetDatabaseId`(같은 DB 가능)·`twoWay`·`pairedFieldId` (버전만) | M6-01 |
 
 v2 문서 이름 변경은 IndexedDB 데이터베이스 복사가 필요합니다. 첫 실행 시 복사하고, 성공하면 구 DB를 삭제합니다. 동기화 엔진은 구 경로 파일을 읽어서 새 경로로 쓰고, 구 경로는 삭제합니다 (M0-17).
 

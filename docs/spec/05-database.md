@@ -196,6 +196,7 @@ AppFlowy 팔레트 10색(Purple, Pink, Light Pink, Orange, Yellow, Lime, Green, 
 ## 10. 관계와 롤업 (`DB-X`, M6)
 
 - 관계 필드: 같은 DB 또는 다른 DB를 대상으로 합니다. 양방향 옵션을 켜면 상대 DB에 짝 필드를 만들고, 양쪽에 같은 트랜잭션 의미로 기록합니다 (두 Y.Doc이므로 실패 시 보정 로직 필요 — 동기화 후 불일치를 검사하고 복구).
+- 구현 (M6-01, schema v24, `core/model/database/relation.ts`): 셀 = 대상 행 id 배열(중복 제거, 순서 유지, 문자열 아닌 값은 무시), 비우면 셀 삭제. 대상은 `targetDatabaseId`(같은 DB 가능)로만 가리키고, 지워진 대상 행은 읽을 때 빠짐(`liveRelationIds`, 셀은 그대로 — 행 삭제 실행 취소로 돌아오면 다시 보임). 제목은 대상 DB의 기본 필드(`relationTitles`). 공유 B안(M9): 대상 DB가 어느 스페이스(= 저장소)에 있는지 `databaseSpaceId`로 알 수 있어, 다른 저장소의 DB를 가리키는 관계를 UI에서 구분할 수 있게 함.
 - 롤업 (P2): 관계 필드 → 대상 필드 → 함수(count, sum, avg, min, max, 고유값 목록, % 체크 등).
 
 ## 11. 성능 요구 사항
